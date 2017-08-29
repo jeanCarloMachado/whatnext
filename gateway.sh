@@ -17,14 +17,13 @@ unique_occurence_from_last_to_earlier() {
 }
 
 new_subjects() {
-
-    alread_practiced_names=$(unique_occurence_from_last_to_earlier)
+    already_practiced_names=$(unique_occurence_from_last_to_earlier)
     subjects=$(list_subjects_names)
 
     pattern=$(tr "\n" "|" <<< $already_practiced_names)
     #deletes last pipe
     pattern=${pattern%?}
-    [ -z $pattern ] && {
+    [[ -z "$pattern" ]] && {
         echo "$subjects"
         return
     }
