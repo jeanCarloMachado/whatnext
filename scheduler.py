@@ -31,6 +31,11 @@ new_subjects =  gateway(['./gateway.sh', 'new_subjects'])
 for subject in new_subjects.splitlines() :
     subjects_weights[subject] +=  10
 
+# change values based on the importance of the subject configured
+for subject in subjects_weights:
+    importance = int(gateway(['./gateway.sh', 'get_weight_by_name', subject]))
+    subjects_weights[subject] += importance
+
 
 sorted_subjects  = sorted(subjects_weights.items(), key=operator.itemgetter(1), reverse=True)
 for  subject, weight in sorted_subjects:

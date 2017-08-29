@@ -33,27 +33,13 @@ new_subjects() {
 }
 
 
-
-[[ "$1"  == "-d" ]] && {
-    echo "$( date "+%Y-%m-%d %H:%M:%S")|$2|$3" >> ~/.scheduler_history
-    exit
+done_today() {
+    cat ~/.scheduler_history | grep  "$(date '+%Y-%m-%d')"
 }
 
-[[ "$1"  == "--done-today" ]] && {
-    done_today
-    exit
+get_weight_by_name()
+{
+    list_subjects | grep $1 | cut -d'|' -f2
 }
-
-
-[[ "$1"  == "--list-subjects" ]] && {
-    $__dir/gateway.sh list_subjects_names
-    exit
-}
-
-[[ "$1"  == "--edit-subjects" ]] && {
-    vim ~/.scheduler
-    exit
-}
-
 
 $@
