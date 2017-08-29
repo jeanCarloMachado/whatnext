@@ -30,3 +30,27 @@ Where the columns are:
 1. name of the subject
 2. priority of it for you
 3. energy level that you need to study it
+
+The output of the program will a contextualized list of priorities to study at the moment
+
+```sh
+clean code: 0.28                   
+hadoop: 0.28                       
+meditaton: 0.24                    
+git: 0.19999999999999998           
+math: 0.17142857142857143          
+category theory: 0.15555555555555556                                   
+algorithms: 0.15555555555555556    
+history: 0.15000000000000002       
+haskell: 0.14444444444444446       
+elm: 0.13333333333333333           
+statistics: 0.13333333333333333    
+music: 0.125                       
+databases: 0.125                   
+crypto currencies: 0.11000000000000001                                 
+python: 0.1035                     
+scientific method: 0.08            
+languages foundations: 0.06        
+crispr: 0.05714285714285714        
+productivity: 0.02 
+```
