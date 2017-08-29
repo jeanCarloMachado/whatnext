@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 get_help() {
     echo "A tool to help schedule studies
     It considers a study period one hour and you cannot study in a row.
@@ -22,83 +24,10 @@ done_today() {
     cat ~/.scheduler_history | grep  "$(date '+%Y-%m-%d')"
 }
 
-list_subjects_names() {
-    cat ~/.scheduler | cut -d '|' -f1
-}
-
-list_subjects() {
-    cat ~/.scheduler
-}
-
-
-not_done_today() {
-    done_today_names=$(done_today | cut -d '|' -f 2)
-    subjects=$(list_subjects_names)
-
-    pattern=$(tr "\n" "|" <<< $done_today_names)
-    #deletes last pipe
-    pattern=${pattern%?}
-    [ -z $pattern ] && {
-        echo "$subjects"
-        return
-    }
-
-    echo "$subjects" | grep -E -v "$pattern"
-}
-
-
-
 [[ "$1"  == "-d" ]] && {
     echo "$( date "+%Y-%m-%d %H:%M:%S")|$2|$3" >> ~/.scheduler_history
     exit
 }
 
-[[ "$1"  == "--done-today" ]] && {
-    done_today
-    exit
-}
 
-
-[[ "$1"  == "--not-done-today" ]] && {
-    not_done_today
-    exit
-}
-
-[[ "$1"  == "--list-subjects" ]] && {
-    list_subjects_names
-    exit
-}
-
-[[ "$1"  == "--edit-subjects" ]] && {
-    vim ~/.scheduler
-    exit
-}
-
-printf "Next: "
-
-
-get_line() {
-    sed "$1q;d"
-}
-
-get_weight()
-{
-    list_subjects | grep $1 | cut -d'|' -f2
-}
-
-not_done_today_entries=$(not_done_today)
-total=$(echo "$not_done_today_entries" | wc -l)
-
-retry() {
-    indice=$(random 1 $total)
-    candidate=$(echo "$not_done_today_entries" | get_line $indice)
-
-    percentage_of_retry=$(( 100 - $(get_weight $candidate) ))
-    [ $(random 0 100) -le $percentage_of_retry ] && {
-        retry
-    }
-    echo $candidate
-    exit
-}
-
-retry
+$__dir/scheduler.py
