@@ -2,6 +2,7 @@
 
 import operator
 import subprocess
+import datetime
 
 def gateway(params):
     return subprocess.run(params, stdout=subprocess.PIPE).stdout.decode('UTF-8')
@@ -34,7 +35,15 @@ subjects_weights[last_entry] = subjects_weights[last_entry] / 4
 # give more probability to new subjects (which were never used)
 new_subjects =  gateway(['./gateway.sh', 'new_subjects'])
 for subject in new_subjects.splitlines() :
-    subjects_weights[subject] =  subjects_weights[subject]  * 8
+    subjects_weights[subject] =  subjects_weights[subject]  * 2
+
+# calculate the energy levels
+now = datetime.datetime.now()
+#low energy level period
+if now.hour > 22 or now.hour < 4:
+    for subject in subjects_weights:
+        energy_level = int(gateway(['./gateway.sh', 'get_energy_level_by_name', subject]))
+        subjects_weights[subject] = subjects_weights[subject] * (1/energy_level)
 
 sorted_subjects  = sorted(subjects_weights.items(), key=operator.itemgetter(1), reverse=True)
 for  subject, weight in sorted_subjects:

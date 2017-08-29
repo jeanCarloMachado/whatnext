@@ -41,4 +41,9 @@ get_weight_by_name()
     list_subjects | grep $1 | cut -d'|' -f2
 }
 
+get_energy_level_by_name()
+{
+    list_subjects | grep $1 | cut -d'|' -f3
+}
+
 $@
