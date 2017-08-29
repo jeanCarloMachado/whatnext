@@ -11,7 +11,7 @@ get_help() {
     $0 -d 'clean code' 'I studied X Y Z' to mark a session of clean code as done
     $0 --list-subjects                   to list all subjects
     $0 --edit-subjects
-    $0 --done-today
+    $0 --summary
     "
 }
 
@@ -25,8 +25,9 @@ get_help() {
     exit
 }
 
-[[ "$1"  == "--done-today" ]] && {
-    $__dir/gateway.sh done_today
+[[ "$1"  == "--summary" ]] && {
+    echo "Done Today: "$($__dir/gateway.sh done_today | wc -l)
+    echo "Done Week: "$($__dir/gateway.sh done_week | wc -l)
     exit
 }
 

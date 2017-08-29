@@ -46,4 +46,21 @@ get_energy_level_by_name()
     list_subjects | grep $1 | cut -d'|' -f3
 }
 
+done_week() {
+    data=$(cat ~/.scheduler_history)
+IFS='
+'
+    first_day_of_week=$(date --date='last sunday' +%Y-%m-%d)
+    for entry in $data
+    do
+        date=$(cut -d ' ' -f1 <<< $entry)
+        if [[ $date < $first_day_of_week ]]
+        then
+            break
+        fi
+
+        echo $entry
+    done
+}
+
 $@
