@@ -12,6 +12,23 @@ last_entry_name() {
     tail -n 1 ~/.scheduler_history | cut  -d '|' -f2 | tr -d "\n"
 }
 
+days_since_last_study() {
+    date=$(tac ~/.scheduler_history | grep $1 | head -n1 | cut -d '|' -f1)
+
+    # subject never studied
+    [ -z "$date" ] && {
+        echo 15
+        return
+    }
+
+    days=$(date_diff.js "$date" "$(date)" | jq .days)
+
+    [[ $days ==  'null' ]] && {
+        days=0
+    }
+    echo $days
+}
+
 unique_occurence_from_last_to_earlier() {
     cat ~/.scheduler_history | cut  -d '|' -f2 | uniq
 }

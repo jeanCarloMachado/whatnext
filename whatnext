@@ -20,7 +20,7 @@ get_help() {
     exit
 }
 
-[[ "$1"  == "-d" ]] && {
+[[ "$1"  == "-d" ]] || [[ "$1"  == "--done" ]]  && {
     echo "$( date "+%Y-%m-%d %H:%M:%S")|$2|$3" >> ~/.scheduler_history
     exit
 }
@@ -30,6 +30,33 @@ get_help() {
     echo "Done Week: "$($__dir/gateway.sh done_week | wc -l)
     exit
 }
+
+
+[[ "$1"  == "--log" ]] && {
+    log_data() {
+    log=$(tac ~/.scheduler_history)
+IFS='
+'
+    for i in $log
+    do
+        date=$(echo $i | cut -d '|' -f1)
+        subject=$(echo $i | cut -d '|' -f2)
+        description=$(echo $i | cut -d '|' -f3)
+        echo -e "\e[0;33;40m $subject \e[0m"
+        echo "Date:     $date"
+        echo $description
+
+        echo "
+        "
+
+    done
+}
+
+    log_data | less
+    exit
+}
+
+
 
 [[ "$1"  == "--list-subjects" ]] && {
     $__dir/gateway.sh list_subjects_names
@@ -41,4 +68,9 @@ get_help() {
     exit
 }
 
-$__dir/scheduler.py
+[[ "$1"  == "--list" ]] && {
+    $__dir/scheduler.py
+    exit
+}
+
+get_help

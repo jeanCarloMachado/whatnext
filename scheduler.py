@@ -17,15 +17,14 @@ for entry in subjects.splitlines() :
 
 # change values based on the importance of the subject configured
 for subject in subjects_weights:
-    importance = int(gateway(['./gateway.sh', 'get_weight_by_name', subject]))
+    importance_str = gateway(['./gateway.sh', 'get_weight_by_name', subject])
+    importance = int(importance_str)
     subjects_weights[subject]+= subjects_weights[subject] * (importance * 0.1)
 
 # give less probability to the latest and more to the earlier
-from_last_to_earlier =  gateway(['./gateway.sh', 'unique_occurence_from_last_to_earlier'])
-counter = 0
-for subject in from_last_to_earlier.splitlines() :
-    counter  = counter + 1
-    subjects_weights[subject]+=  subjects_weights[subject] * (counter * 0.05)
+for subject in subjects_weights:
+    days_since_last_study =  int(gateway(['./gateway.sh', 'days_since_last_study', subject]))
+    subjects_weights[subject]+=  subjects_weights[subject] * days_since_last_study
 
 
 # turns the last one less probable to repeat
