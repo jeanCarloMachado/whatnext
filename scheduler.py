@@ -44,7 +44,11 @@ if now.hour > 22 or now.hour < 4:
         energy_level = int(gateway(['./gateway.sh', 'get_energy_level_by_name', subject]))
         subjects_weights[subject] = subjects_weights[subject] * (1/energy_level)
 
-sorted_subjects  = sorted(subjects_weights.items(), key=operator.itemgetter(1), reverse=True)
-for  subject, weight in sorted_subjects:
-    print (subject + ": " + str(weight))
+def print_result(subjects_weights):
+    sorted_subjects  = sorted(subjects_weights.items(), key=operator.itemgetter(1), reverse=True)
+    for subject,weight in sorted_subjects:
+        what_todo = gateway(['./gateway.sh', 'get_whattodo_details_by_name', subject])
+        print (subject + ": " + what_todo)
+
+print_result(subjects_weights)
 

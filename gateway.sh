@@ -58,10 +58,17 @@ get_weight_by_name()
     list_subjects | grep $1 | cut -d'|' -f2
 }
 
+
 get_energy_level_by_name()
 {
     list_subjects | grep $1 | cut -d'|' -f3
 }
+
+get_whattodo_details_by_name()
+{
+    list_subjects | grep $1 | cut -d'|' -f4 | tr -d "\n"
+}
+
 
 done_week() {
     data=$(cat ~/.scheduler_history)
