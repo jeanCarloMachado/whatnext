@@ -10,29 +10,31 @@ get_help() {
 
     $0 -d 'clean code' 'I studied X Y Z' to mark a session of clean code as done
     $0 --list-subjects                   to list all subjects
-    $0 --edit-subjects
-    $0 --summary
+    $0 --edit-subjects                   opens the subjects on your editor
+    $0 --edit-history                    opens the history on your editor
+
+    $0 --summary                         displays statistics about your usage
     "
 }
 
-[[ "$@" =~ "--help" ]] || [[ "$@" =~ "-h" ]]&& {
+[[ "$@" =~ "--help" ]] || [[ "$@" =~ ^-h$ ]]&& {
     get_help
     exit
 }
 
-[[ "$1"  == "-d" ]] || [[ "$1"  == "--done" ]]  && {
+[[ "$@"  == "-d" ]] || [[ "$@"  == "--done" ]]  && {
     echo "$( date "+%Y-%m-%d %H:%M:%S")|$2|$3" >> ~/.scheduler_history
     exit
 }
 
-[[ "$1"  == "--summary" ]] && {
+[[ "$@"  == "--summary" ]] && {
     echo "Done Today: "$($__dir/gateway.sh done_today | wc -l)
     echo "Done Week: "$($__dir/gateway.sh done_week | wc -l)
     exit
 }
 
 
-[[ "$1"  == "--log" ]] && {
+[[ "$@"  == "--log" ]] && {
     log_data() {
     log=$(tac ~/.scheduler_history)
     current_entry=$(echo "$log" | wc -l )
@@ -43,7 +45,7 @@ IFS='
         date=$(echo $i | cut -d '|' -f1)
         subject=$(echo $i | cut -d '|' -f2)
         description=$(echo $i | cut -d '|' -f3)
-        echo -e "\e[0;33;40m $current_entry $subject \e[0m"
+        echo -e "\e[5;33;40m $current_entry $subject \e[0m"
         echo "Date:     $date"
         echo "      $description"
 
@@ -59,17 +61,30 @@ IFS='
 
 
 
-[[ "$1"  == "--list-subjects" ]] && {
+[[ "$@"  == "--list-subjects" ]] && {
     $__dir/gateway.sh list_subjects_names
     exit
 }
 
-[[ "$1"  == "--edit-subjects" ]] && {
-    vim ~/.scheduler
+[[ "$@"  == "--edit-subjects" ]] && {
+    [ ! -z ${EDITOR+x} ] && {
+        $EDITOR ~/.scheduler
+    } || {
+        vim ~/.scheduler
+    }
     exit
 }
 
-[[ "$1"  == "--list" ]] && {
+[[ "$@"  == "--edit-history" ]] && {
+    [ ! -z ${EDITOR+x} ] && {
+        $EDITOR ~/.scheduler_history
+    } || {
+        vim ~/.scheduler_history
+    }
+    exit
+}
+
+[[ "$@"  == "--list" ]] && {
     $__dir/scheduler.py
     exit
 }
