@@ -4,6 +4,7 @@ import operator
 import subprocess
 import datetime
 import sys
+import math
 
 def gateway(params):
     prefix = ['./gateway.sh']
@@ -32,8 +33,13 @@ def factory_subjects():
 subjects_configs = factory_subjects()
 
 # change values based on the importance of the subject configured
-for subject in subjects_configs:
-    subjects_configs[subject].weight += subjects_configs[subject].weight * (subjects_configs[subject].priority * 0.5)
+def configure_importance(subjects_configs):
+    for subject in subjects_configs:
+        subjects_configs[subject].weight += subjects_configs[subject].weight * (math.pow(subjects_configs[subject].priority,2) * 0.5)
+
+    return subjects_configs
+
+subjects_configs = configure_importance(subjects_configs)
 
 # give less probability to the latest and more to the earlier
 for subject in subjects_configs:
@@ -64,6 +70,6 @@ def print_result(subjects_configs):
     for subject,weight in sorted_subjects:
         what_todo = gateway(['get_whattodo_details_by_name', subject])
         last_date_studied = gateway(['last_studied_date_for_subject', subject])
-        print ('\x1b[6;30;42m' + subject + '\x1b[0m' + '|' + what_todo + '|' + last_date_studied)
+        print ('\x1b[7;30;42m' + subject + '\x1b[0m' + '|' + what_todo + '|' + '\x1b[7;30;43m' + last_date_studied + '\x1b[0m' )
 
 print_result(subjects_configs)

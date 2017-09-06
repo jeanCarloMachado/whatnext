@@ -10,7 +10,7 @@ get_help() {
 
     $0 -d 'clean code' 'I studied X Y Z' to mark a session of clean code as done
     $0 --list-subjects                   to list all subjects
-    $0 --edit-subjects                   opens the subjects on your editor
+    $0 (--edit-subjects|-es)                   opens the subjects on your editor
     $0 --edit-history                    opens the history on your editor
 
     $0 --summary                         displays statistics about your usage
@@ -22,7 +22,7 @@ get_help() {
     exit
 }
 
-[[ "$@"  == "-d" ]] || [[ "$@"  == "--done" ]]  && {
+[[ "$1"  == "-d" ]] || [[ "$1"  == "--done" ]]  && {
     echo "$( date "+%Y-%m-%d %H:%M:%S")|$2|$3" >> ~/.scheduler_history
     exit
 }
@@ -66,7 +66,7 @@ IFS='
     exit
 }
 
-[[ "$@"  == "--edit-subjects" ]] && {
+[[ "$@"  == "--edit-subjects" ]] || [[ "$@"  == "-es" ]] && {
     [ ! -z ${EDITOR+x} ] && {
         $EDITOR ~/.scheduler
     } || {
