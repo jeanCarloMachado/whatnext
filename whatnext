@@ -24,6 +24,11 @@ get_help() {
 [[ "$1"  == "-d" ]] || [[ "$1"  == "--done" ]]  && {
     subject=$2
 
+    [ ! $($__dir/gateway.sh list_subjects_names | grep $subject) ]  && {
+        echo 'subject not found'
+        exit 1
+    }
+
     [ ! -z ${4+x} ] && {
         what_to_do_next="$4"
         subject_config=$(cat ~/.scheduler | grep "$subject")
