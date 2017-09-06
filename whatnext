@@ -35,6 +35,7 @@ get_help() {
 [[ "$1"  == "--log" ]] && {
     log_data() {
     log=$(tac ~/.scheduler_history)
+    current_entry=$(echo "$log" | wc -l )
 IFS='
 '
     for i in $log
@@ -42,12 +43,12 @@ IFS='
         date=$(echo $i | cut -d '|' -f1)
         subject=$(echo $i | cut -d '|' -f2)
         description=$(echo $i | cut -d '|' -f3)
-        echo -e "\e[0;33;40m $subject \e[0m"
+        echo -e "\e[0;33;40m $current_entry $subject \e[0m"
         echo "Date:     $date"
-        echo $description
+        echo "      $description"
 
-        echo "
-        "
+        echo ""
+        current_entry=$(( $current_entry - 1 ))
 
     done
 }
