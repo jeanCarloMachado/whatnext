@@ -8,12 +8,11 @@ get_help() {
 
     Usage:
 
-    $0 -d 'clean code' 'I studied X Y Z' to mark a session of clean code as done
-    $0 --list-subjects                   to list all subjects
-    $0 (--edit-subjects|-es)                   opens the subjects on your editor
-    $0 --edit-history                    opens the history on your editor
-
-    $0 --summary                         displays statistics about your usage
+    $0 --list-subjects                                                  to list all subjects
+    $0 (--edit-subjects|-es)                                            opens the subjects on your editor
+    $0 --edit-history                                                   opens the history on your editor
+    $0 (--done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor 
+    $0 --summary                                                        displays statistics about your usage
     "
 }
 
@@ -23,7 +22,20 @@ get_help() {
 }
 
 [[ "$1"  == "-d" ]] || [[ "$1"  == "--done" ]]  && {
-    echo "$( date "+%Y-%m-%d %H:%M:%S")|$2|$3" >> ~/.scheduler_history
+    subject=$2
+
+    [ ! -z ${4+x} ] && {
+        what_to_do_next="$4"
+        subject_config=$(cat ~/.scheduler | grep "$subject")
+        subject_config_without_description=$(echo "$subject_config" | rev | cut -d '|' -f1 --complement | rev)
+        new_subject_config_entry="$subject_config_without_description|$what_to_do_next"
+
+        subject_config_line=$(cat ~/.scheduler | grep "$subject" -n|cut -d ':' -f1)
+
+        sed -i "$subject_config_line"'s/.*/'"$new_subject_config_entry"'/' ~/.scheduler
+    }
+    echo "$( date "+%Y-%m-%d %H:%M:%S")|$subject|$3" >> ~/.scheduler_history
+
     exit
 }
 
