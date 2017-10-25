@@ -71,7 +71,9 @@ Where the columns are:
 3. energy level that you need to study it
 4. optional description of what to do in the next session
 
-The output of the program will a contextualized list of priorities to study at the moment
+The output of the program will a contextualized list of priorities to
+study at the moment. The most important one's will be on the top.
+
 
 ![output](https://i.imgur.com/KJqNfJC.png)
 
