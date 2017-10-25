@@ -7,7 +7,7 @@ import sys
 import math
 
 def gateway(params):
-    prefix = ['./gateway.sh']
+    prefix = ['gateway.sh']
     return subprocess.run(prefix + params, stdout=subprocess.PIPE).stdout.decode('UTF-8')
 
 class Subject:

@@ -13,11 +13,11 @@ last_entry_name() {
 }
 
 last_studied_date_for_subject() {
-    tac ~/.scheduler_history | grep $1 | head -n1 | cut -d '|' -f1 | tr -d "\n"
+    tac ~/.scheduler_history | grep "$1" | head -n1 | cut -d '|' -f1 | tr -d "\n"
 }
 
 days_since_last_study() {
-    date=$(last_studied_date_for_subject $1)
+    date=$(last_studied_date_for_subject "$1")
 
     # subject never studied
     [ -z "$date" ] && {
@@ -59,18 +59,18 @@ done_today() {
 
 get_weight_by_name()
 {
-    list_subjects | grep $1 | cut -d'|' -f2
+    list_subjects | grep "$1" | cut -d'|' -f2
 }
 
 
 get_energy_level_by_name()
 {
-    list_subjects | grep $1 | cut -d'|' -f3
+    list_subjects | grep "$1" | cut -d'|' -f3
 }
 
 get_whattodo_details_by_name()
 {
-    list_subjects | grep $1 | cut -d'|' -f4 | tr -d "\n"
+    list_subjects | grep "$1" | cut -d'|' -f4 | tr -d "\n"
 }
 
 
@@ -91,4 +91,4 @@ IFS='
     done
 }
 
-$@
+"$@"

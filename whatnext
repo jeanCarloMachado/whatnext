@@ -8,11 +8,11 @@ get_help() {
 
     Usage:
 
-    $0 --list-subjects                                                  to list all subjects
     $0 (--edit-subjects|-es)                                            opens the subjects on your editor
     $0 --edit-history                                                   opens the history on your editor
     $0 (--done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor 
     $0 --summary                                                        displays statistics about your usage
+    $0 --log                                                            shows the log
     "
 }
 
@@ -101,9 +101,4 @@ IFS='
     exit
 }
 
-[[ "$@"  == "--list" ]] && {
-    $__dir/scheduler.py
-    exit
-}
-
-get_help
+$__dir/scheduler.py | less
