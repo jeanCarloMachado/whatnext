@@ -74,15 +74,22 @@ Where the columns are:
 The output of the program will a contextualized list of priorities to
 study at the moment. The most important one's will be on the top.
 
+```sh
+$ whatnext
+```
 
 ![output](https://i.imgur.com/KJqNfJC.png)
 
 When you study some subject you feed whatnext with this info in order to calculate the next most important item
 
 ```sh
-whatnext --done "tese cristiano" 'read about types of polymorpishms'
+$ whatnext --done "tese cristiano" 'read about types of polymorpishms'
 ```
 
 Informing whatnext about your studies also gives you a nice history of your progress
+
+```sh
+$ whatnext --log
+```
 
 ![log](https://i.imgur.com/s7vayZd.png)
