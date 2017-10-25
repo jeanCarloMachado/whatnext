@@ -77,7 +77,8 @@ $ whatnext
 When you study some subject you feed whatnext with this info in order to calculate the next most important item
 
 ```sh
-$ whatnext --done "tese cristiano" 'read about types of polymorpishms'
+$ whatnext --done 'tese cristiano' 'read about types of polymorpishms' 'read about Damas-Milner conjecture' 
+#the arguments are: subject studied, description of what was studied, description of what to do in the next session
 ```
 
 Informing whatnext about your studies also gives you a nice history of your progress
