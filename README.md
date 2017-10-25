@@ -22,8 +22,7 @@ The projects rests on some premises:
 - What really matters is that we know what to do next
 - What to do next cannot be a "must follow" only an advice
 - It's better to study in many little sessions than in few big one's
-- We usually want to study a lot of things
-- There are subjects more important than others (and their importance change quite often)
+- We want to study a lot of things and there are subjects more important than others (and their importance change quite often)
 
 ## Starting
 
