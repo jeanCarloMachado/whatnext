@@ -20,7 +20,7 @@ The projects premises are:
 - Life is too complicated to prepare beforehand a calendar of what to study
 - Yet we want to have some control and balance over the subjects we study
 - What really matters is that we know what to do next
-- What to do next cannot be a "must follow" only a advice
+- What to do next cannot be a "must follow" only an advice
 - It's better to study in many little sessions than in few big one's
 - We usually want to study a lot of things
 - There are subjects more important than others (and their importance change quite often)
@@ -67,8 +67,8 @@ tese cristiano|80|70|continuar introdução
 ```
 Where the columns are:
 1. name of the subject
-2. priority of it for you
-3. energy level that you need to study it
+2. priority of the subject (0 to the least important 100 to the most)
+3. the complexity of the subject (0 to the easiest 100 to the hardest)
 4. optional description of what to do in the next session
 
 The output of the program will a contextualized list of priorities to
