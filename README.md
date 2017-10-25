@@ -26,7 +26,7 @@ The projects rests on some premises:
 
 ## Starting
 
-Create your map of study ~/.scheduler
+Create your map of study ~/.whatnext.conf
 
 ```sh
 git|40|60|create a rebase -i demonstration

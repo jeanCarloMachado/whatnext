@@ -31,15 +31,15 @@ get_help() {
 
     [[ ! -z ${4+x} ]] && {
         what_to_do_next="$4"
-        subject_config=$(cat ~/.scheduler | grep "$subject")
+        subject_config=$(cat ~/.whatnext.conf | grep "$subject")
         subject_config_without_description=$(echo "$subject_config" | rev | cut -d '|' -f1 --complement | rev)
         new_subject_config_entry="$subject_config_without_description|$what_to_do_next"
 
-        subject_config_line=$(cat ~/.scheduler | grep "$subject" -n|cut -d ':' -f1)
+        subject_config_line=$(cat ~/.whatnext.conf | grep "$subject" -n|cut -d ':' -f1)
 
-        sed -i "$subject_config_line"'s/.*/'"$new_subject_config_entry"'/' ~/.scheduler
+        sed -i "$subject_config_line"'s/.*/'"$new_subject_config_entry"'/' ~/.whatnext.conf
     }
-    echo "$( date "+%Y-%m-%d %H:%M:%S")|$subject|$3" >> ~/.scheduler_history
+    echo "$( date "+%Y-%m-%d %H:%M:%S")|$subject|$3" >> ~/.whatnext_history
 
     exit
 }
@@ -53,7 +53,7 @@ get_help() {
 
 [[ "$@"  == "--log" ]] && {
     log_data() {
-    log=$(tac ~/.scheduler_history)
+    log=$(tac ~/.whatnext_history)
     current_entry=$(echo "$log" | wc -l )
 IFS='
 '
@@ -85,18 +85,18 @@ IFS='
 
 [[ "$@"  == "--edit-subjects" ]] || [[ "$@"  == "-es" ]] && {
     [ ! -z ${EDITOR+x} ] && {
-        $EDITOR ~/.scheduler
+        $EDITOR ~/.whatnext.conf
     } || {
-        vim ~/.scheduler
+        vim ~/.whatnext.conf
     }
     exit
 }
 
 [[ "$@"  == "--edit-history" ]] && {
     [ ! -z ${EDITOR+x} ] && {
-        $EDITOR ~/.scheduler_history
+        $EDITOR ~/.whatnext_history
     } || {
-        vim ~/.scheduler_history
+        vim ~/.whatnext_history
     }
     exit
 }

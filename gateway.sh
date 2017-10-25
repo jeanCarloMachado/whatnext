@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 
 list_subjects_names() {
-    cat ~/.scheduler | cut -d '|' -f1
+    cat ~/.whatnext.conf | cut -d '|' -f1
 }
 
 list_subjects() {
-    cat ~/.scheduler
+    cat ~/.whatnext.conf
 }
 
 last_entry_name() {
-    tail -n 1 ~/.scheduler_history | cut  -d '|' -f2 | tr -d "\n"
+    tail -n 1 ~/.whatnext_history | cut  -d '|' -f2 | tr -d "\n"
 }
 
 last_studied_date_for_subject() {
-    tac ~/.scheduler_history | grep "$1" | head -n1 | cut -d '|' -f1 | tr -d "\n"
+    tac ~/.whatnext_history | grep "$1" | head -n1 | cut -d '|' -f1 | tr -d "\n"
 }
 
 days_since_last_study() {
@@ -34,7 +34,7 @@ days_since_last_study() {
 }
 
 unique_occurence_from_last_to_earlier() {
-    cat ~/.scheduler_history | cut  -d '|' -f2 | uniq
+    cat ~/.whatnext_history | cut  -d '|' -f2 | uniq
 }
 
 new_subjects() {
@@ -54,7 +54,7 @@ new_subjects() {
 
 
 done_today() {
-    cat ~/.scheduler_history | grep  "$(date '+%Y-%m-%d')"
+    cat ~/.whatnext_history | grep  "$(date '+%Y-%m-%d')"
 }
 
 get_weight_by_name()
@@ -75,7 +75,7 @@ get_whattodo_details_by_name()
 
 
 done_week() {
-    data=$(cat ~/.scheduler_history)
+    data=$(cat ~/.whatnext_history)
 IFS='
 '
     first_day_of_week=$(date --date='last sunday' +%Y-%m-%d)
