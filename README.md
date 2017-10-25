@@ -15,7 +15,7 @@ Anytime your requirements change over the subjects you may only change
 the configuration file and whatnext will figure out what's more
 important next.
 
-The projects premises are:
+The projects rests on some premises:
 
 - Life is too complicated to prepare beforehand a calendar of what to study
 - Yet we want to have some control and balance over the subjects we study
