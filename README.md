@@ -19,6 +19,7 @@ The projects premisses are:
 
 - Life is too complicated to prepare beforehand a calendar of what to study
 - Yet we want to have some control and balance over the subjects we study
+- What really matters is that we know what to do next
 - It's better to study in many little sessions than in few big one's
 - We usually want to study a lot of things
 - There are subjects more important than others (and their importance change quite often)
