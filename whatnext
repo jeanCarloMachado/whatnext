@@ -8,11 +8,11 @@ get_help() {
 
     Usage:
 
-    $0 (--edit-subjects|-es)                                            opens the subjects on your editor
-    $0 --edit-history                                                   opens the history on your editor
-    $0 (--done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor 
-    $0 --summary                                                        displays statistics about your usage
-    $0 --log                                                            shows the log
+    $0 (edit-subjects|-es)                                            opens the subjects on your editor
+    $0 edit-history                                                   opens the history on your editor
+    $0 (done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor
+    $0 summary                                                        displays statistics about your usage
+    $0 log                                                            shows the log
     "
 }
 
@@ -21,7 +21,7 @@ get_help() {
     exit
 }
 
-[[ "$1"  == "-d" ]] || [[ "$1"  == "--done" ]]  && {
+[[ "$1"  == "-d" ]] || [[ "$1"  == "done" ]]  && {
     subject="$2"
 
     [[ ! $($__dir/gateway.sh list_subjects_names | grep "$subject") ]]  && {
@@ -44,14 +44,26 @@ get_help() {
     exit
 }
 
-[[ "$@"  == "--summary" ]] && {
+[[ "$@"  == "summary" ]] && {
     echo "Done Today: "$($__dir/gateway.sh done_today | wc -l)
     echo "Done Week: "$($__dir/gateway.sh done_week | wc -l)
     exit
 }
 
+[[ "$@"  == "init" ]] && {
+    [ ! -f ~/.whatnext.conf ] && {
+       echo "myFirstSubject|50|50|do something" > ~/.whatnext.conf
+    }
 
-[[ "$@"  == "--log" ]] && {
+    [ ! -f ~/.whatnext_history ] && {
+       echo "myFirstSubject|50|50|do something" > ~/.whatnext_history
+    }
+    exit
+}
+
+
+
+[[ "$@"  == "log" ]] && {
     log_data() {
     log=$(tac ~/.whatnext_history)
     current_entry=$(echo "$log" | wc -l )
@@ -78,12 +90,12 @@ IFS='
 
 
 
-[[ "$@"  == "--list-subjects" ]] && {
+[[ "$@"  == "list-subjects" ]] && {
     $__dir/gateway.sh list_subjects_names
     exit
 }
 
-[[ "$@"  == "--edit-subjects" ]] || [[ "$@"  == "-es" ]] && {
+[[ "$@"  == "edit-subjects" ]] || [[ "$@"  == "-es" ]] && {
     [ ! -z ${EDITOR+x} ] && {
         $EDITOR ~/.whatnext.conf
     } || {
@@ -92,7 +104,7 @@ IFS='
     exit
 }
 
-[[ "$@"  == "--edit-history" ]] && {
+[[ "$@"  == "edit-history" ]] && {
     [ ! -z ${EDITOR+x} ] && {
         $EDITOR ~/.whatnext_history
     } || {

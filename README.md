@@ -17,19 +17,32 @@ important next.
 
 The projects rests on some premises:
 
-- Life is too complicated to prepare beforehand a calendar of what to study
-- Yet we want to have some control and balance over the subjects we study
+- Life is too complicated to prepare beforehand a calendar of what to study and follow it accordingly
+- Yet we want some control and balance over the subjects we study
 - What really matters is that we know what to do next
 - What to do next cannot be a "must follow" only an advice
 - It's better to study in many little sessions than in few big one's
 - We want to study a lot of things and there are subjects more important than others (and their importance change quite often)
+
+# Installation
+
+```sh
+#clone the repo somewhere
+git clone git@github.com:jeanCarloMachado/whatnext.git
+
+#add the cloned repo into your path
+export PATH="$PATH:/whatnextcloneddirectory"
+
+#initialize the config files
+
+whatnext init
+```
 
 ## Starting
 
 Create your map of study ~/.whatnext.conf
 
 ```sh
-git|40|60|create a rebase -i demonstration
 crypto currencies|99|80|continue reading the book
 category theory|70|90|read category theory for programmers
 cormen book|65|90|do the exercise of how much you can do with a given complexity (wiki)
@@ -77,14 +90,14 @@ $ whatnext
 When you study some subject you feed whatnext with this info in order to calculate the next most important item
 
 ```sh
-$ whatnext --done 'tese cristiano' 'read about types of polymorpishms' 'read about Damas-Milner conjecture' 
+$ whatnext done 'tese cristiano' 'read about types of polymorpishms' 'read about Damas-Milner conjecture' 
 #the arguments are: subject studied, description of what was studied, description of what to do in the next session
 ```
 
 Informing whatnext about your studies also gives you a nice history of your progress
 
 ```sh
-$ whatnext --log
+$ whatnext log
 ```
 
 ![log](https://i.imgur.com/s7vayZd.png)
