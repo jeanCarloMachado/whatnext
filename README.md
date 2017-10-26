@@ -30,6 +30,9 @@ The projects rests on some premises:
 #clone the repo somewhere
 git clone git@github.com:jeanCarloMachado/whatnext.git
 
+#install jq lib
+sudo pacman -Sy jq
+
 #add the cloned repo into your path
 export PATH="$PATH:/whatnextcloneddirectory"
 
