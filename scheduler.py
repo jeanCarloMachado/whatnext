@@ -69,7 +69,7 @@ def print_result(subjects_configs):
     sorted_subjects  = sorted(subjects_configs.items(), key=lambda x: x[1].weight, reverse=True)
     for subject,weight in sorted_subjects:
         what_todo = gateway(['get_whattodo_details_by_name', subject])
-        last_date_studied = gateway(['last_studied_date_for_subject', subject])
-        print ('\x1b[7;30;42m' + subject + '\x1b[0m' + '|' + what_todo + '|' + '\x1b[7;30;43m' + last_date_studied + '\x1b[0m' )
+        days_since_last_study =  str(int(gateway(['days_since_last_study', subject])))
+        print ('\x1b[7;30;42m' + subject + '\x1b[0m ' + days_since_last_study + ' days ago ' + '\x1b[7;30;43m' + what_todo + '\x1b[0m'  )
 
 print_result(subjects_configs)
