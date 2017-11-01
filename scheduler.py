@@ -48,7 +48,8 @@ for subject in subjects_configs:
 
 # turns the last one less probable to repeat
 last_entry =  gateway(['last_entry_name'])
-subjects_configs[last_entry].weight = subjects_configs[last_entry].weight / 4
+if last_entry in subjects_configs:
+    subjects_configs[last_entry].weight = subjects_configs[last_entry].weight / 4
 
 # give more probability to new subjects (which were never used)
 new_subjects =  gateway(['new_subjects'])
