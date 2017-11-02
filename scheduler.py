@@ -75,8 +75,8 @@ def print_result(subjects_configs):
     for subject,weight in sorted_subjects:
         what_todo = gateway(['get_whattodo_details_by_name', subject])
         daysSinceLastStudyStr = gateway(['daysSinceLastStudy', subject]);
-        if daysSinceLastStudyStr == "":
-            daysSinceLastStudyStr = " never "
+        if daysSinceLastStudyStr == '':
+            daysSinceLastStudyStr = 'never '
         else:
             daysSinceLastStudyStr+=  ' days ago '
         print ('\x1b[7;30;42m' + subject + '\x1b[0m ' + daysSinceLastStudyStr +  '\x1b[7;30;43m' + what_todo + '\x1b[0m'  )

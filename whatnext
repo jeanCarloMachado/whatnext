@@ -22,25 +22,7 @@ get_help() {
 }
 
 [[ "$1"  == "-d" ]] || [[ "$1"  == "done" ]]  && {
-    subject="$2"
-
-    [[ ! $($__dir/gateway.sh list_subjects_names | grep "$subject") ]]  && {
-        echo 'subject not found'
-        exit 1
-    }
-
-    [[ ! -z ${4+x} ]] && {
-        what_to_do_next="$4"
-        subject_config=$(cat ~/.whatnext.conf | grep "$subject")
-        subject_config_without_description=$(echo "$subject_config" | rev | cut -d '|' -f1 --complement | rev)
-        new_subject_config_entry="$subject_config_without_description|$what_to_do_next"
-
-        subject_config_line=$(cat ~/.whatnext.conf | grep "$subject" -n|cut -d ':' -f1)
-
-        sed -i "$subject_config_line"'s/.*/'"$new_subject_config_entry"'/' ~/.whatnext.conf
-    }
-    echo "$( date "+%Y-%m-%d %H:%M:%S")|$subject|$3" >> ~/.whatnext_history
-
+    ./done.sh "$@"
     exit
 }
 

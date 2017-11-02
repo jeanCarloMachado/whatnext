@@ -70,7 +70,7 @@ get_energy_level_by_name()
 
 get_whattodo_details_by_name()
 {
-    list_subjects | grep "$1" | cut -d'|' -f4 | tr -d "\n"
+    list_subjects | egrep "^$1" | cut -d'|' -f4 | tr -d "\n"
 }
 
 
