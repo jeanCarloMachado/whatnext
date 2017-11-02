@@ -16,12 +16,11 @@ last_studied_date_for_subject() {
     tac ~/.whatnext_history | grep "$1" | head -n1 | cut -d '|' -f1 | tr -d "\n"
 }
 
-days_since_last_study() {
+daysSinceLastStudy() {
     date=$(last_studied_date_for_subject "$1")
 
     # subject never studied
     [ -z "$date" ] && {
-        echo 15
         return
     }
     days=$(echo $(( ( $(date -ud "$date" +'%s') - $(date +'%s') )/60/60/24 )))
@@ -30,7 +29,8 @@ days_since_last_study() {
     [[ $days ==  'null' ]] && {
         days=0
     }
-    echo $days
+    echo $days | tr -d "\n"
+
 }
 
 unique_occurence_from_last_to_earlier() {

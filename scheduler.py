@@ -35,7 +35,7 @@ subjects_configs = factory_subjects()
 # change values based on the importance of the subject configured
 def configure_importance(subjects_configs):
     for subject in subjects_configs:
-        subjects_configs[subject].weight += subjects_configs[subject].weight * (math.pow(subjects_configs[subject].priority,2) * 0.5)
+        subjects_configs[subject].weight += subjects_configs[subject].weight * (math.pow(subjects_configs[subject].priority,2) * 0.9)
 
     return subjects_configs
 
@@ -43,8 +43,12 @@ subjects_configs = configure_importance(subjects_configs)
 
 # give less probability to the latest and more to the earlier
 for subject in subjects_configs:
-    days_since_last_study =  int(gateway(['days_since_last_study', subject]))
-    subjects_configs[subject].weight +=  subjects_configs[subject].weight * days_since_last_study
+    daysSinceLastStudyStr = gateway(['daysSinceLastStudy', subject])
+    if daysSinceLastStudyStr == "":
+        subjects_configs[subject].weight = (subjects_configs[subject].weight  * subjects_configs[subject].weight * 0.2)
+        continue
+    daysSinceLastStudy =  int(daysSinceLastStudyStr)
+    subjects_configs[subject].weight +=  subjects_configs[subject].weight * daysSinceLastStudy
 
 # turns the last one less probable to repeat
 last_entry =  gateway(['last_entry_name'])
@@ -70,7 +74,11 @@ def print_result(subjects_configs):
     sorted_subjects  = sorted(subjects_configs.items(), key=lambda x: x[1].weight, reverse=True)
     for subject,weight in sorted_subjects:
         what_todo = gateway(['get_whattodo_details_by_name', subject])
-        days_since_last_study =  str(int(gateway(['days_since_last_study', subject])))
-        print ('\x1b[7;30;42m' + subject + '\x1b[0m ' + days_since_last_study + ' days ago ' + '\x1b[7;30;43m' + what_todo + '\x1b[0m'  )
+        daysSinceLastStudyStr = gateway(['daysSinceLastStudy', subject]);
+        if daysSinceLastStudyStr == "":
+            daysSinceLastStudyStr = " never "
+        else:
+            daysSinceLastStudyStr+=  ' days ago '
+        print ('\x1b[7;30;42m' + subject + '\x1b[0m ' + daysSinceLastStudyStr +  '\x1b[7;30;43m' + what_todo + '\x1b[0m'  )
 
 print_result(subjects_configs)
