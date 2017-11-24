@@ -6,9 +6,24 @@ import datetime
 import sys
 import math
 
+def memoize(function):
+    from functools import wraps
+    memo = {}
+    @wraps(function)
+    def wrapper(*args):
+        if str(args) in memo:
+            return memo[str(args)]
+        else:
+            rv = function(*args)
+            memo[str(args)] = rv
+            return rv
+    return wrapper
+
+@memoize
 def gateway(params):
     prefix = ['gateway.sh']
     return subprocess.run(prefix + params, stdout=subprocess.PIPE).stdout.decode('UTF-8')
+
 
 class Subject:
     def __init__(self, name, weight, priority, energy_level, what_to_do_next):
