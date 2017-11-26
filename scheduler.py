@@ -85,15 +85,30 @@ if now.hour > 22 or now.hour < 4:
         subjects_configs[subject].weight = subjects_configs[subject].weight * (1/subjects_configs[subject].energy_level)
 # -- printing ---
 
+green='\x1b[7;30;42m'
+resetColor='\x1b[0m'
+orange='\x1b[7;30;43m'
+red='\x1b[7;30;41m'
 def print_result(subjects_configs):
     sorted_subjects  = sorted(subjects_configs.items(), key=lambda x: x[1].weight, reverse=True)
     for subject,weight in sorted_subjects:
         what_todo = gateway(['get_whattodo_details_by_name', subject])
         daysSinceLastStudyStr = gateway(['daysSinceLastStudy', subject]);
+        daysSinceLastStudyInt = int(daysSinceLastStudyStr) if daysSinceLastStudyStr.isdigit() else 0
+
+        if daysSinceLastStudyInt < 3:
+            currentColor = green
+        elif daysSinceLastStudyInt > 3 and daysSinceLastStudyInt < 20:
+            currentColor = orange
+        else:
+            currentColor = red
+
         if daysSinceLastStudyStr == '':
             daysSinceLastStudyStr = 'never '
+            currentColor = orange
         else:
             daysSinceLastStudyStr+=  ' days ago '
-        print ('\x1b[7;30;42m' + subject + '\x1b[0m ' + daysSinceLastStudyStr +  '\x1b[7;30;43m' + what_todo + '\x1b[0m'  )
+
+        print (currentColor + ' ' + subject + ' ' + daysSinceLastStudyStr + ' ' + what_todo + resetColor)
 
 print_result(subjects_configs)
