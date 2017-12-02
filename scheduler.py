@@ -85,10 +85,10 @@ if now.hour > 22 or now.hour < 4:
         subjects_configs[subject].weight = subjects_configs[subject].weight * (1/subjects_configs[subject].energy_level)
 # -- printing ---
 
-green='\x1b[7;30;42m'
+green='\x1b[32m'
 resetColor='\x1b[0m'
-orange='\x1b[7;30;43m'
-red='\x1b[7;30;41m'
+orange='\x1b[33m'
+red='\x1b[31m'
 def print_result(subjects_configs):
     sorted_subjects  = sorted(subjects_configs.items(), key=lambda x: x[1].weight, reverse=True)
     for subject,weight in sorted_subjects:
