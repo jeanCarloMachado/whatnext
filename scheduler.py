@@ -97,18 +97,18 @@ def print_result(subjects_configs):
         daysSinceLastStudyInt = int(daysSinceLastStudyStr) if daysSinceLastStudyStr.isdigit() else 0
 
         if daysSinceLastStudyInt < 3:
-            currentColor = green
+            daysColor = green
         elif daysSinceLastStudyInt > 3 and daysSinceLastStudyInt < 20:
-            currentColor = orange
+            daysColor = orange
         else:
-            currentColor = red
+            daysColor = red
 
         if daysSinceLastStudyStr == '':
             daysSinceLastStudyStr = 'never '
-            currentColor = orange
+            daysColor = orange
         else:
             daysSinceLastStudyStr+=  ' days ago '
 
-        print (currentColor + ' ' + subject + ' ' + daysSinceLastStudyStr + ' ' + what_todo + resetColor)
+        print (green + ' ' + subject + resetColor + daysColor + ' ' + daysSinceLastStudyStr + resetColor + ' ' + what_todo + resetColor)
 
 print_result(subjects_configs)
