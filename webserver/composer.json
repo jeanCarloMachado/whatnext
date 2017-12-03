@@ -1,0 +1,14 @@
+{
+    "name": "jean-carlo-machado/whatnext",
+    "require": {
+        "jean-carlo-machado/f": "dev-master"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~6"
+    },
+    "autoload": {
+        "psr-4": {
+            "wn\\": "src"
+        }
+    }
+}
