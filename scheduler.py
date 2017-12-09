@@ -24,14 +24,14 @@ def gateway(params):
     prefix = ['gateway.sh']
     return subprocess.run(prefix + params, stdout=subprocess.PIPE).stdout.decode('UTF-8')
 
-
 class Subject:
-    def __init__(self, name, weight, priority, energy_level, what_to_do_next):
+    def __init__(self, name, weight, priority, energy_level, what_to_do_next, daysSinceLastStudy):
         self.name = name
         self.weight = weight
         self.priority = priority
         self.energy_level = energy_level
         self.what_to_do_next = what_to_do_next
+        self.daysSinceLastStudy = daysSinceLastStudy
 
 
 def factory_subjects():
@@ -40,7 +40,14 @@ def factory_subjects():
     subjects_configs = {}
     for line in subjects.splitlines() :
         columns  = line.split('|')
-        subjects_configs[columns[0]] = Subject(name=columns[0], weight=1, priority=int(columns[1]), energy_level=int(columns[2]), what_to_do_next=columns[3])
+        subjects_configs[columns[0]] = Subject(
+                name=columns[0],
+                weight=1,
+                priority=int(columns[1]),
+                energy_level=int(columns[2]),
+                what_to_do_next=columns[3],
+                daysSinceLastStudy=gateway(['daysSinceLastStudy', columns[0]])
+        )
 
     return subjects_configs
 
@@ -58,11 +65,10 @@ subjects_configs = configure_importance(subjects_configs)
 
 # give less probability to the latest and more to the earlier
 for subject in subjects_configs:
-    daysSinceLastStudyStr = gateway(['daysSinceLastStudy', subject])
-    if daysSinceLastStudyStr == "":
+    if subjects_configs[subject].daysSinceLastStudy == "":
         subjects_configs[subject].weight = (subjects_configs[subject].weight  * subjects_configs[subject].weight * 0.2)
         continue
-    daysSinceLastStudy =  int(daysSinceLastStudyStr)
+    daysSinceLastStudy =  int(subjects_configs[subject].daysSinceLastStudy)
     subjects_configs[subject].weight +=  subjects_configs[subject].weight * daysSinceLastStudy
 
 # turns the last one less probable to repeat
@@ -92,8 +98,7 @@ red='\x1b[31m'
 def print_result(subjects_configs):
     sorted_subjects  = sorted(subjects_configs.items(), key=lambda x: x[1].weight, reverse=True)
     for subject,weight in sorted_subjects:
-        what_todo = gateway(['get_whattodo_details_by_name', subject])
-        daysSinceLastStudyStr = gateway(['daysSinceLastStudy', subject]);
+        daysSinceLastStudyStr = subjects_configs[subject].daysSinceLastStudy
         daysSinceLastStudyInt = int(daysSinceLastStudyStr) if daysSinceLastStudyStr.isdigit() else 0
 
         if daysSinceLastStudyInt < 3:
@@ -109,6 +114,6 @@ def print_result(subjects_configs):
         else:
             daysSinceLastStudyStr+=  ' days ago '
 
-        print (green + ' ' + subject + resetColor + daysColor + ' ' + daysSinceLastStudyStr + resetColor + ' ' + what_todo + resetColor)
+        print (green + ' ' + subject + resetColor + daysColor + ' ' + daysSinceLastStudyStr + resetColor + ' ' + subjects_configs[subject].what_to_do_next + resetColor)
 
 print_result(subjects_configs)
