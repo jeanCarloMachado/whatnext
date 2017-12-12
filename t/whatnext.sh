@@ -20,6 +20,4 @@ test_expect_success "expect intialized file" "
   $WHATNEXT_BIN init && [[ \"myFirstSubject|50|50|do something\" == \"$(cat /tmp/wn.cfg )\" ]]
 "
 
-
-
 test_done
