@@ -2,6 +2,16 @@
 
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+
+[[ -z ${WHATNEXT_CONF+x} ]] && {
+    WHATNEXT_CONF=~/.whatnext.conf
+}
+
+[[ -z ${WHATNEXT_HISTORY+x} ]] && {
+    WHATNEXT_HISTORY=~/.whatnext_history
+}
+
+
 get_help() {
     echo "A tool to help schedule studies
     It considers a study period one hour and you cannot study in a row.
@@ -33,12 +43,12 @@ get_help() {
 }
 
 [[ "$@"  == "init" ]] && {
-    [ ! -f ~/.whatnext.conf ] && {
-       echo "myFirstSubject|50|50|do something" > ~/.whatnext.conf
+    [ ! -f "$WHATNEXT_CONF" ] && {
+       echo "myFirstSubject|50|50|do something" > "$WHATNEXT_CONF"
     }
 
-    [ ! -f ~/.whatnext_history ] && {
-       echo "myFirstSubject|50|50|do something" > ~/.whatnext_history
+    [ ! -f "$WHATNEXT_HISTORY" ] && {
+       echo "myFirstSubject|50|50|do something" > "$WHATNEXT_HISTORY"
     }
     exit
 }
@@ -47,7 +57,7 @@ get_help() {
 
 [[ "$@"  == "log" ]] && {
     log_data() {
-    log=$(tac ~/.whatnext_history)
+    log=$(tac "$WHATNEXT_HISTORY")
     current_entry=$(echo "$log" | wc -l )
 IFS='
 '
@@ -79,18 +89,18 @@ IFS='
 
 [[ "$@"  == "edit-subjects" ]] || [[ "$@"  == "-es" ]] || [[ "$@"  == "-e" ]] && {
     [ ! -z ${EDITOR+x} ] && {
-        $EDITOR ~/.whatnext.conf
+        $EDITOR "$WHATNEXT_CONF"
     } || {
-        vim ~/.whatnext.conf
+        vim "$WHATNEXT_CONF"
     }
     exit
 }
 
 [[ "$@"  == "edit-history" ]] && {
     [ ! -z ${EDITOR+x} ] && {
-        $EDITOR ~/.whatnext_history
+        $EDITOR "$WHATNEXT_HISTORY"
     } || {
-        vim ~/.whatnext_history
+        vim "$WHATNEXT_HISTORY"
     }
     exit
 }
