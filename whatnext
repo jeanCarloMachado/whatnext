@@ -2,7 +2,6 @@
 
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-
 [[ -z ${WHATNEXT_CONF+x} ]] && {
     WHATNEXT_CONF=~/.whatnext.conf
 }
@@ -50,7 +49,7 @@ get_help() {
     [ ! -f "$WHATNEXT_HISTORY" ] && {
        echo "myFirstSubject|50|50|do something" > "$WHATNEXT_HISTORY"
     }
-    exit
+    exit 0
 }
 
 

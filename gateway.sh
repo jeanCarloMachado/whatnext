@@ -1,19 +1,28 @@
 #!/usr/bin/env bash
 
+[[ -z ${WHATNEXT_CONF+x} ]] && {
+    WHATNEXT_CONF=~/.whatnext.conf
+}
+
+[[ -z ${WHATNEXT_HISTORY+x} ]] && {
+    WHATNEXT_HISTORY=~/.whatnext_history
+}
+
+
 list_subjects_names() {
-    cat ~/.whatnext.conf | cut -d '|' -f1
+    cat "$WHATNEXT_CONF" | cut -d '|' -f1
 }
 
 list_subjects() {
-    cat ~/.whatnext.conf
+    cat "$WHATNEXT_CONF"
 }
 
 last_entry_name() {
-    tail -n 1 ~/.whatnext_history | cut  -d '|' -f2 | tr -d "\n"
+    tail -n 1 "$WHATNEXT_HISTORY" | cut  -d '|' -f2 | tr -d "\n"
 }
 
 last_studied_date_for_subject() {
-    tac ~/.whatnext_history | grep "$1" | head -n1 | cut -d '|' -f1 | tr -d "\n"
+    tac "$WHATNEXT_HISTORY" | grep "$1" | head -n1 | cut -d '|' -f1 | tr -d "\n"
 }
 
 daysSinceLastStudy() {
@@ -34,7 +43,7 @@ daysSinceLastStudy() {
 }
 
 unique_occurence_from_last_to_earlier() {
-    cat ~/.whatnext_history | cut  -d '|' -f2 | uniq
+    cat "$WHATNEXT_HISTORY" | cut  -d '|' -f2 | uniq
 }
 
 new_subjects() {
@@ -54,7 +63,7 @@ new_subjects() {
 
 
 done_today() {
-    cat ~/.whatnext_history | grep  "$(date '+%Y-%m-%d')"
+    cat "$WHATNEXT_HISTORY" | grep  "$(date '+%Y-%m-%d')"
 }
 
 get_weight_by_name()
@@ -74,7 +83,7 @@ get_whattodo_details_by_name()
 }
 
 done_week() {
-    data=$(cat ~/.whatnext_history)
+    data=$(cat "$WHATNEXT_HISTORY")
 IFS='
 '
     first_day_of_week=$(date --date='last sunday' +%Y-%m-%d)
