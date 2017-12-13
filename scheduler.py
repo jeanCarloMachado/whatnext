@@ -35,7 +35,7 @@ class Subject:
 
 
 def factory_subjects():
-    subjects = gateway(['list_subjects'])
+    subjects = gateway(['listSubjects'])
     #build the initial dic
     subjects_configs = {}
     for line in subjects.splitlines() :

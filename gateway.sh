@@ -8,12 +8,11 @@
     WHATNEXT_HISTORY=~/.whatnext_history
 }
 
-
-list_subjects_names() {
+listSubjectsNames() {
     cat "$WHATNEXT_CONF" | cut -d '|' -f1
 }
 
-list_subjects() {
+listSubjects() {
     cat "$WHATNEXT_CONF"
 }
 
@@ -45,7 +44,7 @@ unique_occurence_from_last_to_earlier() {
 
 new_subjects() {
     already_practiced_names=$(unique_occurence_from_last_to_earlier)
-    subjects=$(list_subjects_names)
+    subjects=$(listSubjectsNames)
 
     pattern=$(tr "\n" "|" <<< $already_practiced_names)
     #deletes last pipe
@@ -65,18 +64,18 @@ done_today() {
 
 get_weight_by_name()
 {
-    list_subjects | grep "$1" | cut -d'|' -f2
+    listSubjects | grep "$1" | cut -d'|' -f2
 }
 
 
 get_energy_level_by_name()
 {
-    list_subjects | grep "$1" | cut -d'|' -f3
+    listSubjects | grep "$1" | cut -d'|' -f3
 }
 
 get_whattodo_details_by_name()
 {
-    list_subjects | egrep "^$1" | cut -d'|' -f4 | tr -d "\n"
+    listSubjects | egrep "^$1" | cut -d'|' -f4 | tr -d "\n"
 }
 
 done_week() {

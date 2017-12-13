@@ -4,7 +4,7 @@ __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 subject="$2"
 
-[[ ! $($__dir/gateway.sh list_subjects_names | grep "$subject") ]]  && {
+[[ ! $($__dir/gateway.sh listSubjectsNames | grep "$subject") ]]  && {
     echo 'subject not found'
     exit 1
 }
