@@ -16,6 +16,10 @@ listSubjects() {
     cat "$WHATNEXT_CONF"
 }
 
+listHistory() {
+    cat "$WHATNEXT_HISTORY"
+}
+
 last_entry_name() {
     tail -n 1 "$WHATNEXT_HISTORY" | cut  -d '|' -f2 | tr -d "\n"
 }

@@ -3,11 +3,11 @@
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 [[ -z ${WHATNEXT_CONF+x} ]] && {
-    WHATNEXT_CONF=~/.whatnext.conf
+    export WHATNEXT_CONF=~/.whatnext.conf
 }
 
 [[ -z ${WHATNEXT_HISTORY+x} ]] && {
-    WHATNEXT_HISTORY=~/.whatnext_history
+    export WHATNEXT_HISTORY=~/.whatnext_history
 }
 
 
@@ -17,10 +17,11 @@ get_help() {
 
     Usage:
 
-    $0 (edit-subjects|-es|-e)                                            opens the subjects on your editor
+    $0 (edit-subjects|-es|-e)                                         opens the subjects on your editor
     $0 edit-history                                                   opens the history on your editor
     $0 (done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor
-    $0 summary                                                        displays statistics about your usage
+    $0 stats                                                          shows statistics of most studied subjects
+    $0 summary                                                        shows statistics of recent activities
     $0 log                                                            shows the log
     "
 }
@@ -32,6 +33,11 @@ get_help() {
 
 [[ "$1"  == "-d" ]] || [[ "$1"  == "done" ]]  && {
     $__dir/done.sh "$@"
+    exit
+}
+
+[[ "$@"  == "stats" ]] && {
+    $__dir/stats.py "$@" | less
     exit
 }
 
@@ -51,8 +57,6 @@ get_help() {
     }
     exit 0
 }
-
-
 
 [[ "$@"  == "log" ]] && {
     log_data() {
@@ -79,8 +83,6 @@ IFS='
     exit
 }
 
-
-
 [[ "$@"  == "list-subjects" ]] && {
     $__dir/gateway.sh list_subjects_names
     exit
@@ -102,6 +104,11 @@ IFS='
         vim "$WHATNEXT_HISTORY"
     }
     exit
+}
+
+[[ ! -z "$@" ]]  && {
+    echo "Option not found"
+    exit 1
 }
 
 $__dir/scheduler.py | less
