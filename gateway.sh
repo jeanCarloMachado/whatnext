@@ -32,14 +32,11 @@ daysSinceLastStudy() {
     [ -z "$date" ] && {
         return
     }
-    days=$(echo $(( ( $(date -ud "$date" +'%s') - $(date +'%s') )/60/60/24 )))
-    days=$(date_diff.js "$date" "$(date)" | jq .days)
 
-    [[ $days ==  'null' ]] && {
-        days=0
-    }
-    echo $days | tr -d "\n"
+    start_ts=$(date -d "$date" '+%s')
+    end_ts=$(date '+%s')
 
+    echo $(( ( $end_ts - $start_ts )/(60*60*24) )) | tr -d "\n"
 }
 
 unique_occurence_from_last_to_earlier() {
