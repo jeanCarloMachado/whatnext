@@ -95,15 +95,16 @@ green='\x1b[32m'
 resetColor='\x1b[0m'
 orange='\x1b[33m'
 red='\x1b[31m'
+titleColor='\x1b[1;35;40m'
 def print_result(subjects_configs):
     sorted_subjects  = sorted(subjects_configs.items(), key=lambda x: x[1].weight, reverse=True)
     for subject,weight in sorted_subjects:
         daysSinceLastStudyStr = subjects_configs[subject].daysSinceLastStudy
         daysSinceLastStudyInt = int(daysSinceLastStudyStr) if daysSinceLastStudyStr.isdigit() else 0
 
-        if daysSinceLastStudyInt < 3:
+        if daysSinceLastStudyInt < 7:
             daysColor = green
-        elif daysSinceLastStudyInt > 3 and daysSinceLastStudyInt < 20:
+        elif daysSinceLastStudyInt > 7 and daysSinceLastStudyInt < 20:
             daysColor = orange
         else:
             daysColor = red
@@ -114,6 +115,6 @@ def print_result(subjects_configs):
         else:
             daysSinceLastStudyStr+=  ' days ago '
 
-        print (green + ' ' + subject + resetColor + daysColor + ' ' + daysSinceLastStudyStr + resetColor + ' ' + subjects_configs[subject].what_to_do_next + resetColor)
+        print (titleColor + ' ' + subject + resetColor + daysColor + ' ' + daysSinceLastStudyStr + resetColor + '' + subjects_configs[subject].what_to_do_next + resetColor)
 
 print_result(subjects_configs)
