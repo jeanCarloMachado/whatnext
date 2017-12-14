@@ -100,3 +100,8 @@ $ whatnext log
 ```
 
 ![log](https://i.imgur.com/s7vayZd.png)
+
+
+## Badges system
+
+Helps one to become addicted to study by setting short term-goals.

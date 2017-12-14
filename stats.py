@@ -21,13 +21,14 @@ subjectData = {}
 for line in subjects.splitlines() :
     columns  = line.split('|')
     name=columns[1]
-    subjectData[name] = subjectData[name]+1 if name in subjectData else 1;
+    subjectData[name] = subjectData[name]+50 if name in subjectData else 50;
 
 
 sortedSubjects = sorted(subjectData.items(), key=lambda value: value[1], reverse=True)
 
 titleColor='\x1b[1;35;40m'
 resetColor='\x1b[0m'
-for item in sortedSubjects: 
-    print( titleColor + item[0] + resetColor + ' sessions: ' + str(item[1]))
+for item in sortedSubjects:
+    print( titleColor + item[0] + resetColor )
+    print ('    Minutes: ' + str(item[1]))
 

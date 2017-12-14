@@ -33,7 +33,6 @@ class Subject:
         self.what_to_do_next = what_to_do_next
         self.daysSinceLastStudy = daysSinceLastStudy
 
-
 def factory_subjects():
     subjects = gateway(['listSubjects'])
     #build the initial dic
@@ -79,7 +78,7 @@ if last_entry in subjects_configs:
 # give more probability to new subjects (which were never used)
 new_subjects =  gateway(['new_subjects'])
 for subject in new_subjects.splitlines() :
-    subjects_configs[subject].weight =  subjects_configs[subject].weight * 2
+    subjects_configs[subject].weight =  subjects_configs[subject].weight * 1.1
 
 # -- contextual calculai in the end --
 

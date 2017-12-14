@@ -22,6 +22,7 @@ get_help() {
     $0 (done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor
     $0 stats                                                          shows statistics of most studied subjects
     $0 summary                                                        shows statistics of recent activities
+    $0 proeficiency                                                        shows the 'level' of the subject
     $0 log                                                            shows the log
     "
 }
@@ -33,6 +34,12 @@ get_help() {
 
 [[ "$1"  == "-d" ]] || [[ "$1"  == "done" ]]  && {
     $__dir/done.sh "$@"
+    exit
+}
+
+[[ "$1"  == "proeficiency" ]]  && {
+    $__dir/proeficiency.sh "${@:2}"
+
     exit
 }
 
@@ -69,7 +76,7 @@ IFS='
         date=$(echo $i | cut -d '|' -f1)
         subject=$(echo $i | cut -d '|' -f2)
         description=$(echo $i | cut -d '|' -f3)
-        echo -e "\e[5;33;40m $current_entry $subject \e[0m"
+        echo -e "\e[33m $current_entry $subject \e[0m"
         echo "Date:     $date"
         echo "      $description"
 
