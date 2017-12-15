@@ -18,9 +18,9 @@ get_help() {
     Usage:
 
     $0 (edit-subjects|-es|-e)                                         opens the subjects on your editor
-    $0 edit-history                                                   opens the history on your editor
+    $0 (edit-history|-eh)                                                   opens the history on your editor
     $0 (done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor
-    $0 stats                                                          show how much did you spent in any activity
+    $0 total                                                          show how much did you spent in any activity
     $0 log                                                            shows the log
     "
 }
@@ -40,8 +40,8 @@ get_help() {
     exit
 }
 
-[[ "$@"  =~ "stats" ]] && {
-    $__dir/stats.py "${@:2}" | less
+[[ "$@"  =~ "total" ]] && {
+    $__dir/timePerSubject.py "${@:2}" | less
     exit
 }
 
@@ -100,7 +100,7 @@ IFS='
     exit
 }
 
-[[ "$@"  == "edit-history" ]] && {
+[[ "$@"  == "-eh" ]] || [[ "$@"  == "edit-history" ]] && {
     [ ! -z ${EDITOR+x} ] && {
         $EDITOR "$WHATNEXT_HISTORY"
     } || {
