@@ -76,7 +76,7 @@ IFS='
         date=$(echo $i | cut -d '|' -f1)
         subject=$(echo $i | cut -d '|' -f2)
         description=$(echo $i | cut -d '|' -f3)
-        echo -e "\e[33m $current_entry $subject \e[0m"
+        echo -e "$WN_COLOR_ORANGE $current_entry $WN_COLOR_TITLE $subject $WN_COLOR_RESET"
         echo "Date:     $date"
         echo "      $description"
         echo ""
