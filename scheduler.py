@@ -5,6 +5,7 @@ import subprocess
 import datetime
 import sys
 import math
+import os
 
 def memoize(function):
     from functools import wraps
@@ -90,11 +91,13 @@ if now.hour > 22 or now.hour < 4:
         subjects_configs[subject].weight = subjects_configs[subject].weight * (1/subjects_configs[subject].energy_level)
 # -- printing ---
 
-green='\x1b[32m'
-resetColor='\x1b[0m'
-orange='\x1b[33m'
-red='\x1b[31m'
-titleColor='\x1b[1;35;40m'
+
+orange = os.getenv('WN_COLOR_ORANGE').encode('utf-8').decode('unicode_escape')
+green = os.getenv('WN_COLOR_GREEN').encode('utf-8').decode('unicode_escape')
+red = os.getenv('WN_COLOR_RED').encode('utf-8').decode('unicode_escape')
+reset = os.getenv('WN_COLOR_RESET').encode('utf-8').decode('unicode_escape')
+title = os.getenv('WN_COLOR_TITLE').encode('utf-8').decode('unicode_escape')
+
 def print_result(subjects_configs):
     sorted_subjects  = sorted(subjects_configs.items(), key=lambda x: x[1].weight, reverse=True)
     for subject,weight in sorted_subjects:
@@ -114,6 +117,6 @@ def print_result(subjects_configs):
         else:
             daysSinceLastStudyStr+=  ' days ago '
 
-        print (titleColor + ' ' + subject + resetColor + daysColor + ' ' + daysSinceLastStudyStr + resetColor + '' + subjects_configs[subject].what_to_do_next + resetColor)
+        print (title + ' ' + subject + reset + daysColor + ' ' + daysSinceLastStudyStr + reset + '' + subjects_configs[subject].what_to_do_next + reset)
 
 print_result(subjects_configs)
