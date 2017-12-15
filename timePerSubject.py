@@ -44,6 +44,7 @@ orange = os.getenv('WN_COLOR_ORANGE').encode('utf-8').decode('unicode_escape')
 if len(sys.argv) > 1 and any(map(lambda x: x == "--no-color", sys.argv)):
     title=''
     reset=''
+    orange=''
 
 history = gateway(['listHistory'])
 subjectsConfigs = {}

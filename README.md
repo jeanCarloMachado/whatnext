@@ -102,6 +102,38 @@ $ whatnext log
 ![log](https://i.imgur.com/s7vayZd.png)
 
 
-## Badges system
+## Goals
 
-Helps one to become addicted to study by setting short term-goals.
+You can configure how much you need to spent with a given subject.
+
+```sh
+wn edit-goals
+```
+```sh
+{
+    "haskellMastry": {
+        "from": "2018-01-01",
+        "to": "2018-12-31",
+        "minutes": 2000,
+        "subject": "haskell"
+    },
+    "weekOfPython": {
+        "from": "2017-12-15",
+        "to": "2017-12-22",
+        "minutes": 120,
+        "subject": "python"
+    },
+    "readABitOfLisp": {
+        "from": "2017-12-14",
+        "to": "2017-12-30",
+        "minutes": 120,
+        "subject": "lisp"
+    }
+}
+```
+
+When you get something done your goal status will be updated
+
+```sh
+wn goal
+```

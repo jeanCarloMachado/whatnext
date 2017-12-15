@@ -1,18 +1,7 @@
 #!/usr/bin/env bash
 
-
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
 source $__dir/config.sh
-
-[[ -z ${WHATNEXT_CONF+x} ]] && {
-    export WHATNEXT_CONF=~/.whatnext.conf
-}
-
-[[ -z ${WHATNEXT_HISTORY+x} ]] && {
-    export WHATNEXT_HISTORY=~/.whatnext_history
-}
-
 
 get_help() {
     echo "A tool to help schedule studies
@@ -25,10 +14,12 @@ get_help() {
     $0 (done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor
     $0 total                                                          show how much did you spent in any activity
     $0 log                                                            shows the log
+    $0 goal             show your goals status
+    $0 (edit-goals|-eg)                                                edit your goals
     "
 }
 
-[[ "$@" =~ "--help" ]] || [[ "$@" =~ ^-h$ ]]&& {
+[[ "$@" =~ "--help" ]] || [[ "$*" =~ "-h" ]]&& {
     get_help
     exit
 }
@@ -45,6 +36,10 @@ get_help() {
 
 [[ "$@"  =~ "total" ]] && {
     $__dir/timePerSubject.py "${@:2}" | less
+    exit
+}
+[[ "$@"  =~ goal$ ]] && {
+    $__dir/goals.sh "${@:2}" | less
     exit
 }
 
@@ -91,6 +86,15 @@ IFS='
 
 [[ "$@"  == "list-subjects" ]] && {
     $__dir/gateway.sh list_subjects_names
+    exit
+}
+
+[[ "$@"  == "edit-goals" ]] || [[ "$@"  == "-eg" ]] && {
+    [ ! -z ${EDITOR+x} ] && {
+        $EDITOR "$WHATNEXT_GOALS"
+    } || {
+        vim "$WHATNEXT_GOALS"
+    }
     exit
 }
 
