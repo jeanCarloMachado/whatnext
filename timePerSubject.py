@@ -6,6 +6,7 @@ import datetime
 import sys
 import math
 from datetime import datetime, timedelta
+import os
 
 if len(sys.argv) > 1 and any(map(lambda x: x == "help", sys.argv)):
     print("""Prints the total of time one spent on each subject
@@ -36,12 +37,13 @@ if len(list(filter(lambda x: x != "--no-color", sys.argv))) == 3:
     dateStart = datetime.strptime(sys.argv[1], '%Y-%m-%d')
     dateEnd = datetime.strptime(sys.argv[2], '%Y-%m-%d')
 
-titleColor='\x1b[1;35;40m'
-resetColor='\x1b[0m'
+reset = os.getenv('WN_COLOR_RESET').encode('utf-8').decode('unicode_escape')
+title = os.getenv('WN_COLOR_TITLE').encode('utf-8').decode('unicode_escape')
+orange = os.getenv('WN_COLOR_ORANGE').encode('utf-8').decode('unicode_escape')
 
 if len(sys.argv) > 1 and any(map(lambda x: x == "--no-color", sys.argv)):
-    titleColor=''
-    resetColor=''
+    title=''
+    reset=''
 
 history = gateway(['listHistory'])
 subjectsConfigs = {}
@@ -61,5 +63,5 @@ for line in subjects.splitlines():
 sortedSubjects = sorted(subjectData.items(), key=lambda value: value[1], reverse=True)
 
 for item in sortedSubjects:
-    print( titleColor + item[0] + resetColor + ": " + str(item[1]))
+    print( title + item[0] + reset + ": " + orange + str(item[1]) + reset)
 
