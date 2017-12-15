@@ -1,4 +1,4 @@
-# whatnext
+# Whatnext
 
 Whatnext is the only way I found myself being able to have some control
 over my studies.
@@ -39,7 +39,7 @@ whatnext init
 
 ## Starting
 
-Create your map of study ~/.whatnext.conf
+Create your map of study ``~/.whatnext.conf``
 
 ```sh
 crypto currencies|99|80|continue reading the book
@@ -71,6 +71,7 @@ clean code|1|50|?
 facts and fallacies|70|20|?
 tese cristiano|80|70|continuar introdução
 ```
+
 Where the columns are:
 1. name of the subject
 2. priority of the subject (0 to the least important 100 to the most)
@@ -92,7 +93,6 @@ When you study some subject you feed whatnext with this info in order to calcula
 $ whatnext done 'tese cristiano' 'read about types of polymorpishms' 'read about Damas-Milner conjecture' 
 #the arguments are: subject studied, description of what was studied, description of what to do in the next session
 ```
-
 Informing whatnext about your studies also gives you a nice history of your progress
 
 ```sh

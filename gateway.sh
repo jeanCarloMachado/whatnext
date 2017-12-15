@@ -82,6 +82,13 @@ get_whattodo_details_by_name()
     listSubjects | egrep "^$1" | cut -d'|' -f4 | tr -d "\n"
 }
 
+
+missingTimeToTaskByName()
+{
+    listSubjects | egrep "^$1" | cut -d'|' -f4 | tr -d "\n"
+}
+
+
 done_week() {
     data=$(cat "$WHATNEXT_HISTORY")
 IFS='

@@ -22,7 +22,7 @@ get_help() {
     $0 (done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor
     $0 stats                                                          shows statistics of most studied subjects
     $0 summary                                                        shows statistics of recent activities
-    $0 proeficiency                                                        shows the 'level' of the subject
+    $0 level                                                        shows the 'level' of the subject
     $0 log                                                            shows the log
     "
 }
@@ -37,14 +37,13 @@ get_help() {
     exit
 }
 
-[[ "$1"  == "proeficiency" ]]  && {
-    $__dir/proeficiency.sh "${@:2}"
-
+[[ "$1"  == "level" ]]  && {
+    $__dir/level.sh "${@:2}"
     exit
 }
 
-[[ "$@"  == "stats" ]] && {
-    $__dir/stats.py "$@" | less
+[[ "$@"  =~ "stats" ]] && {
+    $__dir/stats.py "${@:2}" | less
     exit
 }
 
@@ -79,7 +78,6 @@ IFS='
         echo -e "\e[33m $current_entry $subject \e[0m"
         echo "Date:     $date"
         echo "      $description"
-
         echo ""
         current_entry=$(( $current_entry - 1 ))
 

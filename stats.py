@@ -13,7 +13,6 @@ def gateway(params):
 
 history = gateway(['listHistory'])
 
-
 subjectsConfigs = {}
 subjects = gateway(['listHistory'])
 #build the initial dic
@@ -28,7 +27,12 @@ sortedSubjects = sorted(subjectData.items(), key=lambda value: value[1], reverse
 
 titleColor='\x1b[1;35;40m'
 resetColor='\x1b[0m'
+
+if len(sys.argv) > 1 and sys.argv[1] == "--no-color":
+    titleColor=''
+    resetColor=''
+
+
 for item in sortedSubjects:
-    print( titleColor + item[0] + resetColor )
-    print ('    Minutes: ' + str(item[1]))
+    print( titleColor + item[0] + resetColor + ": " + str(item[1]))
 
