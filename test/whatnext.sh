@@ -3,14 +3,17 @@
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 WHATNEXT_BIN="$__dir/../whatnext"
-
 test_description="basic testing"
 
 . sharness.sh
 
 touch /tmp/foo
-export WHATNEXT_CONF="/tmp/wn.cfg"
-export WHATNEXT_HISTORY="/tmp/foo"
+export WHATNEXT_CONF="/tmp/wncfg"
+export WHATNEXT_HISTORY="/tmp/wnhistory"
+
+
+rm -rf $WHATNEXT_CONF || true
+rm -rf $WHATNEXT_HISTORY || true
 
 test_expect_success "expect empty history on empty file" "
     test -z $($WHATNEXT_BIN log)
