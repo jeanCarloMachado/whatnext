@@ -20,9 +20,7 @@ get_help() {
     $0 (edit-subjects|-es|-e)                                         opens the subjects on your editor
     $0 edit-history                                                   opens the history on your editor
     $0 (done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor
-    $0 stats                                                          shows statistics of most studied subjects
-    $0 summary                                                        shows statistics of recent activities
-    $0 level                                                        shows the 'level' of the subject
+    $0 stats                                                          show how much did you spent in any activity
     $0 log                                                            shows the log
     "
 }
