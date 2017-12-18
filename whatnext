@@ -58,6 +58,11 @@ get_help() {
     [ ! -f "$WHATNEXT_HISTORY" ] && {
        touch "$WHATNEXT_HISTORY"
     }
+
+    [ ! -f "$WHATNEXT_GOALS" ] && {
+       touch "$WHATNEXT_GOALS"
+    }
+
     exit 0
 }
 

@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
 
+files=$(ls test/*.sh)
 
-./test/*.sh
+IFS='
+'
+
+for i in $files
+do
+    ./$i
+done
+
+
+
