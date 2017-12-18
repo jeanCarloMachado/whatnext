@@ -27,6 +27,10 @@ percentageDone=$(( 100 * $doneInPeriod / $minutes ))
 resetColor=$WN_COLOR_RESET
 titleColor=$WN_COLOR_TITLE
 
+start_ts=$(date '+%s')
+end_ts=$(date -d "$dateEnd" '+%s')
+remaingingDays=$(( ( end_ts - start_ts )/(60*60*24) ))
+
 percentageColor=$WN_COLOR_RED
 [ $percentageDone -ge 33 ] && {
     percentageColor=$WN_COLOR_ORANGE
@@ -35,4 +39,4 @@ percentageColor=$WN_COLOR_RED
     percentageColor=$WN_COLOR_GREEN
 }
 
-echo -e "You completed $percentageColor $percentageDone$resetColor% of your goal $titleColor$timeMissing$resetColor minutes remaining"
+echo -e "You completed $percentageColor $percentageDone$resetColor% of your goal $titleColor$timeMissing$resetColor minutes remaining to do in $remaingingDays days"
