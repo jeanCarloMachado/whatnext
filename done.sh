@@ -2,7 +2,7 @@
 
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-subject="$2"
+subject="$1"
 
 [[ ! $($__dir/gateway.sh listSubjectsNames | grep "$subject") ]]  && {
     echo 'subject not found'
@@ -10,15 +10,15 @@ subject="$2"
 }
 
 #process what to do next
-[[ ! -z ${4+x} ]] && {
+[[ ! -z ${3+x} ]] && {
     what_to_do_next="$4"
-    subject_config=$(cat ~/.whatnext.conf | grep "$subject")
+    subject_config=$(cat $WHATNEXT_HISTORY | grep "$subject")
     subject_config_without_description=$(echo "$subject_config" | rev | cut -d '|' -f1 --complement | rev)
     newSubjectConfigEntry="$subject_config_without_description|$what_to_do_next"
 
-    sed -i "/^$subject/d" ~/.whatnext.conf
-    echo "$newSubjectConfigEntry" >> ~/.whatnext.conf
+    sed -i "/^$subject/d" $WHATNEXT_HISTORY
+    echo "$newSubjectConfigEntry" >> $WHATNEXT_HISTORY
 }
 
 
-echo "$( date "+%Y-%m-%d %H:%M:%S")|$subject|$3" >> ~/.whatnext_history
+echo "$( date "+%Y-%m-%d %H:%M:%S")|$subject|$2" >> $WHATNEXT_HISTORY

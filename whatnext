@@ -3,19 +3,20 @@
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source $__dir/config.sh
 
+
 get_help() {
+    command="whatnext"
     echo "A tool to help schedule studies
-    It considers a study period one hour and you cannot study in a row.
 
     Usage:
 
-    $0 (edit-subjects|-es|-e)                                         opens the subjects on your editor
-    $0 (edit-history|-eh)                                                   opens the history on your editor
-    $0 (done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor
-    $0 total                                                          show how much did you spent in any activity
-    $0 log                                                            shows the log
-    $0 goal             show your goals status
-    $0 (edit-goals|-eg)                                                edit your goals
+    $command (edit-subjects|-es|-e)                                         opens the subjects on your editor
+    $command (edit-history|-eh)                                             opens the history on your editor
+    $command (done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor
+    $command total                                                          show how much did you spent in any activity
+    $command log                                                            shows the log
+    $command goal             show your goals status
+    $command (edit-goals|-eg)                                                edit your goals
     "
 }
 
@@ -25,7 +26,7 @@ get_help() {
 }
 
 [[ "$1"  == "-d" ]] || [[ "$1"  == "done" ]]  && {
-    $__dir/done.sh "$@"
+    $__dir/done.sh "${@:2}"
     exit
 }
 
@@ -35,11 +36,11 @@ get_help() {
 }
 
 [[ "$@"  =~ "total" ]] && {
-    $__dir/timePerSubject.py "${@:2}" | less
+    $__dir/timePerSubject.py "${@:2}"
     exit
 }
 [[ "$@"  =~ goal$ ]] && {
-    $__dir/goals.sh "${@:2}" | less
+    $__dir/goals.sh "${@:2}"
     exit
 }
 
@@ -55,7 +56,7 @@ get_help() {
     }
 
     [ ! -f "$WHATNEXT_HISTORY" ] && {
-       echo "myFirstSubject|50|50|do something" > "$WHATNEXT_HISTORY"
+       touch "$WHATNEXT_HISTORY"
     }
     exit 0
 }
