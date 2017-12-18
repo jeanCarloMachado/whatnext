@@ -2,6 +2,9 @@ language: bash
 
 before_script:
     - wget "https://github.com/chriscool/sharness/archive/master.zip" && unzip master.zip && sudo mv sharness-master/* /usr/local/bin
+    - sudo apt-get update
+    - sudo apt-get install python3
+    - python --version && cat /etc/*release
 
 script:
     - bash ./testAll.sh
