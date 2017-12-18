@@ -1,5 +1,7 @@
 # Whatnext
 
+![Status](https://travis-ci.org/jeanCarloMachado/whatnext.svg?branch=master)
+
 Whatnext is the only way I found myself being able to have some control
 over my studies.
 
