@@ -19,7 +19,7 @@ Usage:
     sys.exit()
 
 def gateway(params):
-    prefix = ['gateway.sh']
+    prefix = [ os.path.dirname(os.path.realpath(__file__)) + '/gateway.sh']
     return subprocess.run(prefix + params, stdout=subprocess.PIPE).stdout.decode('UTF-8')
 
 dateStart = datetime.strptime('1970-01-01', '%Y-%m-%d')
