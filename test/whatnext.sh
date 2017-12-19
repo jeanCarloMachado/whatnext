@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# set -o xtrace
+ set -o xtrace
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 WHATNEXT_BIN="$__dir/../whatnext"
