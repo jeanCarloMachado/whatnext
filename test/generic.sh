@@ -25,13 +25,14 @@ test_expect_success "expect empty history after initialization" "
     test -z $($WHATNEXT_BIN log)
 "
 
+$WHATNEXT_BIN
 test_expect_success "setup subject appears on listing" "
       echo \"math|90|90|study calculus\" >> $WHATNEXT_CONF &&
       $WHATNEXT_BIN  | grep math
 "
 
 test_expect_success "done subject appears on log" "
-     $WHATNEXT_BIN done \"math\" \"studied calculus\"
+     $WHATNEXT_BIN 'done' \"math\" \"studied calculus\"
 "
 
 
