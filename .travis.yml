@@ -6,9 +6,6 @@ before_script:
     - sudo apt-get update
     - sudo apt-get install jq
     - sudo apt-get install python3.6
-    - python3 --version
-    - whereis python3
-    - cat /etc/*release
     - virtualenv venv --python=python3.6
     - source venv/bin/activate
 
