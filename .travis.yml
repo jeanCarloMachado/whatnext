@@ -2,12 +2,15 @@ language: bash
 
 before_script:
     - wget "https://github.com/chriscool/sharness/archive/master.zip" && unzip master.zip && sudo mv sharness-master/* /usr/local/bin
+    - sudo add-apt-repository ppa:deadsnakes/ppa -y
     - sudo apt-get update
-    - sudo apt-get install python3
     - sudo apt-get install jq
-    - python --version
+    - sudo apt-get install python3.6
     - python3 --version
+    - whereis python3
     - cat /etc/*release
+    - virtualenv venv --python=python3.6
+    - source venv/bin/activate
 
 script:
     - bash ./testAll.sh
