@@ -31,8 +31,8 @@ test_expect_success "setup subject appears on listing" "
 "
 
 test_expect_success "done subject appears on log" "
-     $WHATNEXT_BIN 'done' \"math\" \"studied calculus\"
+     $WHATNEXT_BIN 'done' \"math\" \"studied calculus\" &&
+     $WHATNEXT_BIN log | grep 'math'
 "
-
 
 test_done
