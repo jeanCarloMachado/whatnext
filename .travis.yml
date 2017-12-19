@@ -5,7 +5,8 @@ before_script:
     - sudo apt-get update
     - sudo apt-get install python3
     - sudo apt-get install jq
-    - python --version && cat /etc/*release
+    - python --version
+    - cat /etc/*release
 
 script:
     - bash ./testAll.sh
