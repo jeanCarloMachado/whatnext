@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
- set -o xtrace
+ # set -o xtrace
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 WHATNEXT_BIN="$__dir/../whatnext"
@@ -25,7 +25,6 @@ test_expect_success "expect empty history after initialization" "
     test -z $($WHATNEXT_BIN log)
 "
 
-$WHATNEXT_BIN
 test_expect_success "setup subject appears on listing" "
       echo \"math|90|90|study calculus\" >> $WHATNEXT_CONF &&
       $WHATNEXT_BIN  | grep math

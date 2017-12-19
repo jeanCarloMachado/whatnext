@@ -6,6 +6,7 @@ before_script:
     - sudo apt-get install python3
     - sudo apt-get install jq
     - python --version
+    - python3 --version
     - cat /etc/*release
 
 script:
