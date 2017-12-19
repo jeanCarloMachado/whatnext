@@ -42,7 +42,7 @@ test_expect_success "list goal" "
 
 test_expect_success "mark as done" "
   $WHATNEXT_BIN done math 'first session' &&
-  $WHATNEXT_BIN goal | grep 125
+  $WHATNEXT_BIN goal | grep -i \"completed  125\"
 "
 
 test_done
