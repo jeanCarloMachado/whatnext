@@ -11,18 +11,19 @@ touch /tmp/foo
 export WHATNEXT_CONF="/tmp/wncfg"
 export WHATNEXT_HISTORY="/tmp/wnhistory"
 export WHATNEXT_GOALS="/tmp/wngoals"
+export NO_COLOR=1
 
 
 rm -rf $WHATNEXT_CONF || true
 rm -rf $WHATNEXT_HISTORY || true
+rm -rf $WHATNEXT_GOALS || true
 
 test_expect_success "goal initalization" "
   $WHATNEXT_BIN init &&
   test -f $WHATNEXT_GOALS &&
   echo \"math|90|90|study calculus\" >> $WHATNEXT_CONF
 "
-
-echo '
+cat >$WHATNEXT_GOALS <<EOL
 {
     "mathToday": {
         "from": "2017-12-18",
@@ -31,12 +32,11 @@ echo '
         "subject": "math"
     }
 }
-' > $WHATNEXT_GOAL
-
+EOL
 
 test_expect_success "list goal" "
   $WHATNEXT_BIN goal | grep math &&
-  $WHATNEXT_BIN goal | grep 0
+  $WHATNEXT_BIN goal | grep -i \"completed  0\"
 "
 
 

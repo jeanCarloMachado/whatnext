@@ -39,4 +39,8 @@ percentageColor=$WN_COLOR_RED
     percentageColor=$WN_COLOR_GREEN
 }
 
+[ ! -z ${NO_COLOR+x} ] && {
+    percentageColor=""
+}
+
 echo -e "You completed $percentageColor $percentageDone$resetColor% of your goal $titleColor$timeMissing$resetColor minutes remaining to do in $remaingingDays days"
