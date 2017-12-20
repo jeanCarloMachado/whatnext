@@ -10,8 +10,9 @@ get_help() {
 
     Usage:
 
-    $command (edit-subjects|-es|-e)                                         opens the subjects on your editor
-    $command (edit-history|-eh)                                             opens the history on your editor
+    $command (edit-subjects|es)                                         opens the subjects on your editor
+    $command (edit-subject-description|esd)                                 edit the subject description
+    $command (edit-history|eh)                                             opens the history on your editor
     $command (done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor
     $command total                                                          show how much did you spent in any activity
     $command log                                                            shows the log
@@ -66,29 +67,33 @@ get_help() {
 }
 
 [[ "$@"  == "edit-goals" ]] || [[ "$@"  == "-eg" ]] && {
-    [ ! -z ${EDITOR+x} ] && {
-        $EDITOR "$WHATNEXT_GOALS"
-    } || {
-        vim "$WHATNEXT_GOALS"
-    }
+    $EDITOR "$WHATNEXT_GOALS"
     exit
 }
 
-[[ "$@"  == "edit-subjects" ]] || [[ "$@"  == "-es" ]] || [[ "$@"  == "-e" ]] && {
-    [ ! -z ${EDITOR+x} ] && {
-        $EDITOR "$WHATNEXT_CONF"
-    } || {
-        vim "$WHATNEXT_CONF"
-    }
+[[ "$@"  == "edit-subjects" ]] || [[ "$@"  == "es" ]] && {
+    $EDITOR "$WHATNEXT_CONF"
     exit
 }
 
-[[ "$@"  == "-eh" ]] || [[ "$@"  == "edit-history" ]] && {
-    [ ! -z ${EDITOR+x} ] && {
-        $EDITOR "$WHATNEXT_HISTORY"
-    } || {
-        vim "$WHATNEXT_HISTORY"
+[[ "$@"  =~ "edit-subject-description" ]] || [[ "$@"  =~ "esd" ]] && {
+    subject=$2
+    [[ ! $($__dir/gateway.sh listSubjectsNames | grep "$subject") ]]  && {
+        echo 'subject not found'
+        exit 1
     }
+    file=$(echo /tmp/$(date "+%Y-%m-%d_%H-%I-%S"))
+    subjectDescription=$($__dir/gateway.sh listSubjects | grep "$subject" | rev | cut -d'|' -f1 | rev )
+    echo "$subjectDescription" | tr '_' '\n' > $file
+
+    $EDITOR "$file"
+    newContent=$(cat $file | tr '\n' '_')
+    $__dir/gateway.sh addWhatToDoNextToSubjet "$subject" "$newContent"
+    exit
+}
+
+[[ "$@"  == "eh" ]] || [[ "$@"  == "edit-history" ]] && {
+    $EDITOR "$WHATNEXT_HISTORY"
     exit
 }
 
