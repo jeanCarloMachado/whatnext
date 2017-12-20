@@ -19,7 +19,8 @@ dateStart=$( echo "$goals" | jq ".$goalName"'.from' -r)
 dateEnd=$( echo "$goals" | jq ".$goalName"'.to' -r)
 minutes=$( echo "$goals" | jq ".$goalName"'.minutes' -r)
 
-doneInPeriod=$($__dir/timePerSubject.py "$dateStart" "$dateEnd" --no-color | grep "$subject" | cut -d ' ' -f2 | tr -d " ")
+doneInPeriod=$($__dir/timePerSubject.py "$dateStart" "$dateEnd" --no-color |
+    grep "$subject" | cut -d ':' -f2 | tr -d " ")
 doneInPeriod=${doneInPeriod:-0}
 
 timeMissing=$(($minutes - $doneInPeriod))

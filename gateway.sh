@@ -1,13 +1,5 @@
 #!/usr/bin/env bash
 
-[[ -z ${WHATNEXT_CONF+x} ]] && {
-    WHATNEXT_CONF=~/.whatnext.conf
-}
-
-[[ -z ${WHATNEXT_HISTORY+x} ]] && {
-    WHATNEXT_HISTORY=~/.whatnext_history
-}
-
 listSubjectsNames() {
     cat "$WHATNEXT_CONF" | cut -d '|' -f1
 }

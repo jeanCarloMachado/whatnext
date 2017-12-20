@@ -93,14 +93,14 @@ When you study some subject you feed whatnext with this info in order to calcula
 
 ```sh
 $ whatnext done 'tese cristiano' 'read about types of polymorpishms'
-#the arguments are: subject studied, description of what was studied, description of what to do in the next session
+#the arguments are: subject studied, description of what was studied
 ```
 Informing whatnext about your studies also gives you a nice history of your progress
 ```sh
 $ whatnext log
 ```
 
-![log](https://i.imgur.com/CCZWKPA.png)
+![log](https://i.imgur.com/vbMa3ji.png)
 
 
 ## Goals
@@ -132,10 +132,17 @@ wn edit-goals
 }
 ```
 
-When you get something done your goal status will be updated
+Then run:
+```sh
+wn goal
+```
 
-![](https://i.imgur.com/S0TjpMu.png)
+![goal](https://i.imgur.com/S0TjpMu.png)
+
+When you get something done your goal status will be updated
 
 ```sh
 wn goal
 ```
+
+![goalAfter](https://i.imgur.com/oyxrpKn.png)
