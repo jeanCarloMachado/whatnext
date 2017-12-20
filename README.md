@@ -54,23 +54,23 @@ hadoop|55|50|continue installing and single node hello world
 meditation|80|50|read more papers
 math|50|70|master mathematical proophs reading the paper math_proofs 
 elm|40|90|do some other tutorials
-music theory|43|80|?
-learning|40|40|??
+music theory|43|80|
+learning|40|40|
 paraiso perdido|33|20|
 statistics|80|60|do the second chapter of the thinkstats book
-kernel development|30|60|??
-chemistry|30|70|??
+kernel development|30|60|
+chemistry|30|70|
 clang|20|70|organize wiki, make the tutorial to build a sqlite
-databases|15|40|??
-bad science|10|50|??
-history|5|20|??
-productivity|3|30|?
-climate change|10|10|?
-dragons book|20|80|?
-artificial intelligence|40|80|?
-open source|99|50|?
-clean code|1|50|?
-facts and fallacies|70|20|?
+databases|15|40|
+bad science|10|50|
+history|5|20|
+productivity|3|30|
+climate change|10|10|
+dragons book|20|80|
+artificial intelligence|40|80|
+open source|99|50|
+clean code|1|50|
+facts and fallacies|70|20|
 tese cristiano|80|70|continuar introdução
 ```
 
@@ -87,27 +87,25 @@ study at the moment. The most important one's will be on the top.
 $ whatnext
 ```
 
-![output](https://i.imgur.com/yP0qe1D.png)
+![output](https://i.imgur.com/Rr90riL.png)
 
 When you study some subject you feed whatnext with this info in order to calculate the next most important item
 
 ```sh
-$ whatnext done 'tese cristiano' 'read about types of polymorpishms' 'read about Damas-Milner conjecture' 
+$ whatnext done 'tese cristiano' 'read about types of polymorpishms'
 #the arguments are: subject studied, description of what was studied, description of what to do in the next session
 ```
 Informing whatnext about your studies also gives you a nice history of your progress
-
 ```sh
 $ whatnext log
 ```
 
-![log](https://i.imgur.com/s7vayZd.png)
+![log](https://i.imgur.com/CCZWKPA.png)
 
 
 ## Goals
 
 You can configure how much you need to spent with a given subject.
-
 ```sh
 wn edit-goals
 ```
@@ -135,6 +133,8 @@ wn edit-goals
 ```
 
 When you get something done your goal status will be updated
+
+![](https://i.imgur.com/S0TjpMu.png)
 
 ```sh
 wn goal
