@@ -5,7 +5,7 @@ listSubjectsNames() {
 }
 
 listSubjects() {
-    cat "$WHATNEXT_CONF"
+    cat "$WHATNEXT_CONF" | sed -e /^$/d
 }
 
 listHistory() {
