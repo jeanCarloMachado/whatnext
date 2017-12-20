@@ -23,11 +23,15 @@ test_expect_success "goal initalization" "
   test -f $WHATNEXT_GOALS &&
   echo \"math|90|90|study calculus\" >> $WHATNEXT_CONF
 "
+
+today=$(date --date="today" "+%Y-%m-%d")
+nextWeek=$(date --date="next Friday" "+%Y-%m-%d")
+
 cat >$WHATNEXT_GOALS <<EOL
 {
     "mathToday": {
-        "from": "2017-12-18",
-        "to": "2017-12-20",
+        "from": "$today",
+        "to": "$nextWeek",
         "minutes": 40,
         "subject": "math"
     }
