@@ -23,12 +23,13 @@ last_entry_name() {
     tail -n 1 "$WHATNEXT_HISTORY" | cut  -d '|' -f2 | tr -d "\n"
 }
 
-last_studied_date_for_subject() {
-    tac "$WHATNEXT_HISTORY" | grep "$1" | head -n1 | cut -d '|' -f1 | tr -d "\n"
+lastStudiedDateForSubject() {
+    subject="$1"
+    tac "$WHATNEXT_HISTORY" | grep "|$subject|" | head -n1 | cut -d '|' -f1 | tr -d "\n"
 }
 
 daysSinceLastStudy() {
-    date=$(last_studied_date_for_subject "$1")
+    date=$(lastStudiedDateForSubject "$1")
 
     # subject never studied
     [ -z "$date" ] && {
@@ -78,7 +79,8 @@ get_energy_level_by_name()
 
 get_whattodo_details_by_name()
 {
-    listSubjects | egrep "^$1" | cut -d'|' -f4 | tr -d "\n"
+    subject="$1"
+    listSubjects | egrep "^$subject" | cut -d'|' -f4 | tr -d "\n";
 }
 
 
