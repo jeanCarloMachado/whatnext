@@ -9,10 +9,12 @@ timeOnSubject() {
 
 goalName="$1"
 goals=$(cat $WHATNEXT_GOALS)
-[[ "$(echo "$goals" | jq ".$goalName" -r | tr -d ' ' )" == 'null' ]] && {
+$__dir/gateway.sh goalExists "$goalName"
+if [ $? -ne 0 ]
+then
     echo "No goal named $goalName"
     exit 1
-}
+fi
 
 subject=$( echo "$goals" | jq ".$goalName"'.subject' -r)
 dateStart=$( echo "$goals" | jq ".$goalName"'.from' -r)
@@ -39,9 +41,13 @@ percentageColor=$WN_COLOR_RED
 [ $percentageDone -ge 66 ] && {
     percentageColor=$WN_COLOR_GREEN
 }
+[ $percentageDone -ge 100 ] && {
+    percentageDone=100
+}
 
 [ ! -z ${NO_COLOR+x} ] && {
     percentageColor=""
+    resetColor=""
 }
 
-echo -e "You completed $percentageColor $percentageDone$resetColor% of your goal $titleColor$timeMissing$resetColor minutes remaining to do in $remaingingDays days"
+echo -e "$percentageColor$percentageDone$resetColor% of your goal $titleColor$timeMissing$resetColor minutes remaining to do in $remaingingDays days"

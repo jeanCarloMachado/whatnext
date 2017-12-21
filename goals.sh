@@ -6,10 +6,14 @@ goals=$(cat $WHATNEXT_GOALS | jq 'keys[]' -r)
 IFS='
 '
 
+[ ! -z ${NO_COLOR+x} ] && {
+    WN_COLOR_TITLE=""
+    WN_COLOR_RESET=""
+}
+
 for i in $goals
 do
-    echo -e "$WN_COLOR_TITLE $i $WN_COLOR_RESET"
-    echo  "    $($__dir/goalStatus.sh $i )"
+    echo -e "$WN_COLOR_TITLE$i:$WN_COLOR_RESET "$($__dir/goalStatus.sh $i )
 
 done
 

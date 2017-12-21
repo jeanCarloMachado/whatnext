@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+goalExists() {
+    goalName="$1"
+    goals=$(cat $WHATNEXT_GOALS)
+    result=$(echo "$goals" | jq ".$goalName")
+    test "$result" != "null"
+}
+
 listSubjectsNames() {
     cat "$WHATNEXT_CONF" | cut -d '|' -f1
 }
@@ -9,7 +16,7 @@ listSubjects() {
 }
 
 listHistory() {
-    cat "$WHATNEXT_HISTORY"
+    cat "$WHATNEXT_HISTORY" | sed -e /^$/d
 }
 
 last_entry_name() {
