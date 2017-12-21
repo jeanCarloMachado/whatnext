@@ -21,7 +21,7 @@ get_help() {
     "
 }
 
-[[ "$@" =~ "--help" ]] || [[ "$*" =~ "-h" ]]&& {
+[[ "$@" =~ "--help" ]] || [[ "$*" =~ "-h" ]] || [[ "$*" =~ ^h$ ]] && {
     get_help
     exit
 }
@@ -37,7 +37,7 @@ get_help() {
 }
 
 [[ "$@"  =~ "total" ]] && {
-    $__dir/timePerSubject.py "${@:2}"
+    $__dir/timePerSubject.py "${@:2}" | less
     exit
 }
 [[ "$@"  =~ goal$ ]] && {
