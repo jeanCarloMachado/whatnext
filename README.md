@@ -132,13 +132,6 @@ wn edit-goals
 }
 ```
 
-Then run:
-```sh
-wn goal
-```
-
-![goal](https://i.imgur.com/S0TjpMu.png)
-
 When you get something done your goal status will be updated
 
 ```sh
