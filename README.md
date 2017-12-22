@@ -26,22 +26,10 @@ The projects rests on some premises:
 - It's better to study in many little sessions than in few big one's
 - We want to study a lot of things and there are subjects more important than others (and their importance change quite often)
 
-# Installation
-
-```sh
-#clone the repo somewhere
-git clone git@github.com:jeanCarloMachado/whatnext.git
-#add the cloned repo into your path
-export PATH="$PATH:/whatnextcloneddirectory"
-
-#initialize the config files
-
-whatnext init
-```
 
 ## Starting
 
-Create your map of study ``~/.whatnext.conf``
+Create your map of study ``whatnext edit-subjects``
 
 ```sh
 crypto currencies|99|80|continue reading the book
@@ -139,3 +127,6 @@ wn goal
 ```
 
 ![goalAfter](https://i.imgur.com/oyxrpKn.png)
+
+
+[Installation and documentation](doc.md)

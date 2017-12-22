@@ -86,7 +86,6 @@ for subject in new_subjects.splitlines() :
 now = datetime.datetime.now()
 #low energy level period
 if (now.hour > 22 or now.hour < 4) or os.environ.get('TIRED') is not None:
-    print('inside loo')
     for subject in subjects_configs:
         base = (1 / math.pow(subjects_configs[subject].energy_level,9))
         subjects_configs[subject].weight = subjects_configs[subject].weight *  base 
