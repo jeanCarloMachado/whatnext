@@ -57,7 +57,7 @@ subjects_configs = factory_subjects()
 # change values based on the importance of the subject configured
 def configure_importance(subjects_configs):
     for subject in subjects_configs:
-        subjects_configs[subject].weight += subjects_configs[subject].weight * (math.pow(subjects_configs[subject].priority,2) * 0.9)
+        subjects_configs[subject].weight += subjects_configs[subject].weight * (math.pow(subjects_configs[subject].priority, 2) * 0.9)
 
     return subjects_configs
 
@@ -83,14 +83,14 @@ for subject in new_subjects.splitlines() :
 
 # -- contextual calculai in the end --
 
-# calculate the energy levels
 now = datetime.datetime.now()
 #low energy level period
-if now.hour > 22 or now.hour < 4:
+if (now.hour > 22 or now.hour < 4) or os.environ.get('TIRED') is not None:
+    print('inside loo')
     for subject in subjects_configs:
-        subjects_configs[subject].weight = subjects_configs[subject].weight * (1/subjects_configs[subject].energy_level)
+        base = (1 / math.pow(subjects_configs[subject].energy_level,9))
+        subjects_configs[subject].weight = subjects_configs[subject].weight *  base 
 # -- printing ---
-
 
 orange = os.getenv('WN_COLOR_ORANGE').encode('utf-8').decode('unicode_escape')
 green = os.getenv('WN_COLOR_GREEN').encode('utf-8').decode('unicode_escape')
