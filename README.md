@@ -123,10 +123,10 @@ wn edit-goals
 When you get something done your goal status will be updated
 
 ```sh
-wn goal
+wn status
 ```
 
-![goalAfter](https://i.imgur.com/oyxrpKn.png)
+![goalAfter](https://i.imgur.com/fGXj3AX.png)
 
 
 [Installation and documentation](doc.md)
