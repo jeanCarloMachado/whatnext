@@ -16,6 +16,7 @@ get_help() {
     $command (done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor
     $command total                                                          show how much did you spent in any activity
     $command log                                                            shows the log
+    $command status                                                         get current status of your studies
     $command goal             show your goals status $command (edit-goals|eg)                                                edit your goals
     "
 }
@@ -44,9 +45,8 @@ get_help() {
     exit
 }
 
-[[ "$@"  == "summary" ]] && {
-    echo "Done Today: "$($__dir/gateway.sh done_today | wc -l)
-    echo "Done Week: "$($__dir/gateway.sh done_week | wc -l)
+[[ "$@"  == "status" ]] && {
+    $__dir/status.sh "${@:2}"
     exit
 }
 
@@ -76,18 +76,7 @@ get_help() {
 }
 
 [[ "$@"  =~ "edit-subject-description" ]] || [[ "$@"  =~ "esd" ]] && {
-    subject=$2
-    [[ -z "$subject"  ]] || [[ ! $($__dir/gateway.sh listSubjectsNames | egrep "^$subject") ]]  && {
-        echo 'subject not found'
-        exit 1
-    }
-    file=$(echo /tmp/$(date "+%Y-%m-%d_%H-%I-%S"))
-    subjectDescription=$($__dir/gateway.sh listSubjects | egrep "^$subject" | rev | cut -d'|' -f1 | rev )
-    echo "$subjectDescription" | tr '_' '\n' > $file
-
-    $EDITOR "$file"
-    newContent=$(cat $file | tr '\n' '_')
-    $__dir/gateway.sh addWhatToDoNextToSubjet "$subject" "$newContent"
+    $__dir/editSubjectDescription.sh "${@:2}"
     exit
 }
 

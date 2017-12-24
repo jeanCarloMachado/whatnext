@@ -62,7 +62,7 @@ new_subjects() {
 }
 
 
-done_today() {
+doneToday() {
     cat "$WHATNEXT_HISTORY" | grep  "$(date '+%Y-%m-%d')"
 }
 
@@ -73,17 +73,17 @@ missingTimeToTaskByName()
 }
 
 
-done_week() {
-    data=$(cat "$WHATNEXT_HISTORY")
+doneWeek() {
 IFS='
 '
-    first_day_of_week=$(date --date='last sunday' +%Y-%m-%d)
-    for entry in $data
+    firstDayOfWeek=$(date --date='last sunday' +%s)
+    for entry in $(listHistory)
     do
         date=$(cut -d ' ' -f1 <<< $entry)
-        if [[ $date < $first_day_of_week ]]
+        realDate=$(date  --date "$date" +%s)
+        if [[ $realDate -lt $firstDayOfWeek ]]
         then
-            break
+            continue
         fi
 
         echo $entry
