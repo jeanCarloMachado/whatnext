@@ -26,12 +26,12 @@ def gateway(params):
     return subprocess.run(prefix + params, stdout=subprocess.PIPE).stdout.decode('UTF-8')
 
 class Subject:
-    def __init__(self, name, weight, priority, energy_level, what_to_do_next, daysSinceLastStudy):
+    def __init__(self, name, weight, priority, complexity, whatToDoNext, daysSinceLastStudy):
         self.name = name
         self.weight = weight
         self.priority = priority
-        self.energy_level = energy_level
-        self.what_to_do_next = what_to_do_next
+        self.complexity = complexity
+        self.whatToDoNext = whatToDoNext
         self.daysSinceLastStudy = daysSinceLastStudy
 
 def factory_subjects():
@@ -44,8 +44,8 @@ def factory_subjects():
                 name=columns[0],
                 weight=1,
                 priority=int(columns[1]),
-                energy_level=int(columns[2]),
-                what_to_do_next=columns[3],
+                complexity=int(columns[2]),
+                whatToDoNext=columns[3],
                 daysSinceLastStudy=gateway(['daysSinceLastStudy', columns[0]])
         )
 
@@ -87,7 +87,7 @@ now = datetime.datetime.now()
 #low energy level period
 if (now.hour > 22 or now.hour < 4) or os.environ.get('TIRED') is not None:
     for subject in subjects_configs:
-        base = (1 / math.pow(subjects_configs[subject].energy_level,9))
+        base = (1 / math.pow(subjects_configs[subject].complexity,9))
         subjects_configs[subject].weight = subjects_configs[subject].weight *  base 
 # -- printing ---
 
@@ -116,6 +116,6 @@ def print_result(subjects_configs):
         else:
             daysSinceLastStudyStr+=  ' days ago '
 
-        print (title + ' ' + subject + reset + daysColor + ' ' + daysSinceLastStudyStr + reset + '' + subjects_configs[subject].what_to_do_next + reset)
+        print (title + ' ' + subject + reset + daysColor + ' ' + daysSinceLastStudyStr + reset + '' + subjects_configs[subject].whatToDoNext + reset)
 
 print_result(subjects_configs)

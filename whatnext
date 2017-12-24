@@ -77,12 +77,12 @@ get_help() {
 
 [[ "$@"  =~ "edit-subject-description" ]] || [[ "$@"  =~ "esd" ]] && {
     subject=$2
-    [[ -z "$subject"  ]] || [[ ! $($__dir/gateway.sh listSubjectsNames | grep "$subject") ]]  && {
+    [[ -z "$subject"  ]] || [[ ! $($__dir/gateway.sh listSubjectsNames | egrep "^$subject") ]]  && {
         echo 'subject not found'
         exit 1
     }
     file=$(echo /tmp/$(date "+%Y-%m-%d_%H-%I-%S"))
-    subjectDescription=$($__dir/gateway.sh listSubjects | grep "$subject" | rev | cut -d'|' -f1 | rev )
+    subjectDescription=$($__dir/gateway.sh listSubjects | egrep "^$subject" | rev | cut -d'|' -f1 | rev )
     echo "$subjectDescription" | tr '_' '\n' > $file
 
     $EDITOR "$file"

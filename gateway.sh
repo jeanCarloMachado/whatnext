@@ -110,7 +110,7 @@ IFS='
 addWhatToDoNextToSubjet() {
     subject="$1"
     what_to_do_next="$2"
-    subject_config=$(cat $WHATNEXT_CONF | grep "$subject")
+    subject_config=$(cat $WHATNEXT_CONF | egrep "^$subject")
     subject_config_without_description=$(echo "$subject_config" | rev | cut -d '|' -f1 --complement | rev)
     newSubjectConfigEntry="$subject_config_without_description|$what_to_do_next"
 
