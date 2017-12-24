@@ -72,7 +72,7 @@ for subject in subjects_configs:
     subjects_configs[subject].weight +=  subjects_configs[subject].weight * daysSinceLastStudy
 
 # turns the last one less probable to repeat
-last_entry =  gateway(['last_entry_name'])
+last_entry =  gateway(['lastEntryName'])
 if last_entry in subjects_configs:
     subjects_configs[last_entry].weight = subjects_configs[last_entry].weight / 4
 

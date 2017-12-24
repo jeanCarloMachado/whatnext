@@ -19,7 +19,7 @@ listHistory() {
     cat "$WHATNEXT_HISTORY" | sed -e /^$/d
 }
 
-last_entry_name() {
+lastEntryName() {
     tail -n 1 "$WHATNEXT_HISTORY" | cut  -d '|' -f2 | tr -d "\n"
 }
 
@@ -73,15 +73,23 @@ missingTimeToTaskByName()
 }
 
 
-doneWeek() {
+donePeriod() {
+from=$1
+to="$2"
+[[ -z "$to" ]] && {
+    to=$(date -d'today 23:59:59' +%s)
+}
 IFS='
 '
-    firstDayOfWeek=$(date --date='last sunday' +%s)
     for entry in $(listHistory)
     do
         date=$(cut -d ' ' -f1 <<< $entry)
-        realDate=$(date  --date "$date" +%s)
-        if [[ $realDate -lt $firstDayOfWeek ]]
+        realDate=$(date  --date "$date 00:00:00" +%s)
+        if [[ $realDate -lt $from ]]
+        then
+            continue
+        fi
+        if [[ $realDate -gt $to ]]
         then
             continue
         fi
