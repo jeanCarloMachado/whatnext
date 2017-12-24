@@ -11,9 +11,11 @@ IFS='
     WN_COLOR_RESET=""
 }
 
+data=""
 for i in $goals
 do
-    echo -e "$WN_COLOR_TITLE$i:$WN_COLOR_RESET "$($__dir/goalStatus.sh $i )
-
+    data="$(echo -e "$WN_COLOR_TITLE$i:$WN_COLOR_RESET "$($__dir/goalStatus.sh $i ))
+$data"
 done
 
+echo "$data" | egrep -v "^$" | sort -k2 -t " "  -r
