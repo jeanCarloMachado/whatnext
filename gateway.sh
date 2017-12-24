@@ -66,23 +66,6 @@ done_today() {
     cat "$WHATNEXT_HISTORY" | grep  "$(date '+%Y-%m-%d')"
 }
 
-get_weight_by_name()
-{
-    listSubjects | grep "$1" | cut -d'|' -f2
-}
-
-
-get_energy_level_by_name()
-{
-    listSubjects | grep "$1" | cut -d'|' -f3
-}
-
-get_whattodo_details_by_name()
-{
-    subject="$1"
-    listSubjects | egrep "^$subject" | cut -d'|' -f4 | tr -d "\n";
-}
-
 
 missingTimeToTaskByName()
 {
@@ -118,7 +101,4 @@ addWhatToDoNextToSubjet() {
     echo "$newSubjectConfigEntry" >> $WHATNEXT_CONF
 }
 
-
 "$@"
-
-
