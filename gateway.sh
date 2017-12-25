@@ -15,6 +15,10 @@ listSubjects() {
     cat "$WHATNEXT_CONF" | sed -e /^$/d
 }
 
+listHistoryDesc() {
+    tac "$WHATNEXT_HISTORY" | sed -e /^$/d
+}
+
 listHistory() {
     cat "$WHATNEXT_HISTORY" | sed -e /^$/d
 }
@@ -107,6 +111,25 @@ addWhatToDoNextToSubjet() {
 
     sed -i "/^$subject/d" $WHATNEXT_CONF
     echo "$newSubjectConfigEntry" >> $WHATNEXT_CONF
+}
+
+currentStreak() {
+    hist=$(listHistoryDesc)
+
+IFS='
+'
+    streak=0
+    daysAgoCounter=1
+
+    while true
+    do
+        refDate=$(date --date "$daysAgoCounter day ago" "+%Y-%m-%d")
+        (echo "$hist" | grep "$refDate" &>/dev/null) || break
+        daysAgoCounter=$(($daysAgoCounter + 1))
+        streak=$(($streak + 1))
+    done
+
+    echo $streak
 }
 
 "$@"

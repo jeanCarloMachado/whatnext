@@ -65,12 +65,12 @@ get_help() {
     exit
 }
 
-[[ "$@"  == "edit-goals" ]] || [[ "$@"  =~ "eg" ]] && {
+[[ "$@"  == "edit-goals" ]] || [[ "$*"  =~ ^eg$ ]] && {
     $EDITOR "$WHATNEXT_GOALS"
     exit
 }
 
-[[ "$@"  == "edit-subjects" ]] || [[ "$@"  == "es" ]] && {
+[[ "$@"  == "edit-subjects" ]] || [[ "$1"  == "es" ]] && {
     $EDITOR "$WHATNEXT_CONF"
     exit
 }

@@ -80,12 +80,12 @@ whatnext
 When you study some subject you feed whatnext with this info in order to calculate the next most important item
 
 ```sh
-$ whatnext done 'tese cristiano' 'read about types of polymorpishms'
+whatnext done 'tese cristiano' 'read about types of polymorpishms'
 #the arguments are: subject studied, description of what was studied
 ```
 Informing whatnext about your studies also gives you a nice history of your progress
 ```sh
-$ whatnext log
+whatnext log
 ```
 
 ![log](https://i.imgur.com/vbMa3ji.png)

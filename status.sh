@@ -12,6 +12,9 @@ previousWeekFrom=$(date --date='sunday-fortnight ago' +%s)
 previousWeekTo=$(date --date='saturday-fortnight ago 23:59:59' +%s)
 donePreviousWeek=$($__dir/gateway.sh donePeriod $previousWeekFrom $previousWeekTo | wc -l)
 
+
+daysInARow=$($__dir/gateway.sh currentStreak)
+
 resetColor=$WN_COLOR_RESET
 sectionColor="\x1b[1;49;95m"
 [ $doneToday -ge $doneYesterday ] && {
@@ -39,6 +42,8 @@ echo -e "$WN_COLOR_TITLE""Today$resetColor: $dayColor$doneToday$resetColor"
 echo -e "$WN_COLOR_TITLE""Yesterday$resetColor: $dayColor$doneYesterday$resetColor"
 echo -e "$WN_COLOR_TITLE""Week$resetColor: $weekColor$doneWeek$resetColor"
 echo -e "$WN_COLOR_TITLE""Previous Week$resetColor: $weekColor$donePreviousWeek$resetColor"
+
+echo -e "$WN_COLOR_TITLE""Current streak$resetColor: $weekColor$daysInARow$resetColor days"
 
 echo ""
 echo -e "$sectionColor""Goals$resetColor"
