@@ -72,10 +72,10 @@ The output of the program will a contextualized list of priorities to
 study at the moment. The most important one's will be on the top.
 
 ```sh
-$ whatnext
+whatnext
 ```
 
-![output](https://i.imgur.com/Rr90riL.png)
+![output](https://i.imgur.com/penJYeF.png)
 
 When you study some subject you feed whatnext with this info in order to calculate the next most important item
 
