@@ -1,6 +1,6 @@
 # Whatnext
 
-![Status](https://travis-ci.org/jeanCarloMachado/whatnext.svg?branch=master)
+![BuildStatus](https://travis-ci.org/jeanCarloMachado/whatnext.svg?branch=master)
 
 Whatnext is the only way I found myself being able to have some control
 over my studies.
@@ -126,7 +126,7 @@ When you get something done your goal status will be updated
 wn status
 ```
 
-![goalAfter](https://i.imgur.com/fGXj3AX.png)
+![status](https://i.imgur.com/7ABQpBj.png)
 
 
 [Installation and documentation](doc.md)
