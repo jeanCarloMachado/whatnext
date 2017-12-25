@@ -41,7 +41,8 @@ reset = os.getenv('WN_COLOR_RESET').encode('utf-8').decode('unicode_escape')
 title = os.getenv('WN_COLOR_TITLE').encode('utf-8').decode('unicode_escape')
 orange = os.getenv('WN_COLOR_ORANGE').encode('utf-8').decode('unicode_escape')
 
-if len(sys.argv) > 1 and any(map(lambda x: x == "--no-color", sys.argv)):
+
+if os.environ.get('NO_COLOR') is not None:
     title=''
     reset=''
     orange=''

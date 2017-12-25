@@ -13,6 +13,7 @@ previousWeekTo=$(date --date='saturday-fortnight ago 23:59:59' +%s)
 donePreviousWeek=$($__dir/gateway.sh donePeriod $previousWeekFrom $previousWeekTo | wc -l)
 
 resetColor=$WN_COLOR_RESET
+sectionColor="\x1b[1;49;95m"
 [ $doneToday -ge $doneYesterday ] && {
     dayColor=$WN_COLOR_GREEN
 } || {
@@ -25,18 +26,25 @@ resetColor=$WN_COLOR_RESET
 }
 
 
-echo -e "\x1b[1;49;95m""Status$resetColor"
+[ ! -z ${NO_COLOR+x} ] && {
+    resetColor=""
+    sectionColor=""
+    dayColor=""
+    weekColor=""
+    WN_COLOR_TITLE=""
+}
+
+echo -e "$sectionColor""Status$resetColor"
 echo -e "$WN_COLOR_TITLE""Today$resetColor: $dayColor$doneToday$resetColor"
 echo -e "$WN_COLOR_TITLE""Yesterday$resetColor: $dayColor$doneYesterday$resetColor"
 echo -e "$WN_COLOR_TITLE""Week$resetColor: $weekColor$doneWeek$resetColor"
 echo -e "$WN_COLOR_TITLE""Previous Week$resetColor: $weekColor$donePreviousWeek$resetColor"
 
+echo ""
+echo -e "$sectionColor""Goals$resetColor"
+$__dir/goals.sh | head -n 5
 
 echo ""
-echo -e "\x1b[1;49;95m""Goals$resetColor"
-./goals.sh | head -n 5
+echo -e "$sectionColor""Top subjects$resetColor"
 
-echo ""
-echo -e "\x1b[1;49;95m""Top subjects$resetColor"
-
-./timePerSubject.py | head -n 5
+$__dir/timePerSubject.py | head -n 5

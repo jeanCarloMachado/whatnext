@@ -21,7 +21,7 @@ dateStart=$( echo "$goals" | jq ".$goalName"'.from' -r)
 dateEnd=$( echo "$goals" | jq ".$goalName"'.to' -r)
 minutes=$( echo "$goals" | jq ".$goalName"'.minutes' -r)
 
-doneInPeriod=$($__dir/timePerSubject.py "$dateStart" "$dateEnd" --no-color |
+doneInPeriod=$(NO_COLOR=1 $__dir/timePerSubject.py "$dateStart" "$dateEnd" |
     grep "$subject" | cut -d ':' -f2 | tr -d " ")
 doneInPeriod=${doneInPeriod:-0}
 
@@ -48,6 +48,7 @@ percentageColor=$WN_COLOR_RED
 [ ! -z ${NO_COLOR+x} ] && {
     percentageColor=""
     resetColor=""
+    titleColor=""
 }
 
-echo -e "$percentageColor$percentageDone$resetColor% of your goal $titleColor$timeMissing$resetColor minutes remaining to do in $remaingingDays days"
+echo -e "$percentageColor$percentageDone$resetColoryour$resetColor% done $titleColor$timeMissing$resetColor min remaining in $remaingingDays days"

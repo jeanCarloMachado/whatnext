@@ -16,7 +16,7 @@ get_help() {
     $command (done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor
     $command total                                                          show how much did you spent in any activity
     $command log                                                            shows the log
-    $command status                                                         get current status of your studies
+    $command (status|s)                                                         get current status of your studies
     $command goal             show your goals status $command (edit-goals|eg)                                                edit your goals
     "
 }
@@ -45,7 +45,7 @@ get_help() {
     exit
 }
 
-[[ "$@"  == "status" ]] && {
+[[ "$@"  == "status" ]] || [[ "$@"  == "s" ]] && {
     $__dir/status.sh "${@:2}"
     exit
 }
