@@ -1,11 +1,24 @@
 #!/usr/bin/env bash
 
+gethelp() {
+    echo "
+Mark as done a study session
+
+-f when you want to mark as done a subject you don't have on your config file
+    "
+}
+
+[[ $1 == '--help' ]] && {
+    gethelp
+    exit
+}
+
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 subject="$1"
 doneDescription="$2"
 
-[ -z "$subject" ] || [[ ! $($__dir/gateway.sh listSubjectsNames | grep "$subject") ]]  && {
+[ ! $($__dir/gateway.sh subjectExists $subject) ] && [[ ! "$@" =~ " -f" ]]  && {
     echo 'subject not found'
     exit 1
 }

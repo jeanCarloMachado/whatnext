@@ -1,12 +1,5 @@
 #!/usr/bin/env bash
 
-goalExists() {
-    goalName="$1"
-    goals=$(cat $WHATNEXT_GOALS)
-    result=$(echo "$goals" | jq ".$goalName")
-    test "$result" != "null"
-}
-
 listSubjectsNames() {
     cat "$WHATNEXT_CONF" | cut -d '|' -f1
 }
@@ -14,6 +7,23 @@ listSubjectsNames() {
 listSubjects() {
     cat "$WHATNEXT_CONF" | sed -e /^$/d
 }
+
+goalExists() {
+    goalName="$1"
+    goals=$(cat $WHATNEXT_GOALS)
+    result=$(echo "$goals" | jq ".$goalName")
+    test "$result" != "null"
+}
+
+subjectExists() {
+    subject="$1"
+    [ ! -z "$subject" ] && [ $(listSubjectsNames | grep "$subject") ] && {
+        return 0
+    }
+
+    return 1
+}
+
 
 listHistoryDesc() {
     tac "$WHATNEXT_HISTORY" | sed -e /^$/d
