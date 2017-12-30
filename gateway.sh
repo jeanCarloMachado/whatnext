@@ -17,11 +17,16 @@ goalExists() {
 
 subjectExists() {
     subject="$1"
-    [ ! -z "$subject" ] && [ $(listSubjectsNames | grep "$subject") ] && {
-        return 0
+    [[ -z "$subject" ]] && {
+        return 1
     }
 
-    return 1
+    listSubjectsNames | grep "$subject"&>/dev/null || { 
+        return 1
+    }
+
+
+    return 0
 }
 
 

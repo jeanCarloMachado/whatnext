@@ -18,7 +18,9 @@ __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 subject="$1"
 doneDescription="$2"
 
-[ ! $($__dir/gateway.sh subjectExists $subject) ] && [[ ! "$@" =~ " -f" ]]  && {
+$__dir/gateway.sh subjectExists "$subject"
+
+[ $? -eq 1 ] && [[ ! "$@" =~ " -f" ]]  && {
     echo 'subject not found'
     exit 1
 }
