@@ -61,11 +61,3 @@ echo -e "$WN_COLOR_TITLE""Previous Week$resetColor: $weekColor$donePreviousWeek$
 
 echo -e "$WN_COLOR_TITLE""Current streak$resetColor: $weekColor$daysInARow$resetColor days"
 
-echo ""
-echo -e "$sectionColor""Goals$resetColor"
-$__dir/goals.sh | head -n 5
-
-echo ""
-echo -e "$sectionColor""Top subjects$resetColor"
-
-$__dir/timePerSubject.py | head -n 5

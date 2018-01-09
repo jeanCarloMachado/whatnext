@@ -47,6 +47,17 @@ get_help() {
 
 [[ "$@"  == "status" ]] || [[ "$@"  == "s" ]] && {
     $__dir/status.sh "${@:2}"
+
+    echo ""
+    echo -e "$sectionColor""Goals$resetColor"
+    $__dir/goals.sh | head -n 5
+
+    echo ""
+    echo -e "$sectionColor""Top subjects$resetColor"
+
+    $__dir/timePerSubject.py | head -n 5
+
+
     exit
 }
 
