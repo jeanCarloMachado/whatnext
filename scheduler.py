@@ -135,11 +135,13 @@ def get_days_since_last_study_str(subject):
 
 def print_result(subjects_configs):
     sorted_subjects  = sorted(subjects_configs.items(), key=lambda x: x[1].weight, reverse=True)
+    counter = 1
     for subject,weight in sorted_subjects:
         days_since_last_study_str = get_days_since_last_study_str(subjects_configs[subject])
         time_invested = minutes_to_str(subjects_configs[subject].time_already_invested)
         time_invested = " - " + time_invested  if len(time_invested) > 4 else "" 
 
-        print (title + ' ' + subject + reset + ' (' + days_since_last_study_str + '' + time_invested + reset + ') ' + subjects_configs[subject].what_to_do_next + reset)
+        print ( title + str(counter) + '. ' + subject + reset + ': ' + days_since_last_study_str + '' + time_invested + reset + ' ' + subjects_configs[subject].what_to_do_next + reset)
+        counter += 1
 
 print_result(configure_subjects())
