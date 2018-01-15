@@ -17,15 +17,16 @@ do
     subject=$(echo $i | cut -d '|' -f2)
     description=$(echo $i | cut -d '|' -f3)
     goal=$(echo $i | cut -d '|' -f4)
-    echo -e "$WN_COLOR_ORANGE $current_entry $WN_COLOR_TITLE $subject $WN_COLOR_RESET"
-    echo " Date:     $date"
+    echo -e "$WN_COLOR_ORANGE$current_entry $subject$WN_COLOR_RESET"
+    echo "Date: $date"
     [ ! -z "$goal" ] && {
         name=$(echo $goal | cut -d ' ' -f1)
         minutes=$(echo $goal | cut -d ' ' -f2 | tr -d ' ')
         echo -e "$WN_COLOR_GREEN Goal: $name completed a total of $minutes minutes"
     }
     [ ! -z "$description" ] && {
-        echo "      $description"
+        echo "
+    $description"
     }
     echo ""
     current_entry=$(( $current_entry - 1 ))

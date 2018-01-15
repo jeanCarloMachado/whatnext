@@ -20,7 +20,7 @@ doneDescription="$2"
 
 $__dir/gateway.sh subjectExists "$subject"
 
-[ $? -eq 1 ] && [[ ! "$@" =~ " -f" ]]  && {
+[ $? -eq 1 ] && [[ ! "$*" =~ " -f" ]]  && {
     echo 'subject not found'
     exit 1
 }
