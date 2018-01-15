@@ -88,7 +88,7 @@ Informing whatnext about your studies also gives you a nice history of your prog
 whatnext log
 ```
 
-![log](https://i.imgur.com/vbMa3ji.png)
+![log](https://i.imgur.com/N2OMkvH.png)
 
 
 ## Goals
