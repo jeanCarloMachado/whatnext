@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-log=$(tac "$WHATNEXT_HISTORY")
-current_entry=$(echo "$log" | wc -l )
 IFS='
 '
 [ ! -z ${NO_COLOR+x} ] && {
@@ -10,6 +8,29 @@ IFS='
     WN_COLOR_TITLE=""
     WN_COLOR_GREEN=""
 }
+
+[[ "$*" =~ "--help"  ]]  && {
+
+    echo "View the log
+
+        Options:
+            --filter <filterStr>    to filter by text
+    "
+    exit 0
+}
+
+
+filter=""
+if [[ "$1" =~ "--filter"  ]]
+then
+shift
+    filter="$1"
+    log=$(tac "$WHATNEXT_HISTORY" | grep "$filter")
+else
+    log=$(tac "$WHATNEXT_HISTORY")
+fi
+
+current_entry=$(echo "$log" | wc -l )
 
 for i in $log
 do
