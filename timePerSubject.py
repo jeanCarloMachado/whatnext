@@ -18,9 +18,19 @@ Usage:
             """)
     sys.exit()
 
+
+humanMode=False
+if len(sys.argv) > 1 and any(map(lambda x: x == "human", sys.argv)):
+    humanMode=True
+
 def gateway(params):
     prefix = [ os.path.dirname(os.path.realpath(__file__)) + '/gateway.sh']
     return subprocess.run(prefix + params, stdout=subprocess.PIPE).stdout.decode('UTF-8')
+
+def timeConverter(time):
+    cmd = os.path.dirname(os.path.realpath(__file__)) + '/timeToStr.py'
+    return subprocess.run([cmd , str(time), "--from-minutes"], stdout=subprocess.PIPE).stdout.decode('UTF-8').split("\n")[0]
+
 
 dateStart = datetime.strptime('1970-01-01', '%Y-%m-%d')
 dateEnd = datetime.strptime('3000-01-01', '%Y-%m-%d')
@@ -64,6 +74,8 @@ for line in subjects.splitlines():
 
 sortedSubjects = sorted(subjectData.items(), key=lambda value: value[1], reverse=True)
 
+
 for item in sortedSubjects:
-    print( title + item[0] + reset + ": " + orange + str(item[1]) + reset)
+    timeInSubject = timeConverter(item[1]) if (humanMode) else  str(item[1])
+    print( title + item[0] + reset + ": " + orange + timeInSubject + reset)
 

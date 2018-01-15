@@ -37,7 +37,7 @@ get_help() {
 }
 
 [[ "$@"  =~ "total" ]] && {
-    $__dir/timePerSubject.py "${@:2}" | less
+    $__dir/timePerSubject.py human "${@:2}" | less
     exit
 }
 [[ "$@"  =~ goal$ ]] && {
@@ -55,7 +55,7 @@ get_help() {
     echo ""
     echo -e "$sectionColor""Top subjects$resetColor"
 
-    $__dir/timePerSubject.py | head -n 5
+    $__dir/timePerSubject.py human | head -n 5
 
 
     exit
