@@ -69,7 +69,7 @@ for subject in subjects_configs:
         subjects_configs[subject].weight = (subjects_configs[subject].weight  * subjects_configs[subject].weight * 0.2)
         continue
     daysSinceLastStudy =  int(subjects_configs[subject].daysSinceLastStudy)
-    subjects_configs[subject].weight +=  subjects_configs[subject].weight * daysSinceLastStudy
+    subjects_configs[subject].weight += subjects_configs[subject].weight * daysSinceLastStudy
 
 # turns the last one less probable to repeat
 last_entry =  gateway(['lastEntryName'])
@@ -84,7 +84,7 @@ for subject in new_subjects.splitlines() :
 # -- contextual calculai in the end --
 
 now = datetime.datetime.now()
-#low energy level period
+#tired period
 if (now.hour > 22 or now.hour < 4) or os.environ.get('TIRED') is not None:
     for subject in subjects_configs:
         base = (1 / math.pow(subjects_configs[subject].complexity,9))
@@ -100,22 +100,22 @@ title = os.getenv('WN_COLOR_TITLE').encode('utf-8').decode('unicode_escape')
 def print_result(subjects_configs):
     sorted_subjects  = sorted(subjects_configs.items(), key=lambda x: x[1].weight, reverse=True)
     for subject,weight in sorted_subjects:
-        daysSinceLastStudyStr = subjects_configs[subject].daysSinceLastStudy
-        daysSinceLastStudyInt = int(daysSinceLastStudyStr) if daysSinceLastStudyStr.isdigit() else 0
+        days_since_last_study_str = subjects_configs[subject].daysSinceLastStudy
+        days_since_last_study_int = int(days_since_last_study_str) if days_since_last_study_str.isdigit() else 0
 
-        if daysSinceLastStudyInt < 7:
+        if days_since_last_study_int < 7:
             daysColor = green
-        elif daysSinceLastStudyInt > 7 and daysSinceLastStudyInt < 20:
+        elif days_since_last_study_int > 7 and days_since_last_study_int < 20:
             daysColor = orange
         else:
             daysColor = red
 
-        if daysSinceLastStudyStr == '':
-            daysSinceLastStudyStr = 'never '
+        if days_since_last_study_str == '':
+            days_since_last_study_str = 'never '
             daysColor = orange
         else:
-            daysSinceLastStudyStr+=  ' days ago '
+            days_since_last_study_str+=  ' days ago '
 
-        print (title + ' ' + subject + reset + daysColor + ' ' + daysSinceLastStudyStr + reset + '' + subjects_configs[subject].whatToDoNext + reset)
+        print (title + ' ' + subject + reset + daysColor + ' ' + days_since_last_study_str + reset + '' + subjects_configs[subject].whatToDoNext + reset)
 
 print_result(subjects_configs)

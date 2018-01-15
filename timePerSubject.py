@@ -7,6 +7,7 @@ import sys
 import math
 from datetime import datetime, timedelta
 import os
+from timeToStr import minutes_to_str
 
 if len(sys.argv) > 1 and any(map(lambda x: x == "help", sys.argv)):
     print("""Prints the total of time one spent on each subject
@@ -27,9 +28,6 @@ def gateway(params):
     prefix = [ os.path.dirname(os.path.realpath(__file__)) + '/gateway.sh']
     return subprocess.run(prefix + params, stdout=subprocess.PIPE).stdout.decode('UTF-8')
 
-def timeConverter(time):
-    cmd = os.path.dirname(os.path.realpath(__file__)) + '/timeToStr.py'
-    return subprocess.run([cmd , str(time), "--from-minutes"], stdout=subprocess.PIPE).stdout.decode('UTF-8').split("\n")[0]
 
 
 dateStart = datetime.strptime('1970-01-01', '%Y-%m-%d')
@@ -47,14 +45,14 @@ if len(list(filter(lambda x: x != "--no-color", sys.argv))) == 3:
     dateStart = datetime.strptime(sys.argv[1], '%Y-%m-%d')
     dateEnd = datetime.strptime(sys.argv[2], '%Y-%m-%d')
 
-reset = os.getenv('WN_COLOR_RESET').encode('utf-8').decode('unicode_escape')
-title = os.getenv('WN_COLOR_TITLE').encode('utf-8').decode('unicode_escape')
+resetColor = os.getenv('WN_COLOR_RESET').encode('utf-8').decode('unicode_escape')
+titleColor = os.getenv('WN_COLOR_TITLE').encode('utf-8').decode('unicode_escape')
 orange = os.getenv('WN_COLOR_ORANGE').encode('utf-8').decode('unicode_escape')
 
 
 if os.environ.get('NO_COLOR') is not None:
-    title=''
-    reset=''
+    titleColor=''
+    resetColor=''
     orange=''
 
 history = gateway(['listHistory'])
@@ -75,7 +73,12 @@ for line in subjects.splitlines():
 sortedSubjects = sorted(subjectData.items(), key=lambda value: value[1], reverse=True)
 
 
+total = 0
 for item in sortedSubjects:
-    timeInSubject = timeConverter(item[1]) if (humanMode) else  str(item[1])
-    print( title + item[0] + reset + ": " + orange + timeInSubject + reset)
+    total+= item[1]
+    timeInSubject = minutes_to_str(item[1]) if (humanMode) else  str(item[1])
+    print( titleColor + item[0] + resetColor + ": " + orange + timeInSubject + resetColor)
 
+total = minutes_to_str(total) if (humanMode) else  str(total)
+
+print( titleColor + "Total" + resetColor + ": " + orange + total + resetColor)

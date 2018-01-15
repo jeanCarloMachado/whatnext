@@ -21,7 +21,7 @@ get_help() {
     "
 }
 
-[[ "$@" =~ "--help" ]] || [[ "$*" =~ "-h" ]] || [[ "$*" =~ ^h$ ]] && {
+[[ "$*" =~ "--help" ]] || [[ "$*" =~ "-h" ]] || [[ "$*" =~ ^h$ ]] && {
     get_help
     exit
 }
@@ -36,16 +36,16 @@ get_help() {
     exit
 }
 
-[[ "$@"  =~ "total" ]] && {
+[[ "$*"  =~ "total" ]] && {
     $__dir/timePerSubject.py human "${@:2}" | less
     exit
 }
-[[ "$@"  =~ goal$ ]] && {
+[[ "$*"  =~ goal$ ]] && {
     $__dir/goals.sh "${@:2}"
     exit
 }
 
-[[ "$@"  == "status" ]] || [[ "$@"  == "s" ]] && {
+[[ "$*"  == "status" ]] || [[ "$*"  == "s" ]] && {
     $__dir/status.sh "${@:2}"
 
     echo ""
@@ -55,48 +55,50 @@ get_help() {
     echo ""
     echo -e "$sectionColor""Top subjects$resetColor"
 
-    $__dir/timePerSubject.py human | head -n 5
 
+    result=$($__dir/timePerSubject.py human)
+    echo "$result" | tail -n1
+    echo "$result" | head -n 5
 
     exit
 }
 
-[[ "$@"  == "init" ]] && {
+[[ "$*"  == "init" ]] && {
     $__dir/init.sh "${@:2}"
     exit
 }
 
-[[ "$@"  == "log" ]] && {
+[[ "$*"  == "log" ]] && {
     $__dir/log.sh "${@:2}" | less
     exit
 }
 
-[[ "$@"  == "list-subjects" ]] && {
+[[ "$*"  == "list-subjects" ]] && {
     $__dir/gateway.sh list_subjects_names
     exit
 }
 
-[[ "$@"  == "edit-goals" ]] || [[ "$*"  =~ ^eg$ ]] && {
+[[ "$*"  == "edit-goals" ]] || [[ "$*"  =~ ^eg$ ]] && {
     $EDITOR "$WHATNEXT_GOALS"
     exit
 }
 
-[[ "$@"  == "edit-subjects" ]] || [[ "$1"  == "es" ]] && {
+[[ "$*"  == "edit-subjects" ]] || [[ "$1"  == "es" ]] && {
     $EDITOR "$WHATNEXT_CONF"
     exit
 }
 
-[[ "$@"  =~ "edit-subject-description" ]] || [[ "$@"  =~ "esd" ]] && {
+[[ "$*"  =~ "edit-subject-description" ]] || [[ "$*"  =~ "esd" ]] && {
     $__dir/editSubjectDescription.sh "${@:2}"
     exit
 }
 
-[[ "$@"  == "eh" ]] || [[ "$@"  == "edit-history" ]] && {
+[[ "$*"  == "eh" ]] || [[ "$*"  == "edit-history" ]] && {
     $EDITOR "$WHATNEXT_HISTORY"
     exit
 }
 
-[[ ! -z "$@" ]]  && {
+[[ ! -z "$*" ]]  && {
     echo "Option not found"
     exit 1
 }

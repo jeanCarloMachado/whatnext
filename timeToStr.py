@@ -1,21 +1,6 @@
 #!/usr/bin/env python3
 import sys
 
-time=0
-timeMultiplier=1
-
-if len(sys.argv) == 1:
-    time = int(sys.stdin.readlines()[0])
-else:
-    time = int(sys.argv[1])
-
-if len(sys.argv) > 2:
-    if sys.argv[2] == "--from-minutes" :
-        timeMultiplier = 60
-
-time = time * timeMultiplier
-
-
 intervals = (
     ('weeks', 604800),  # 60 * 60 * 24 * 7
     ('days', 86400),    # 60 * 60 * 24
@@ -24,9 +9,11 @@ intervals = (
     ('seconds', 1),
     )
 
-def display_time(seconds, granularity=2):
-    result = []
+granularity = 2
 
+
+def seconds_to_str(seconds):
+    result = []
     for name, count in intervals:
         value = seconds // count
         if value:
@@ -36,4 +23,21 @@ def display_time(seconds, granularity=2):
             result.append("{} {}".format(value, name))
     return ', '.join(result[:granularity])
 
-print (display_time(time))
+
+def minutes_to_str(minutes):
+    seconds = minutes * 60
+    return seconds_to_str(seconds)
+
+
+if __name__ == '__main__':
+    if len(sys.argv) == 1:
+        time = int(sys.stdin.readlines()[0])
+    else:
+        time = int(sys.argv[1])
+
+    if len(sys.argv) > 2:
+        if sys.argv[2] == "--from-minutes" :
+            print(minutes_to_str(time))
+            sys.exit(0)
+
+    print (seconds_to_str(time))
