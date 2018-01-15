@@ -126,7 +126,7 @@ When you get something done your goal status will be updated
 wn status
 ```
 
-![status](https://i.imgur.com/7ABQpBj.png)
+![status](https://i.imgur.com/imsMToT.png)
 
 
 [Installation and documentation](doc.md)
