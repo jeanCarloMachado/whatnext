@@ -133,7 +133,6 @@ def print_result(subjects_configs):
         time_invested = minutes_to_str(subjects_configs[subject].time_already_invested)
         time_invested = " - " + time_invested  if len(time_invested) > 4 else "" 
 
-
         print (title + ' ' + subject + reset + ' (' + days_since_last_study_str + '' + time_invested + reset + ') ' + subjects_configs[subject].what_to_do_next + reset)
 
 print_result(configure_subjects())
