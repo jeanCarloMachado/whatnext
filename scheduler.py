@@ -106,6 +106,13 @@ red = os.getenv('WN_COLOR_RED').encode('utf-8').decode('unicode_escape')
 reset = os.getenv('WN_COLOR_RESET').encode('utf-8').decode('unicode_escape')
 title = os.getenv('WN_COLOR_TITLE').encode('utf-8').decode('unicode_escape')
 
+if os.environ.get('NO_COLOR') is not None:
+    orange=''
+    green=''
+    red=''
+    reset=''
+    title=''
+
 
 def get_days_since_last_study_str(subject):
     days_since_last_study_str = subject.days_since_last_study

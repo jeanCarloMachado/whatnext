@@ -103,4 +103,10 @@ get_help() {
     exit 1
 }
 
-$__dir/scheduler.py | less
+if [ ! -z ${NO_COLOR+x} ]
+then
+    $__dir/scheduler.py
+else
+    $__dir/scheduler.py | less
+fi
+
