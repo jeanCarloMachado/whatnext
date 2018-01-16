@@ -10,7 +10,6 @@ if len(sys.argv) < 2:
     print ("you must pass a subject")
     sys.exit()
 
-
 subject = sys.argv[1]
 
 orange = os.getenv('WN_COLOR_ORANGE').encode('utf-8').decode('unicode_escape')
@@ -36,6 +35,8 @@ def gateway(params):
 subjectRow = gateway(['listSubject', subject])
 columns  = subjectRow.split('|')
 lastTime=gateway(['daysSinceLastStudy', subject])
+
+lastTime = "yesterday" if lastTime == "0" else lastTime + " days ago"
 
 time_already_invested = time_of_subjects()
 time_invested=minutes_to_str(time_already_invested[subject])
