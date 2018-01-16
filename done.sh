@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 
 gethelp() {
-    echo "
-Mark as done a study session
+    echo "Mark as done a study session
 
--f when you want to mark as done a subject you don't have on your config file
+    Options:
+        FORCE=1 wn done 'subject that does not exits'
+        when you want to mark as done a subject you don't have on your config file
     "
 }
 
-[[ $1 == '--help' ]] && {
+[[ "$*" =~ '-h' ]] && {
     gethelp
     exit
 }
@@ -17,12 +18,29 @@ __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 subject="$1"
 doneDescription="$2"
+nextStep="$3"
 
 $__dir/gateway.sh subjectExists "$subject"
 
-[ $? -eq 1 ] && [[ ! "$*" =~ " -f" ]]  && {
+[ $? -eq 1 ] && [[ -z ${FORCE+x} ]]  && {
     echo 'subject not found'
     exit 1
+}
+
+[ -z "$doneDescription" ] && {
+    file=$(echo /tmp/whatnext_$(date "+%Y-%m-%d_%H-%I-%S"))
+    echo "# describe what you've done" >> $file
+    $EDITOR "$file"
+    doneDescription=$(cat "$file" | sed "/^\#.*/d"  | tr "\n" "_")
+}
+
+[ -z "$nextStep" ] && {
+    file=$(echo /tmp/whatnext_$(date "+%Y-%m-%d_%H-%I-%S"))
+    echo "# describe the next steps of this subject" >> $file
+    $EDITOR "$file"
+    nextStep=$(cat "$file" | sed "/^\#.*/d" | tr "\n" "_") 
+
+    $__dir/gateway.sh addWhatToDoNextToSubjet "$subject" "$nextStep"
 }
 
 goalsNamesBefore=$(NO_COLOR=1 $__dir/goals.sh | grep -v "100%" | cut -d ':' -f1)
@@ -44,7 +62,7 @@ IFS='
             #remove the previously added entry to readd with the goal info
             sed -i '$ d' $WHATNEXT_HISTORY
             goalStr="$goalName $minutes"
-            echo "$( date "+%Y-%m-%d %H:%M:%S")|$subject|$doneDescription|$goalStr" >> $WHATNEXT_HISTORY
+            echo "$( date "+%Y-%m-%d %H:%M:%S")|$subject|$doneDescription|$goalStr" >> "$WHATNEXT_HISTORY"
             exit
         }
 
