@@ -8,6 +8,11 @@ listSubjects() {
     cat "$WHATNEXT_CONF" | sed -e /^$/d
 }
 
+listSubject() {
+    subject=$1
+    cat "$WHATNEXT_CONF" | grep "$subject" | sed -e /^$/d
+}
+
 goalExists() {
     goalName="$1"
     goals=$(cat $WHATNEXT_GOALS)

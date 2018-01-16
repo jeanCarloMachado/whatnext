@@ -136,25 +136,11 @@ def get_days_since_last_study_str(subject):
 
 def print_result(subjects_configs):
     sorted_subjects  = sorted(subjects_configs.items(), key=lambda x: x[1].weight, reverse=True)
-    counter = 2
+    counter = 1
     first = True
     for subject,weight in sorted_subjects:
         days_since_last_study_str = get_days_since_last_study_str(subjects_configs[subject])
         time_invested = green + minutes_to_str(subjects_configs[subject].time_already_invested) +  reset
-
-        if first:
-            print ("")
-            print(section_color + "What to do next: " + title + subject + reset)
-            print ("Last time: " + days_since_last_study_str + reset ) 
-            print ("Time already invested: " + time_invested + reset )
-            print ("")
-            print (subjects_configs[subject].what_to_do_next)
-            print ("")
-            first = False
-
-            cmd = os.path.dirname(os.path.realpath(__file__)) + '/log.sh'
-            print(subprocess.run([cmd, '--filter', subject], stdout=subprocess.PIPE).stdout.decode('UTF-8'))
-            continue
 
         time_invested = " - " + time_invested  if len(time_invested) > 4 else "" 
 

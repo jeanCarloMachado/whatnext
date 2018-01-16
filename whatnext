@@ -35,6 +35,10 @@ get_help() {
     $__dir/level.sh "${@:2}"
     exit
 }
+[[ "$1"  =~ "detail" ]]  && {
+    $__dir/detail.py "${@:2}" | less
+    exit
+}
 
 [[ "$*"  =~ "total" ]] && {
     $__dir/timePerSubject.py human "${@:2}" | less
