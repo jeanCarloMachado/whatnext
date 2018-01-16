@@ -105,6 +105,7 @@ green = os.getenv('WN_COLOR_GREEN').encode('utf-8').decode('unicode_escape')
 red = os.getenv('WN_COLOR_RED').encode('utf-8').decode('unicode_escape')
 reset = os.getenv('WN_COLOR_RESET').encode('utf-8').decode('unicode_escape')
 title = os.getenv('WN_COLOR_TITLE').encode('utf-8').decode('unicode_escape')
+section_color = os.getenv('WN_COLOR_SECTION').encode('utf-8').decode('unicode_escape')
 
 if os.environ.get('NO_COLOR') is not None:
     orange=''
@@ -120,7 +121,7 @@ def get_days_since_last_study_str(subject):
 
     if days_since_last_study_int < 7:
         daysColor = green
-    elif days_since_last_study_int > 7 and days_since_last_study_int < 20:
+    elif days_since_last_study_int > 7 and days_since_last_study_int < 30:
         daysColor = orange
     else:
         daysColor = red
@@ -135,13 +136,25 @@ def get_days_since_last_study_str(subject):
 
 def print_result(subjects_configs):
     sorted_subjects  = sorted(subjects_configs.items(), key=lambda x: x[1].weight, reverse=True)
-    counter = 1
+    counter = 2
+    first = True
     for subject,weight in sorted_subjects:
         days_since_last_study_str = get_days_since_last_study_str(subjects_configs[subject])
         time_invested = minutes_to_str(subjects_configs[subject].time_already_invested)
+
+        if first:
+            print ("")
+            print(section_color + "What to do next: " + title + subject + reset)
+            print ("Last time: " + days_since_last_study_str + reset ) 
+            print ("Time already invested: " + time_invested + reset )
+            print (subjects_configs[subject].what_to_do_next)
+            print ("")
+            first = False
+            continue
+
         time_invested = " - " + time_invested  if len(time_invested) > 4 else "" 
 
-        print ( title + str(counter) + '. ' + subject + reset + ': ' + days_since_last_study_str + '' + time_invested + reset + ' ' + subjects_configs[subject].what_to_do_next + reset)
+        print ( title + str(counter) + '. ' + subject + reset + ': ' + days_since_last_study_str + reset + time_invested + reset + ' ' + subjects_configs[subject].what_to_do_next + reset)
         counter += 1
 
 print_result(configure_subjects())

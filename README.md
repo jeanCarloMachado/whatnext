@@ -75,7 +75,7 @@ study at the moment. The most important one's will be on the top.
 whatnext
 ```
 
-![output](https://i.imgur.com/q9IwXWs.png)
+![output](https://i.imgur.com/V7DJGOa.png)
 
 When you study some subject you feed whatnext with this info in order to calculate the next most important item
 
