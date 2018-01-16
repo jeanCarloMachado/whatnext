@@ -38,7 +38,7 @@ do
     subject=$(echo $i | cut -d '|' -f2)
     description=$(echo $i | cut -d '|' -f3)
     goal=$(echo $i | cut -d '|' -f4)
-    echo -e "$WN_COLOR_ORANGE$current_entry $subject$WN_COLOR_RESET"
+    echo -e $WN_COLOR_ORANGE"task $current_entry: $subject$WN_COLOR_RESET"
     echo "Date: $date"
     [ ! -z "$goal" ] && {
         name=$(echo $goal | cut -d ' ' -f1)

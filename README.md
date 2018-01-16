@@ -37,29 +37,16 @@ category theory|70|90|read category theory for programmers
 cormen book|65|90|do the exercise of how much you can do with a given complexity (wiki)
 kubernetes|79|70|do a tutorial
 haskell|45|90|continue reading the book
-lisp book|55|90|
-hadoop|55|50|continue installing and single node hello world
 meditation|80|50|read more papers
 math|50|70|master mathematical proophs reading the paper math_proofs 
 elm|40|90|do some other tutorials
 music theory|43|80|
-learning|40|40|
 paraiso perdido|33|20|
-statistics|80|60|do the second chapter of the thinkstats book
 kernel development|30|60|
 chemistry|30|70|
-clang|20|70|organize wiki, make the tutorial to build a sqlite
-databases|15|40|
-bad science|10|50|
-history|5|20|
-productivity|3|30|
 climate change|10|10|
 dragons book|20|80|
-artificial intelligence|40|80|
 open source|99|50|
-clean code|1|50|
-facts and fallacies|70|20|
-tese cristiano|80|70|continuar introdução
 ```
 
 Where the columns are:
@@ -75,7 +62,7 @@ study at the moment. The most important one's will be on the top.
 whatnext
 ```
 
-![output](https://i.imgur.com/V7DJGOa.png)
+![output](https://i.imgur.com/sbXFpnd.png)
 
 When you study some subject you feed whatnext with this info in order to calculate the next most important item
 
