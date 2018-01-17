@@ -8,4 +8,8 @@ all:
 	cd /tmp/whatnext ; git push
 
 build:
-	makepkg -rsi -f 
+	makepkg -rsi -f
+
+md5sha:
+	makepkg -g
+
