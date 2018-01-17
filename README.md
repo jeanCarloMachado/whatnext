@@ -32,6 +32,8 @@ The projects rests on some premises:
 
 ```sh
 yaourt -Sa whatnext
+whatnext init # to initialize config files
+
 ```
 
 ## Starting

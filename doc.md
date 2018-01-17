@@ -1,6 +1,6 @@
 # Documentation
 
-## Installation
+## Manual Installation
 
 ```sh
 #clone the repo somewhere
