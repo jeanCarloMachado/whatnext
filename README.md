@@ -26,6 +26,13 @@ The projects rests on some premises:
 - It's better to study in many little sessions than in few big one's
 - We want to study a lot of things and there are subjects more important than others (and their importance change quite often)
 
+## Installation
+
+### Archlinux
+
+```sh
+yaourt -Sa whatnext
+```
 
 ## Starting
 

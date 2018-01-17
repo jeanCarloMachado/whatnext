@@ -1,5 +1,0 @@
-#!/bin/bash
-
-cd /usr/lib/whatnext
-
-eval ./whatnext $@
