@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source $__dir/config.sh
+
+
+get_help() {
+    command="whatnext"
+    echo "A tool to help schedule studies
+
+    Usage:
+
+    $command (edit-subjects|es)                                         opens the subjects on your editor
+    $command (edit-subject-description|esd)                                 edit the subject description
+    $command (edit-history|eh)                                             opens the history on your editor
+    $command (done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor
+    $command total                                                          show how much did you spent in any activity
+    $command log                                                            shows the log
+    $command (status|s)                                                         get current status of your studies
+    $command goal             show your goals status $command (edit-goals|eg)                                                edit your goals
+    "
+}
+
+[[ "$*" =~ ^--help$ ]] || [[ "$*" =~ ^-h$ ]] || [[ "$*" =~ ^h$ ]] && {
+    get_help
+    exit
+}
+
+[[ "$1"  == "-d" ]] || [[ "$1"  == "done" ]]  && {
+    $__dir/done.sh "${@:2}"
+    exit
+}
+
+[[ "$1"  == "level" ]]  && {
+    $__dir/level.sh "${@:2}"
+    exit
+}
+[[ "$1"  =~ "detail" ]]  && {
+    $__dir/detail.py "${@:2}" | less
+    exit
+}
+
+[[ "$*"  =~ "total" ]] && {
+    $__dir/timePerSubject.py human "${@:2}" | less
+    exit
+}
+[[ "$*"  =~ goal$ ]] && {
+    $__dir/goals.sh "${@:2}"
+    exit
+}
+
+[[ "$*"  == "status" ]] || [[ "$*"  == "s" ]] && {
+    $__dir/status.sh "${@:2}"
+
+    echo ""
+    echo -e "$sectionColor""Goals$resetColor"
+    $__dir/goals.sh | head -n 5
+
+    echo ""
+    echo -e "$sectionColor""Top subjects$resetColor"
+
+
+    result=$($__dir/timePerSubject.py human)
+    echo "$result" | tail -n1
+    echo "$result" | head -n 5
+
+    exit
+}
+
+[[ "$*"  == "init" ]] && {
+    $__dir/init.sh "${@:2}"
+    exit
+}
+
+[[ "$*"  =~ "log" ]] && {
+    $__dir/log.sh "${@:2}" | less
+    exit
+}
+
+[[ "$*"  == "list-subjects" ]] && {
+    $__dir/gateway.sh list_subjects_names
+    exit
+}
+
+[[ "$*"  == "edit-goals" ]] || [[ "$*"  =~ ^eg$ ]] && {
+    $EDITOR "$WHATNEXT_GOALS"
+    exit
+}
+
+[[ "$*"  == "edit-subjects" ]] || [[ "$1"  == "es" ]] && {
+    $EDITOR "$WHATNEXT_CONF"
+    exit
+}
+
+[[ "$*"  =~ "edit-subject-description" ]] || [[ "$*"  =~ "esd" ]] && {
+    $__dir/editSubjectDescription.sh "${@:2}"
+    exit
+}
+
+[[ "$*"  == "eh" ]] || [[ "$*"  == "edit-history" ]] && {
+    $EDITOR "$WHATNEXT_HISTORY"
+    exit
+}
+
+[[ ! -z "$*" ]]  && {
+    echo "Option not found"
+    exit 1
+}
+
+if [ ! -z ${NO_COLOR+x} ]
+then
+    $__dir/scheduler.py
+else
+    $__dir/scheduler.py | less
+fi
+
