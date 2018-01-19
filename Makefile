@@ -1,3 +1,3 @@
 .PHONY: test
 test:
-	testAll.sh
+	./testsBootstrap.sh
