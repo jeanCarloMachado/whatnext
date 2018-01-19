@@ -62,7 +62,7 @@ IFS='
             #remove the previously added entry to readd with the goal info
             sed -i '$ d' $WHATNEXT_HISTORY
             goalStr="$goalName $minutes"
-            echo "$( date "+%Y-%m-%d %H:%M:%S")|$subject|$doneDescription|$goalStr" >> "$WHATNEXT_HISTORY"
+            echo $( date "+%Y-%m-%d %H:%M:%S")|"$subject"|"$doneDescription"|"$goalStr" >> "$WHATNEXT_HISTORY"
             exit
         }
 

@@ -26,12 +26,7 @@ subjectExists() {
         return 1
     }
 
-    listSubjectsNames | grep "$subject"&>/dev/null || { 
-        return 1
-    }
-
-
-    return 0
+    listSubjectsNames | egrep "^$subject$" 1>/dev/null
 }
 
 

@@ -2,4 +2,4 @@
 
 cd /usr/lib/whatnext
 
-eval ./whatnext $@
+./whatnext "$@"

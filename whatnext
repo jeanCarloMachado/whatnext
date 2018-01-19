@@ -27,30 +27,36 @@ get_help() {
 }
 
 [[ "$1"  == "-d" ]] || [[ "$1"  == "done" ]]  && {
-    $__dir/done.sh "${@:2}"
+    shift
+    $__dir/done.sh "$@"
     exit
 }
 
 [[ "$1"  == "level" ]]  && {
-    $__dir/level.sh "${@:2}"
+    shift
+    $__dir/level.sh "$@"
     exit
 }
 [[ "$1"  =~ "detail" ]]  && {
-    $__dir/detail.py "${@:2}" | less
+    shift
+    $__dir/detail.py "$@" | less
     exit
 }
 
 [[ "$*"  =~ "total" ]] && {
-    $__dir/timePerSubject.py human "${@:2}" | less
+    shift
+    $__dir/timePerSubject.py human "$@" | less
     exit
 }
 [[ "$*"  =~ goal$ ]] && {
-    $__dir/goals.sh "${@:2}"
+    shift
+    $__dir/goals.sh "$@"
     exit
 }
 
 [[ "$*"  == "status" ]] || [[ "$*"  == "s" ]] && {
-    $__dir/status.sh "${@:2}"
+    shift
+    $__dir/status.sh "$@"
 
     echo ""
     echo -e "$sectionColor""Goals$resetColor"
@@ -68,12 +74,13 @@ get_help() {
 }
 
 [[ "$*"  == "init" ]] && {
-    $__dir/init.sh "${@:2}"
+    shift
+    $__dir/init.sh "$@"
     exit
 }
 
 [[ "$*"  =~ "log" ]] && {
-    $__dir/log.sh "${@:2}" | less
+    $__dir/log.sh "$@" | less
     exit
 }
 
@@ -93,7 +100,8 @@ get_help() {
 }
 
 [[ "$*"  =~ "edit-subject-description" ]] || [[ "$*"  =~ "esd" ]] && {
-    $__dir/editSubjectDescription.sh "${@:2}"
+    shift
+    $__dir/editSubjectDescription.sh "$@"
     exit
 }
 
