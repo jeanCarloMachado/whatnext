@@ -1,19 +1,15 @@
 #!/usr/bin/env python3
 
 import operator
-import subprocess
 import datetime
 import sys
 import math
 from datetime import datetime, timedelta
 import os
 from timeToStr import minutes_to_str
+from gateway import gateway
 
 humanMode=False
-
-def gateway(params):
-    prefix = [ os.path.dirname(os.path.realpath(__file__)) + '/gateway.sh']
-    return subprocess.run(prefix + params, stdout=subprocess.PIPE).stdout.decode('UTF-8')
 
 def time_of_subjects(dateStart=None, dateEnd=None):
     if dateStart is None:
