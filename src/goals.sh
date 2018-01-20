@@ -14,7 +14,7 @@ IFS='
 data=""
 for i in $goals
 do
-    data="$(echo -e "$WN_COLOR_TITLE$i:$WN_COLOR_RESET "$($__dir/goalStatus.sh $i ))
+    data="$(echo -e "$WN_COLOR_TITLE$i:$WN_COLOR_RESET "$($__dir/goal.py $i ))
 $data"
 done
 
