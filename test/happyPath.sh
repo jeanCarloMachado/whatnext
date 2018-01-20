@@ -12,7 +12,6 @@ export WHATNEXT_CONF="/tmp/wncfg"
 export WHATNEXT_HISTORY="/tmp/wnhistory"
 export NO_COLOR=1
 
-
 rm -rf $WHATNEXT_CONF || true
 rm -rf $WHATNEXT_HISTORY || true
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from functools import reduce
 import operator
 import subprocess
 import datetime
@@ -72,7 +73,12 @@ def configure_subjects():
     return subjects_configs
 
 def sort_subjects(configured_subjects):
-    return  sorted(configured_subjects.items(), key=lambda x: x[1]['weight'], reverse=True)
+
+    subjects_list = []
+    for key, value in configured_subjects.items():
+        subjects_list.append(value)
+
+    return sorted(subjects_list, key=lambda x: x['weight'], reverse=True)
 
 
 # -- printing ---
@@ -115,7 +121,8 @@ if __name__ == '__main__':
         sorted_subjects = sort_subjects(subjects_configs)
         counter = 1
         first = True
-        for subject,weight in sorted_subjects:
+        for data in sorted_subjects:
+            subject = data['name']
             days_since_last_study_str = get_days_since_last_study_str(subjects_configs[subject])
             time_invested = green + minutes_to_str(subjects_configs[subject]['time_already_invested']) +  reset
 
