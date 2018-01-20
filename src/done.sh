@@ -27,14 +27,14 @@ $__dir/gateway.sh subjectExists "$subject"
     exit 1
 }
 
-[ -z "$doneDescription" ] && {
+[ -z "$doneDescription" ] && [ -z ${NO_ITERACTIVE+x} ] && {
     file=$(echo /tmp/whatnext_$(date "+%Y-%m-%d_%H-%I-%S"))
     echo "# describe what you've done" >> $file
     $EDITOR "$file"
     doneDescription=$(cat "$file" | sed "/^\#.*/d"  | tr "\n" "_")
 }
 
-[ -z "$nextStep" ] && {
+[ -z "$nextStep" ] && [ -z ${NO_ITERACTIVE+x} ] && {
     file=$(echo /tmp/whatnext_$(date "+%Y-%m-%d_%H-%I-%S"))
     echo "# describe the next steps of this subject" >> $file
     $EDITOR "$file"

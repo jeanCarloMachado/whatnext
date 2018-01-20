@@ -30,6 +30,9 @@ now = datetime.now()
 date_end_datetime = datetime.strptime(date_end, "%Y-%m-%d")
 
 remaining_days = diff_dates(now, date_end_datetime)
-percentage_done = 100 * done_in_period / minutes
+percentage_done = 100 * done_in_period / minutes 
+
+if percentage_done > 100:
+    percentage_done = 100
 
 print(str(int(percentage_done)) + "% done " + str(time_missing) + " min remaining in " + str (remaining_days) + " days")

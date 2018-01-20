@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
- # set -o xtrace
+# set -o xtrace
 __dir="$(cd "$(dirname "${bash_source[0]}")" && pwd)"
 
 test_description="basic testing"

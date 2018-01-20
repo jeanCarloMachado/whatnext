@@ -41,7 +41,7 @@ test_expect_success "list goal" "
   $WHATNEXT_BIN goal | grep -i \"0%\"
 "
 test_expect_success "mark as done" "
-  $WHATNEXT_BIN 'done' math 'first session' &&
+  NO_ITERACTIVE=1 $WHATNEXT_BIN 'done' math 'first session' &&
   $WHATNEXT_BIN goal | grep -i \"100%\"
 "
 
