@@ -11,7 +11,6 @@ from timePerSubject import time_of_subjects
 from timeToStr import minutes_to_str
 from gateway import gateway
 
-
 def factory_subjects():
     subjects = gateway(['listSubjects'])
     time_already_invested = time_of_subjects()
@@ -96,7 +95,6 @@ if __name__ == '__main__':
         red=''
         reset=''
         title=''
-
 
     def get_days_since_last_study_str(subject):
         days_since_last_study_str = subject['days_since_last_study']

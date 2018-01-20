@@ -20,7 +20,7 @@ subject="$1"
 doneDescription="$2"
 nextStep="$3"
 
-$__dir/gateway.sh subjectExists "$subject"
+"$__dir"/gateway.sh subjectExists "$subject"
 
 [ $? -eq 1 ] && [[ -z ${FORCE+x} ]]  && {
     echo 'subject not found'
@@ -40,14 +40,14 @@ $__dir/gateway.sh subjectExists "$subject"
     $EDITOR "$file"
     nextStep=$(cat "$file" | sed "/^\#.*/d" | tr "\n" "_") 
 
-    $__dir/gateway.sh addWhatToDoNextToSubjet "$subject" "$nextStep"
+    "$__dir"/gateway.sh addWhatToDoNextToSubjet "$subject" "$nextStep"
 }
 
-goalsNamesBefore=$(NO_COLOR=1 $__dir/goals.sh | grep -v "100%" | cut -d ':' -f1)
+goalsNamesBefore=$(NO_COLOR=1 "$__dir"/goals.sh | grep -v "100%" | cut -d ':' -f1)
 
 echo "$( date "+%Y-%m-%d %H:%M:%S")|$subject|$doneDescription|$goalStr" >> $WHATNEXT_HISTORY
 
-goalsToBeDoneAfter=$(NO_COLOR=1 $__dir/goals.sh | grep -v "100%")
+goalsToBeDoneAfter=$(NO_COLOR=1 "$__dir"/goals.sh | grep -v "100%")
 [ $(echo "$goalsNamesBefore" | wc -l) -ne $( echo "$goalsToBeDoneAfter" | wc -l ) ] && {
     goals=$(cat $WHATNEXT_GOALS)
 
