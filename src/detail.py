@@ -5,12 +5,15 @@ import subprocess
 import sys
 from timePerSubject import time_of_subjects
 from timeToStr import minutes_to_str
+from gateway import gateway, gatewaySuccess
 
-if len(sys.argv) < 2:
-    print ("you must pass a subject")
-    sys.exit()
 
 subject = sys.argv[1]
+
+if not gatewaySuccess(['subjectExists', subject]):
+    print ("you must pass a valid subject")
+    sys.exit()
+
 
 orange = os.getenv('WN_COLOR_ORANGE').encode('utf-8').decode('unicode_escape')
 green = os.getenv('WN_COLOR_GREEN').encode('utf-8').decode('unicode_escape')
@@ -27,23 +30,20 @@ if os.environ.get('NO_COLOR') is not None:
     title=''
 
 
-def gateway(params):
-    prefix = [ os.path.dirname(os.path.realpath(__file__)) + '/gateway.sh']
-    return subprocess.run(prefix + params, stdout=subprocess.PIPE).stdout.decode('UTF-8')
-
-
 subjectRow = gateway(['listSubject', subject])
+
 columns  = subjectRow.split('|')
 lastTime=gateway(['daysSinceLastStudy', subject])
 
 lastTime = "yesterday" if lastTime == "0" else lastTime + " days ago"
 
 time_already_invested = time_of_subjects()
-time_invested=minutes_to_str(time_already_invested[subject])
+time_invested=time_already_invested[subject] if subject in time_already_invested else 0
+time_invested_str=minutes_to_str(time_invested)
 
 print(title + "Subject: " + section_color + subject + reset)
 print (title + "Last time: " + reset + lastTime + reset )
-print (title + "Time invested: " + reset + green + time_invested + reset )
+print (title + "Time invested: " + reset + green + time_invested_str + reset )
 print (title + "Importance: "  + reset + columns[1]  + reset )
 print (title + "Complexity: " + reset  + columns[2]  + reset )
 print ("")
