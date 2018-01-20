@@ -28,7 +28,6 @@ previousWeekTo=$(echo "$previousWeek" | tail -n1)
 
 donePreviousWeek=$($__dir/gateway.sh donePeriod "$previousWeekFrom" "$previousWeekTo" | wc -l)
 
-
 daysInARow=$($__dir/gateway.sh currentStreak)
 
 resetColor=$WN_COLOR_RESET
@@ -43,7 +42,6 @@ sectionColor="\x1b[1;49;95m"
 } || {
     weekColor=$WN_COLOR_RED
 }
-
 
 [ ! -z ${NO_COLOR+x} ] && {
     resetColor=""

@@ -3,27 +3,20 @@
 # set -o xtrace
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-timeOnSubject() {
-    $__dir/timePerSubject.py --no-color | grep "$1" | cut -d ' ' -f2
-}
-
 goalName="$1"
-goals=$(cat $WHATNEXT_GOALS)
-$__dir/gateway.sh goalExists "$goalName"
-if [ $? -ne 0 ]
-then
+goals=$($__dir/gateway.sh getGoals)
+
+[[ ! $($__dir/gateway.sh goalExists "$goalName") ]] || {
     echo "No goal named $goalName"
     exit 1
-fi
+}
 
 subject=$( echo "$goals" | jq ".$goalName"'.subject' -r)
 dateStart=$( echo "$goals" | jq ".$goalName"'.from' -r)
 dateEnd=$( echo "$goals" | jq ".$goalName"'.to' -r)
 minutes=$( echo "$goals" | jq ".$goalName"'.minutes' -r)
 
-doneInPeriod=$(NO_COLOR=1 $__dir/timePerSubject.py "$dateStart" "$dateEnd" |
-    grep "$subject" | cut -d ':' -f2 | tr -d " ")
-doneInPeriod=${doneInPeriod:-0}
+doneInPeriod=$($__dir/gateway.sh doneInPeriod "$subject" "$dateStart" "$dateEnd")
 
 timeMissing=$(($minutes - $doneInPeriod))
 percentageDone=$(( 100 * $doneInPeriod / $minutes ))

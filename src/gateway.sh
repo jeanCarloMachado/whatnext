@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 listSubjectsNames() {
     cat "$WHATNEXT_CONF" | cut -d '|' -f1
 }
@@ -18,6 +20,10 @@ goalExists() {
     goals=$(cat $WHATNEXT_GOALS)
     result=$(echo "$goals" | jq ".$goalName")
     test "$result" != "null"
+}
+
+getGoals() {
+    cat $WHATNEXT_GOALS
 }
 
 subjectExists() {
@@ -46,6 +52,18 @@ lastStudiedDateForSubject() {
     subject="$1"
     tac "$WHATNEXT_HISTORY" | grep "|$subject|" | head -n1 | cut -d '|' -f1 | tr -d "\n"
 }
+
+doneInPeriod() {
+    subject="$1"
+    dateStart="$2"
+    dateEnd="$3"
+
+    doneInPeriod=$(NO_COLOR=1 $__dir/timePerSubject.py "$dateStart" "$dateEnd" |
+        grep "$subject" | cut -d ':' -f2 | tr -d " ")
+    doneInPeriod=${doneInPeriod:-0}
+    echo $doneInPeriod
+}
+
 
 daysSinceLastStudy() {
     date=$(lastStudiedDateForSubject "$1")
