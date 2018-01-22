@@ -18,13 +18,17 @@ def factory_subjects():
     subjects_configs = {}
     for line in subjects.splitlines() :
         columns  = line.split('|')
+        days_str = gateway(['daysSinceLastStudy', columns[0]])
+        if days_str == "":
+            days_str="0"
+
         subjects_configs[columns[0]] = {
                 'name': columns[0],
                 'weight': 1,
                 'priority': int(columns[1]),
                 'complexity': int(columns[2]),
                 'what_to_do_next': columns[3],
-                'days_since_last_study': gateway(['daysSinceLastStudy', columns[0]]),
+                'days_since_last_study': int(days_str),
                 'time_already_invested': time_already_invested[columns[0]] if columns[0] in time_already_invested  else 0
         }
 
@@ -97,21 +101,19 @@ if __name__ == '__main__':
         title=''
 
     def get_days_since_last_study_str(subject):
-        days_since_last_study_str = subject['days_since_last_study']
-        days_since_last_study_int = int(days_since_last_study_str) if days_since_last_study_str.isdigit() else 0
+        days_since_last_study = subject['days_since_last_study']
 
-        if days_since_last_study_int < 7:
+        if days_since_last_study < 7:
             daysColor = green
-        elif days_since_last_study_int > 7 and days_since_last_study_int < 30:
+        elif days_since_last_study > 7 and days_since_last_study < 30:
             daysColor = orange
         else:
             daysColor = red
 
-        if days_since_last_study_str == '':
-            days_since_last_study_str = ''
-            daysColor = orange
-        else:
-            days_since_last_study_str =  daysColor  + days_since_last_study_str + ' days ago' 
+        daysColor = orange
+        days_since_last_study_str = ""
+        if days_since_last_study > 0:
+            days_since_last_study_str =  daysColor  + str(days_since_last_study) + ' days ago'
 
         return days_since_last_study_str
 
