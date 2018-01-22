@@ -19,6 +19,7 @@ main =
 
 type alias Subject =
     { name : String
+    , daysSinceLast : Int
     }
 
 
@@ -32,7 +33,7 @@ subjectList =
 
 init : ( List Subject, Cmd Msg )
 init =
-    ( [ Subject "now i become death" ], getList )
+    ( [ Subject "now i become death" 666 ], getList )
 
 
 
@@ -74,6 +75,7 @@ decodeSubject : Decoder Subject
 decodeSubject =
     Json.Decode.Pipeline.decode Subject
         |> Json.Decode.Pipeline.required "name" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "days_since_last_study" (Json.Decode.int)
 
 
 
@@ -85,6 +87,7 @@ subjectToHtml subject =
     li []
         [ div []
             [ text subject.name
+            , text (", " ++ (toString subject.daysSinceLast))
             ]
         ]
 
