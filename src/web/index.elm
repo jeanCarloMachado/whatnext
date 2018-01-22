@@ -10,23 +10,23 @@ main =
     Html.program { init = init, view = view, update = update, subscriptions = subscriptions }
 
 --Model
-type alias Model =
+type alias Subject =
     {
         name: String
     }
 
+
 -- Init
-init : (Model, Cmd Msg)
+init : (Subject, Cmd Msg)
 init =
-    (Model "now i become death",  getList)
+    (Subject "now i become death",  getList)
 
 
 -- UPDATE
-
 type Msg
- = Empty | NewList (Result Http.Error Model)
+ = Empty | NewList (Result Http.Error Subject)
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Subject -> (Subject, Cmd Msg)
 update msg model =
     case msg of
         NewList (Err msg) ->
@@ -46,18 +46,18 @@ getList =
     in
         Http.send NewList request
 
-decodeSubjects : Decoder Model
+decodeSubjects : Decoder Subject
 decodeSubjects =
     at [ "0" ] decodeSubject
 
 
-decodeSubject : Decoder Model
+decodeSubject : Decoder Subject
 decodeSubject =
-        Json.Decode.Pipeline.decode Model
+        Json.Decode.Pipeline.decode Subject
         |>  Json.Decode.Pipeline.required "name" (Json.Decode.string)
 
 -- VIEW
-view : Model -> Html Msg
+view : Subject -> Html Msg
 view model =
     div []
     [
@@ -68,5 +68,5 @@ view model =
     ]
 
 -- SUBSCRIPTIONS
-subscriptions : Model -> Sub Msg
+subscriptions : Subject -> Sub Msg
 subscriptions model = Sub.none

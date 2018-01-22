@@ -1,5 +1,9 @@
 #!/usr/bin/env python
+import os, sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from scheduler import configure_subjects, sort_subjects
+
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 import json
