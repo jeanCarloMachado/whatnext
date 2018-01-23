@@ -70,7 +70,7 @@ def configure_subjects():
     #tired period
     if (now.hour > 22 or now.hour < 4) or os.environ.get('TIRED') is not None:
         for subject in subjects_configs:
-            base = (1 / math.pow(subjects_configs[subject].complexity,9))
+            base = (1 / math.pow(subjects_configs[subject]['complexity'],9))
             subjects_configs[subject]['weight'] = subjects_configs[subject]['weight'] *  base 
 
     return subjects_configs
