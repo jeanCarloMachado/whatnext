@@ -1,8 +1,10 @@
 module Main exposing (..)
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
+import Css exposing (..)
+import Html
+import Html.Styled exposing (..)
+import Html.Styled.Attributes exposing (css, href, src)
+import Html.Styled.Events exposing (onClick)
 import Http exposing (..)
 import Platform exposing (..)
 import Json.Decode exposing (..)
@@ -10,7 +12,7 @@ import Json.Decode.Pipeline exposing (..)
 
 
 main =
-    Html.program { init = init, view = view, update = update, subscriptions = subscriptions }
+    Html.program { init = init, view = view >> toUnstyled, update = update, subscriptions = subscriptions }
 
 
 
@@ -23,17 +25,19 @@ type alias Subject =
     }
 
 
-subjectList =
-    (Subject "initial")
+type alias PageData =
+    { subjects : List Subject
+    , loading : Bool
+    }
 
 
 
 -- Init
 
 
-init : ( List Subject, Cmd Msg )
+init : ( PageData, Cmd Msg )
 init =
-    ( [ Subject "now i become death" 666 ], getList )
+    ( PageData [ Subject "now i become death" 666 ] True, getList )
 
 
 
@@ -42,16 +46,20 @@ init =
 
 type Msg
     = NewList (Result Http.Error (List Subject))
+    | Done
 
 
-update : Msg -> List Subject -> ( List Subject, Cmd Msg )
+update : Msg -> PageData -> ( PageData, Cmd Msg )
 update msg model =
     case msg of
         NewList (Err msg) ->
-            ( [], Cmd.none )
+            ( PageData [] False, Cmd.none )
 
         NewList (Ok subjects) ->
-            ( subjects, Cmd.none )
+            ( PageData subjects False, Cmd.none )
+
+        Done ->
+            ( { model | loading = True }, Cmd.none )
 
 
 getList : Cmd Msg
@@ -82,9 +90,8 @@ decodeSubject =
 -- VIEW
 
 
-subjectToHtml : Subject -> Html Msg
 subjectToHtml subject =
-    li []
+    li [ css [ borderStyle solid, borderWidth (px 1), marginTop (px 1) ] ]
         [ div []
             [ text subject.name
             , text (", " ++ (toString subject.daysSinceLast))
@@ -97,13 +104,29 @@ subjectsToHtml list =
         innerList =
             List.map subjectToHtml list
     in
-        ul [] innerList
+        ul [ css [ listStyle none ] ] innerList
 
 
-view : List Subject -> Html Msg
-view list =
-    div []
-        [ subjectsToHtml list
+doneMessage : PageData -> String
+doneMessage pageData =
+    case pageData.loading of
+        True ->
+            "Loading"
+
+        False ->
+            "Done"
+
+
+view : PageData -> Html.Styled.Html Msg
+view pageData =
+    div [ css [ margin (pct 3) ] ]
+        [ div []
+            [ button [ onClick Done ] [ text (doneMessage pageData) ]
+            ]
+        , div
+            []
+            [ subjectsToHtml pageData.subjects
+            ]
         ]
 
 
@@ -111,6 +134,6 @@ view list =
 -- SUBSCRIPTIONS
 
 
-subscriptions : List Subject -> Sub Msg
+subscriptions : PageData -> Sub Msg
 subscriptions model =
     Sub.none
