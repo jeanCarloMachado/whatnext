@@ -22,12 +22,23 @@ main =
 type alias Subject =
     { name : String
     , daysSinceLast : Int
+    , timeAlreadyInvested : String
+    , history : List StudyEntry
+    , current : Bool
+    }
+
+
+type alias StudyEntry =
+    { date : String
+    , description : String
+    , subjectName : String
     }
 
 
 type alias PageData =
     { subjects : List Subject
     , loading : Bool
+    , toasterMsg : String
     }
 
 
@@ -37,7 +48,7 @@ type alias PageData =
 
 init : ( PageData, Cmd Msg )
 init =
-    ( PageData [ Subject "now i become death" 666 ] True, getList )
+    ( PageData [] True "", getList )
 
 
 
@@ -46,6 +57,8 @@ init =
 
 type Msg
     = NewList (Result Http.Error (List Subject))
+    | ExpandSubject
+    | GetDetail (Result Http.Error (List StudyEntry))
     | Done
 
 
@@ -53,13 +66,67 @@ update : Msg -> PageData -> ( PageData, Cmd Msg )
 update msg model =
     case msg of
         NewList (Err msg) ->
-            ( PageData [] False, Cmd.none )
+            ( PageData [] False (toString msg), Cmd.none )
 
         NewList (Ok subjects) ->
-            ( PageData subjects False, Cmd.none )
+            ( PageData subjects False "", Cmd.none )
+
+        ExpandSubject ->
+            case List.head model.subjects of
+                Just subject ->
+                    ( model, getDetail subject )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        GetDetail (Ok subjectHistory) ->
+            case model.subjects of
+                a :: b ->
+                    let
+                        listHead =
+                            { a | history = subjectHistory }
+
+                        newHead =
+                            { listHead | current = True }
+
+                        newModel =
+                            { model
+                                | subjects = (newHead :: b)
+                            }
+                    in
+                        ( newModel, Cmd.none )
+
+                [] ->
+                    ( model, Cmd.none )
+
+        GetDetail (Err msg) ->
+            ( { model | toasterMsg = (toString msg) }, Cmd.none )
 
         Done ->
             ( { model | loading = True }, Cmd.none )
+
+
+getDetail : Subject -> Cmd Msg
+getDetail subject =
+    let
+        url =
+            "http://whatnext:5000/detail/" ++ subject.name
+
+        request =
+            Http.get url decodeSubjectHistory
+    in
+        Http.send GetDetail request
+
+
+decodeSubjectHistory =
+    at [ "history" ] (Json.Decode.list decodeStudyEntry)
+
+
+decodeStudyEntry =
+    Json.Decode.Pipeline.decode StudyEntry
+        |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)
 
 
 getList : Cmd Msg
@@ -69,13 +136,13 @@ getList =
             "http://whatnext:5000"
 
         request =
-            Http.get url decodeAll
+            Http.get url decodeSubjectList
     in
         Http.send NewList request
 
 
-decodeAll : Decoder (List Subject)
-decodeAll =
+decodeSubjectList : Decoder (List Subject)
+decodeSubjectList =
     Json.Decode.list decodeSubject
 
 
@@ -84,19 +151,46 @@ decodeSubject =
     Json.Decode.Pipeline.decode Subject
         |> Json.Decode.Pipeline.required "name" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "days_since_last_study" (Json.Decode.int)
+        |> Json.Decode.Pipeline.required "time_already_invested_str" (Json.Decode.string)
+        |> Json.Decode.Pipeline.hardcoded []
+        |> Json.Decode.Pipeline.hardcoded False
 
 
 
 -- VIEW
 
 
-subjectToHtml subject =
-    li [ css [ borderStyle solid, borderWidth (px 1), marginTop (px 1) ] ]
-        [ div []
-            [ text subject.name
-            , text (", " ++ (toString subject.daysSinceLast))
-            ]
+studyEntryToHtml studyEntry =
+    div []
+        [ text (studyEntry.date)
         ]
+
+
+selectedColor subject =
+    case subject.current of
+        True ->
+            hex "b3fce5"
+
+        _ ->
+            hex "f2f2f2"
+
+
+subjectToHtml subject =
+    let
+        detailHtml =
+            List.map studyEntryToHtml subject.history
+
+        color =
+            selectedColor subject
+    in
+        li [ onClick ExpandSubject, css [ borderStyle solid, borderWidth (px 1), padding (px 5), marginTop (px 1), backgroundColor color ] ]
+            [ div []
+                [ text
+                    (subject.name ++ ":  " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested |> toString))
+                , div []
+                    detailHtml
+                ]
+            ]
 
 
 subjectsToHtml list =
@@ -117,12 +211,22 @@ doneMessage pageData =
             "Done"
 
 
+getToasterHtml pageData =
+    case String.length pageData.toasterMsg of
+        0 ->
+            div [] []
+
+        _ ->
+            div [ css [ borderStyle dashed, borderWidth (px 1), textAlign center ] ]
+                [ text pageData.toasterMsg
+                ]
+
+
 view : PageData -> Html.Styled.Html Msg
 view pageData =
     div [ css [ margin (pct 3) ] ]
-        [ div []
-            [ button [ onClick Done ] [ text (doneMessage pageData) ]
-            ]
+        [ getToasterHtml pageData
+        , text "Subjects"
         , div
             []
             [ subjectsToHtml pageData.subjects

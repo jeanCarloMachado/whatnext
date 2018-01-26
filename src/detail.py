@@ -50,9 +50,18 @@ print ("")
 print (orange + "To do next:" + reset)
 print (columns[3])
 print ("")
-first = False
 
-cmd = os.path.dirname(os.path.realpath(__file__)) + '/log.sh'
-print( subprocess.run([cmd, '--filter', subject], stdout=subprocess.PIPE).stdout.decode('UTF-8'))
 
+if __name__ == '__main__':
+    print(title + "Subject: " + section_color + subject + reset)
+    print (title + "Last time: " + reset + lastTime + reset )
+    print (title + "Time invested: " + reset + green + time_invested_str + reset )
+    print (title + "Importance: "  + reset + columns[1]  + reset )
+    print (title + "Complexity: " + reset  + columns[2]  + reset )
+    print ("")
+    print (orange + "To do next:" + reset)
+    print (columns[3])
+    print ("")
+    cmd = os.path.dirname(os.path.realpath(__file__)) + '/log.sh'
+    print( subprocess.run([cmd, '--filter', subject], stdout=subprocess.PIPE).stdout.decode('UTF-8'))
 

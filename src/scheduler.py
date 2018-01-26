@@ -13,7 +13,7 @@ from gateway import gateway
 
 def factory_subjects():
     subjects = gateway(['listSubjects'])
-    time_already_invested = time_of_subjects()
+    intested_time_of_subjects = time_of_subjects()
     #build the initial dic
     subjects_configs = {}
     for line in subjects.splitlines() :
@@ -22,6 +22,8 @@ def factory_subjects():
         if days_str == "":
             days_str="0"
 
+        time_already_invested = intested_time_of_subjects[columns[0]] if columns[0] in intested_time_of_subjects  else 0
+
         subjects_configs[columns[0]] = {
                 'name': columns[0],
                 'weight': 1,
@@ -29,7 +31,8 @@ def factory_subjects():
                 'complexity': int(columns[2]),
                 'what_to_do_next': columns[3],
                 'days_since_last_study': int(days_str),
-                'time_already_invested': time_already_invested[columns[0]] if columns[0] in time_already_invested  else 0
+                'time_already_invested': time_already_invested,
+                'time_already_invested_str': minutes_to_str(time_already_invested)
         }
 
     return subjects_configs
@@ -124,7 +127,7 @@ if __name__ == '__main__':
         for data in sorted_subjects:
             subject = data['name']
             days_since_last_study_str = get_days_since_last_study_str(subjects_configs[subject])
-            time_invested = green + minutes_to_str(subjects_configs[subject]['time_already_invested']) +  reset
+            time_invested = green + subjects_configs[subject]['time_already_invested_str'] +  reset
 
             time_invested = " - " + time_invested  if len(time_invested) > 4 else "" 
 

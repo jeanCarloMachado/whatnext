@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IFS='
 '
 [ ! -z ${NO_COLOR+x} ] && {
@@ -21,16 +22,21 @@ IFS='
 
 
 filter=""
-if [[ "$1" =~ "--filter"  ]]
+if [[ "$*" =~ "--filter"  ]]
 then
-shift
-    filter="$1"
-    log=$(tac "$WHATNEXT_HISTORY" | grep "$filter")
+    shift
+    subject="$1"
+    log=$( "$__dir"/gateway.sh logEntriesOfSubject "$subject")
 else
-    log=$(tac "$WHATNEXT_HISTORY")
+    log=$( "$__dir"/gateway.sh logEntries)
 fi
 
+
 current_entry=$(echo "$log" | wc -l )
+
+[[ $* =~ "--json" ]] && {
+    echo "["
+}
 
 for i in $log
 do
@@ -38,6 +44,26 @@ do
     subject=$(echo $i | cut -d '|' -f2)
     description=$(echo $i | cut -d '|' -f3)
     goal=$(echo $i | cut -d '|' -f4)
+
+
+    [[ $* =~ "--json" ]] && {
+
+    if [ -z ${skipFirstComma+x} ]
+    then
+        skipFirstComma=1
+    else
+        echo ","
+    fi
+
+echo '{
+    "subject": "'$subject'",
+    "date": "'$date'",
+    "description": "'$description'",
+    "goal": "'$goal'"
+}'
+        continue
+    }
+
     echo -e $WN_COLOR_ORANGE"task $current_entry: $subject$WN_COLOR_RESET"
     echo "Date: $date"
     [ ! -z "$goal" ] && {
@@ -54,3 +80,6 @@ do
 
 done
 
+[[ $* =~ "--json" ]] && {
+    echo "]"
+}

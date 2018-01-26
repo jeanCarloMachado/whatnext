@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os, sys
+import subprocess
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from scheduler import configure_subjects, sort_subjects
@@ -20,5 +21,22 @@ def index():
 
     return content, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
+@app.route('/log')
+def log():
+    cmd = [ os.path.dirname(os.path.realpath(__file__)) + '/../log.sh', '--json']
+    content =  subprocess.run(cmd, stdout=subprocess.PIPE).stdout.decode('UTF-8')
+
+    return content, 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+@app.route('/detail/<subject>')
+def detail(subject):
+    cmd = [ os.path.dirname(os.path.realpath(__file__)) + '/../log.sh', '--filter', subject, '--json']
+    subjectHistoryStr =  subprocess.run(cmd, stdout=subprocess.PIPE).stdout.decode('UTF-8')
+    subjectHistory = json.loads(subjectHistoryStr) 
+
+    obj = {"subject": subject, "history": subjectHistory}
+    result = json.dumps(obj)
+
+    return result, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 app.run(host= '0.0.0.0')

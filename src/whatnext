@@ -80,6 +80,7 @@ get_help() {
 }
 
 [[ "$*"  =~ "log" ]] && {
+    shift
     $__dir/log.sh "$@" | less
     exit
 }

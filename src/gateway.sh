@@ -2,6 +2,16 @@
 
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+
+logEntries() {
+    tac "$WHATNEXT_HISTORY"
+}
+
+logEntriesOfSubject() {
+    subject="$1"
+    logEntries | grep "$subject"
+}
+
 listSubjectsNames() {
     cat "$WHATNEXT_CONF" | cut -d '|' -f1
 }
