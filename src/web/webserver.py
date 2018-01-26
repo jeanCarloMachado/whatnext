@@ -8,6 +8,7 @@ from scheduler import configure_subjects, sort_subjects
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 import json
+from detail import get_subject
 
 app = Flask(__name__)
 app.debug=True
@@ -28,15 +29,12 @@ def log():
 
     return content, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
-@app.route('/detail/<subject>')
-def detail(subject):
-    cmd = [ os.path.dirname(os.path.realpath(__file__)) + '/../log.sh', '--filter', subject, '--json']
-    subjectHistoryStr =  subprocess.run(cmd, stdout=subprocess.PIPE).stdout.decode('UTF-8')
-    subjectHistory = json.loads(subjectHistoryStr) 
+@app.route('/detail/<subjectName>')
+def detail(subjectName):
 
-    obj = {"subject": subject, "history": subjectHistory}
+    obj = get_subject(subjectName)
+
     result = json.dumps(obj)
-
     return result, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 app.run(host= '0.0.0.0')
