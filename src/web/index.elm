@@ -161,18 +161,21 @@ decodeSubject =
 
 
 studyEntryToHtml studyEntry =
-    div []
+    div [ css [ padding (px 5) ] ]
         [ text (studyEntry.date)
+        , span []
+            [ text (": " ++ studyEntry.description)
+            ]
         ]
 
 
 selectedColor subject =
     case subject.current of
         True ->
-            hex "b3fce5"
+            hex "add8e6"
 
         _ ->
-            hex "f2f2f2"
+            hex "ffffff"
 
 
 subjectToHtml subject =
@@ -183,12 +186,14 @@ subjectToHtml subject =
         color =
             selectedColor subject
     in
-        li [ onClick ExpandSubject, css [ borderStyle solid, borderWidth (px 1), padding (px 5), marginTop (px 1), backgroundColor color ] ]
+        li [ onClick ExpandSubject, css [ borderRadius (px 10), borderWidth (px 1), padding (px 20), marginBottom (px 1), backgroundColor color ] ]
             [ div []
                 [ text
                     (subject.name ++ ":  " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested |> toString))
                 , div []
                     detailHtml
+
+                --
                 ]
             ]
 
@@ -224,12 +229,13 @@ getToasterHtml pageData =
 
 view : PageData -> Html.Styled.Html Msg
 view pageData =
-    div [ css [ margin (pct 3) ] ]
-        [ getToasterHtml pageData
-        , text "Subjects"
-        , div
-            []
-            [ subjectsToHtml pageData.subjects
+    div [ css [ position relative, top (px 0), left (px 0), margin (px 0), height (pct 100) ] ]
+        [ div [ css [ margin (pct 3) ] ]
+            [ getToasterHtml pageData
+            , div
+                []
+                [ subjectsToHtml pageData.subjects
+                ]
             ]
         ]
 
