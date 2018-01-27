@@ -57,8 +57,8 @@ init =
 
 type Msg
     = NewList (Result Http.Error (List Subject))
-    | ExpandSubject
-    | GetDetail (Result Http.Error (List StudyEntry))
+    | ExpandSubject Subject
+    | GetDetail (Result Http.Error Subject)
     | Done
 
 
@@ -71,39 +71,33 @@ update msg model =
         NewList (Ok subjects) ->
             ( PageData subjects False "", Cmd.none )
 
-        ExpandSubject ->
-            case List.head model.subjects of
-                Just subject ->
-                    ( model, getDetail subject )
+        ExpandSubject subject ->
+            ( model, getDetail subject )
 
-                Nothing ->
-                    ( model, Cmd.none )
+        GetDetail (Ok subject) ->
+            let
+                newSubject =
+                    { subject | current = True }
 
-        GetDetail (Ok subjectHistory) ->
-            case model.subjects of
-                a :: b ->
-                    let
-                        listHead =
-                            { a | history = subjectHistory }
-
-                        newHead =
-                            { listHead | current = True }
-
-                        newModel =
-                            { model
-                                | subjects = (newHead :: b)
-                            }
-                    in
-                        ( newModel, Cmd.none )
-
-                [] ->
-                    ( model, Cmd.none )
+                newSubjects =
+                    (List.map (\x -> replaceSame newSubject x) model.subjects)
+            in
+                ( { model | subjects = newSubjects }, Cmd.none )
 
         GetDetail (Err msg) ->
             ( { model | toasterMsg = (toString msg) }, Cmd.none )
 
         Done ->
             ( { model | loading = True }, Cmd.none )
+
+
+replaceSame orig cmp =
+    case orig.name == cmp.name of
+        True ->
+            orig
+
+        False ->
+            cmp
 
 
 getDetail : Subject -> Cmd Msg
@@ -113,7 +107,7 @@ getDetail subject =
             "http://whatnext:5000/detail/" ++ subject.name
 
         request =
-            Http.get url decodeSubjectHistory
+            Http.get url decodeSubject
     in
         Http.send GetDetail request
 
@@ -152,7 +146,7 @@ decodeSubject =
         |> Json.Decode.Pipeline.required "name" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "days_since_last_study" (Json.Decode.int)
         |> Json.Decode.Pipeline.required "time_already_invested_str" (Json.Decode.string)
-        |> Json.Decode.Pipeline.hardcoded []
+        |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodeStudyEntry) []
         |> Json.Decode.Pipeline.hardcoded False
 
 
@@ -186,7 +180,7 @@ subjectToHtml subject =
         color =
             selectedColor subject
     in
-        li [ onClick ExpandSubject, css [ borderRadius (px 10), borderWidth (px 1), padding (px 20), marginBottom (px 1), backgroundColor color ] ]
+        li [ onClick (ExpandSubject subject), css [ borderRadius (px 10), borderWidth (px 1), padding (px 20), marginBottom (px 1), backgroundColor color ] ]
             [ div []
                 [ text
                     (subject.name ++ ":  " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested |> toString))
