@@ -3,8 +3,8 @@ module Main exposing (..)
 import Css exposing (..)
 import Html
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (css, href, src)
-import Html.Styled.Events exposing (onClick)
+import Html.Styled.Attributes exposing (css, href, src, placeholder, type_)
+import Html.Styled.Events exposing (..)
 import Http exposing (..)
 import Platform exposing (..)
 import Json.Decode exposing (..)
@@ -32,7 +32,12 @@ type alias Subject =
     , timeAlreadyInvested : String
     , history : List StudyEntry
     , open : Bool
+    , doneForm : Bool
     }
+
+
+emptySubject =
+    Subject "" 0 "" [] False False
 
 
 type alias StudyEntry =
@@ -59,7 +64,7 @@ type Msg
     = NewList (Result Http.Error (List Subject))
     | ExpandSubject Subject
     | GetDetail (Result Http.Error Subject)
-    | Done
+    | Done Subject
 
 
 update : Msg -> PageData -> ( PageData, Cmd Msg )
@@ -72,34 +77,57 @@ update msg model =
             ( PageData subjects False "", Cmd.none )
 
         ExpandSubject subject ->
-            case subject.open of
-                False ->
-                    ( model, getDetail subject )
+            case subject.history of
+                [] ->
+                    ( model, getDetail { subject | open = True } )
 
-                True ->
-                    ( { model | subjects = (List.map (\x -> replaceSame { subject | open = False } x) model.subjects) }, Cmd.none )
+                _ ->
+                    ( { model | subjects = (List.map (\x -> replaceSame { subject | open = not subject.open } x) model.subjects) }, Cmd.none )
 
         GetDetail (Ok subject) ->
             let
+                currentSubject =
+                    subjectByName subject.name model.subjects
+
+                newSubject =
+                    { subject | open = currentSubject.doneForm, doneForm = currentSubject.doneForm }
+
                 newSubjects =
-                    (List.map (\x -> replaceSame { subject | open = True } x) model.subjects)
+                    (List.map (\x -> replaceSame newSubject x) model.subjects)
             in
                 ( { model | subjects = newSubjects }, Cmd.none )
 
         GetDetail (Err msg) ->
             ( { model | toasterMsg = (toString msg) }, Cmd.none )
 
-        Done ->
-            ( { model | loading = True }, Cmd.none )
+        Done subject ->
+            let
+                newSubject =
+                    { subject | doneForm = not subject.doneForm, open = not subject.open }
+            in
+                ( { model | subjects = replaceSubjectFromList model.subjects newSubject }, Cmd.none )
 
 
-replaceSame orig cmp =
-    case orig.name == cmp.name of
+replaceSubjectFromList list subject =
+    (List.map (\x -> replaceSame subject x) list)
+
+
+subjectByName subjectName subjectList =
+    case List.filter (\x -> x.name == subjectName) subjectList of
+        a :: _ ->
+            a
+
+        _ ->
+            emptySubject
+
+
+replaceSame new orig =
+    case orig.name == new.name of
         True ->
-            orig
+            new
 
         False ->
-            cmp
+            orig
 
 
 getDetail : Subject -> Cmd Msg
@@ -138,6 +166,7 @@ decodeSubject =
         |> Json.Decode.Pipeline.required "days_since_last_study" (Json.Decode.int)
         |> Json.Decode.Pipeline.required "time_already_invested_str" (Json.Decode.string)
         |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodeStudyEntry) []
+        |> Json.Decode.Pipeline.hardcoded False
         |> Json.Decode.Pipeline.hardcoded False
 
 
@@ -181,17 +210,33 @@ subjectToHtml subject =
     let
         historyHtml =
             subjectHistory subject
+
+        doneHtml =
+            doneHtmlForSubject subject
     in
         li [ onClick (ExpandSubject subject), subjectCss subject ]
             [ div []
                 [ text
                     (subject.name ++ ":  " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested |> toString))
+                , button [ onWithOptions "click" { stopPropagation = True, preventDefault = True } (succeed (Done subject)), css [ Css.float right ] ] [ text "Done" ]
+                , doneHtml
                 , div []
-                    historyHtml
-
-                --
+                    (historyHtml)
                 ]
             ]
+
+
+doneHtmlForSubject subject =
+    case subject.doneForm of
+        True ->
+            div []
+                [ input [ type_ "text", placeholder "Done" ] []
+                , input [ type_ "text", placeholder "Next Action" ] []
+                ]
+
+        False ->
+            div []
+                []
 
 
 subjectHistory subject =
@@ -205,7 +250,7 @@ subjectHistory subject =
 
 subjectCss subject =
     css
-        [ borderRadius (px 10), borderWidth (px 1), padding (px 20), marginBottom (px 1), selectedColor subject |> backgroundColor ]
+        [ borderRadius (px 10), display block, borderWidth (px 1), padding (px 20), marginBottom (px 1), selectedColor subject |> backgroundColor ]
 
 
 selectedColor subject =
