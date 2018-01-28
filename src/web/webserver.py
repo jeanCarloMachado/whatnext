@@ -9,12 +9,17 @@ from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 import json
 from detail import get_subject
+from nocache import nocache
+
 
 app = Flask(__name__)
 app.debug=True
 CORS(app)
 
+
+
 @app.route('/scheduler')
+@nocache
 def index():
     tiredMode = request.args.get('tiredMode', default = False, type = bool)
 
@@ -59,5 +64,6 @@ def detail(subjectName):
     return result, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 app.run(host= '0.0.0.0')
+
 
 
