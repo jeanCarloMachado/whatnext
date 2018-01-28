@@ -23,7 +23,7 @@ main =
 
 init : ( PageData, Cmd Msg )
 init =
-    ( PageData [] True "", getList )
+    ( PageData [] True "" False, getList False )
 
 
 
@@ -36,6 +36,7 @@ type Msg
     | GetDetail (Result Http.Error Subject)
     | DoneResult (Result Http.Error String)
     | SubmitDone Subject
+    | ToggleTiredMode
     | StartDone Subject
     | CancelDone Subject
     | None
@@ -47,10 +48,10 @@ update : Msg -> PageData -> ( PageData, Cmd Msg )
 update msg model =
     case msg of
         NewList (Err msg) ->
-            ( PageData [] False (toString msg), Cmd.none )
+            ( { model | toasterMsg = (toString msg) }, Cmd.none )
 
         NewList (Ok subjects) ->
-            ( PageData subjects False "", Cmd.none )
+            ( { model | subjects = subjects }, Cmd.none )
 
         ExpandSubject subject ->
             case subject.history of
@@ -109,10 +110,17 @@ update msg model =
             ( model, doneRequest subject )
 
         DoneResult (Ok _) ->
-            ( model, getList )
+            ( model, getList model.tiredMode )
 
         DoneResult (Err msg) ->
             ( { model | toasterMsg = (toString msg) }, Cmd.none )
+
+        ToggleTiredMode ->
+            let
+                newModel =
+                    { model | tiredMode = not model.tiredMode }
+            in
+                ( newModel, getList newModel.tiredMode )
 
         None ->
             ( model, Cmd.none )
@@ -148,16 +156,26 @@ getDetail subject =
         Http.send GetDetail request
 
 
-getList : Cmd Msg
-getList =
+getList : Bool -> Cmd Msg
+getList tiredMode =
     let
         url =
-            "http://whatnext:5000"
+            "http://whatnext:5000/scheduler" ++ (tiredMode |> toUrlBool)
 
         request =
             Http.get url decodeSubjectList
     in
         Http.send NewList request
+
+
+toUrlBool : Bool -> String
+toUrlBool bool =
+    case bool of
+        True ->
+            "?tiredMode=True"
+
+        False ->
+            ""
 
 
 
@@ -168,7 +186,11 @@ view : PageData -> Html.Styled.Html Msg
 view pageData =
     div [ css [ position relative, top (px 0), left (px 0), margin (px 0), height (pct 100) ] ]
         [ div [ css [ margin (pct 3) ] ]
-            [ getToasterHtml pageData
+            [ div []
+                [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
+                , text "Tired mode"
+                ]
+            , getToasterHtml pageData
             , div
                 []
                 [ subjectsToHtml pageData.subjects
@@ -275,7 +297,7 @@ subjectCss subject =
 selectedColor subject =
     case subject.open of
         True ->
-            hex "add8e6"
+            hex "f9ff98"
 
         _ ->
             hex "ffffff"

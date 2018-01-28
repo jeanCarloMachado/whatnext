@@ -5,6 +5,7 @@ type alias PageData =
     { subjects : List Subject
     , loading : Bool
     , toasterMsg : String
+    , tiredMode : Bool
     }
 
 

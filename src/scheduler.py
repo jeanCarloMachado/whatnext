@@ -45,7 +45,7 @@ def configure_importance(subjects_configs):
 
     return subjects_configs
 
-def configure_subjects():
+def configure_subjects(tiredMode=False):
     subjects_configs = factory_subjects()
     subjects_configs = configure_importance(subjects_configs)
 
@@ -71,7 +71,7 @@ def configure_subjects():
 
     now = datetime.datetime.now()
     #tired period
-    if (now.hour > 22 or now.hour < 4) or os.environ.get('TIRED') is not None:
+    if (now.hour > 22 or now.hour < 4) or tiredMode:
         for subject in subjects_configs:
             base = (1 / math.pow(subjects_configs[subject]['complexity'],9))
             subjects_configs[subject]['weight'] = subjects_configs[subject]['weight'] *  base 
@@ -134,4 +134,7 @@ if __name__ == '__main__':
             print ( title + str(counter) + '. ' + subject + reset + ': ' + days_since_last_study_str + reset + time_invested + reset + ' ' + subjects_configs[subject]['what_to_do_next'] + reset)
             counter += 1
 
-    print_result(configure_subjects())
+    if os.environ.get('TIRED') is not None:
+        print_result(configure_subjects())
+    else:
+        print_result(configure_subjects())

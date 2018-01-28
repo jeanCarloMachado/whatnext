@@ -14,9 +14,14 @@ app = Flask(__name__)
 app.debug=True
 CORS(app)
 
-@app.route('/')
+@app.route('/scheduler')
 def index():
-    subjects = configure_subjects()
+    tiredMode = request.args.get('tiredMode', default = False, type = bool)
+
+    if tiredMode:
+        subjects = configure_subjects(True)
+    else:
+        subjects = configure_subjects()
     sorted_subjects = sort_subjects(subjects)
     content = json.dumps(sorted_subjects)
 
