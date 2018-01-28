@@ -8,6 +8,12 @@ type alias PageData =
     }
 
 
+type alias DoneData =
+    { description : String
+    , whatToDoNext : String
+    }
+
+
 type alias Subject =
     { name : String
     , daysSinceLast : Int
@@ -15,11 +21,12 @@ type alias Subject =
     , history : List StudyEntry
     , open : Bool
     , doneForm : Bool
+    , doneData : DoneData
     }
 
 
 emptySubject =
-    Subject "" 0 "" [] False False
+    Subject "" 0 "" [] False False (DoneData "" "")
 
 
 type alias StudyEntry =

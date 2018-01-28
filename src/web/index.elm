@@ -10,6 +10,7 @@ import Platform exposing (..)
 import Entities exposing (..)
 import Decoders exposing (..)
 import Json.Decode
+import Json.Encode
 
 
 main =
@@ -33,9 +34,13 @@ type Msg
     = NewList (Result Http.Error (List Subject))
     | ExpandSubject Subject
     | GetDetail (Result Http.Error Subject)
+    | DoneResult (Result Http.Error String)
+    | SubmitDone Subject
     | StartDone Subject
     | CancelDone Subject
     | None
+    | DoneChangeDescription Subject String
+    | DoneChangeWhatToDoNext Subject String
 
 
 update : Msg -> PageData -> ( PageData, Cmd Msg )
@@ -74,8 +79,61 @@ update msg model =
         CancelDone subject ->
             ( (Entities.replaceSubjectFromList model { subject | doneForm = False }), Cmd.none )
 
+        DoneChangeDescription subject description ->
+            let
+                doneData =
+                    subject.doneData
+
+                newDoneData =
+                    { doneData | description = description }
+
+                newSubject =
+                    { subject | doneData = newDoneData }
+            in
+                ( (Entities.replaceSubjectFromList model newSubject), Cmd.none )
+
+        DoneChangeWhatToDoNext subject next ->
+            let
+                doneData =
+                    subject.doneData
+
+                newDoneData =
+                    { doneData | whatToDoNext = next }
+
+                newSubject =
+                    { subject | doneData = newDoneData }
+            in
+                ( Entities.replaceSubjectFromList model newSubject, Cmd.none )
+
+        SubmitDone subject ->
+            ( model, doneRequest subject )
+
+        DoneResult (Ok _) ->
+            ( model, getList )
+
+        DoneResult (Err msg) ->
+            ( { model | toasterMsg = (toString msg) }, Cmd.none )
+
         None ->
             ( model, Cmd.none )
+
+
+doneRequest : Subject -> Cmd Msg
+doneRequest subject =
+    let
+        url =
+            "http://whatnext:5000/done/" ++ subject.name
+
+        body =
+            Json.Encode.object
+                [ ( "description", Json.Encode.string subject.doneData.description )
+                , ( "whatToDoNext", Json.Encode.string subject.doneData.whatToDoNext )
+                ]
+
+        request =
+            Http.post url (Http.jsonBody body) decodeEmptyResult
+    in
+        Http.send DoneResult request
 
 
 getDetail : Subject -> Cmd Msg
@@ -161,7 +219,7 @@ doneControlButtons subject =
                 [ button [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed (CancelDone subject)) ]
                     [ text "Cancel" ]
                 , button
-                    [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed (StartDone subject)) ]
+                    [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed (SubmitDone subject)) ]
                     [ text "Confirm" ]
                 ]
 
@@ -175,8 +233,8 @@ doneFormForSubject subject =
     case subject.doneForm of
         True ->
             div [ css [ paddingTop (px 10) ] ]
-                [ input [ type_ "text", placeholder "Done" ] []
-                , input [ type_ "text", placeholder "Next Action" ] []
+                [ input [ type_ "text", placeholder "Done", onInput (DoneChangeDescription subject) ] []
+                , input [ type_ "text", placeholder "Next Action", onInput (DoneChangeWhatToDoNext subject) ] []
                 ]
 
         False ->

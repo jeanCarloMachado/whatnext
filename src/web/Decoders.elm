@@ -19,6 +19,7 @@ decodeSubject =
         |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodeStudyEntry) []
         |> Json.Decode.Pipeline.hardcoded False
         |> Json.Decode.Pipeline.hardcoded False
+        |> Json.Decode.Pipeline.hardcoded (DoneData "" "")
 
 
 decodeSubjectHistory =
@@ -30,3 +31,7 @@ decodeStudyEntry =
         |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)
+
+
+decodeEmptyResult =
+    Json.Decode.succeed ""

@@ -30,7 +30,7 @@ def log():
     return content, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 @app.route('/done/<subjectName>', methods = ['POST'])
-def detail(subjectName):
+def done(subjectName):
 
     data=request.json
     cmd = [
@@ -44,6 +44,15 @@ def detail(subjectName):
     my_env["NO_ITERACTIVE"] = "1"
     subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
 
-    return "{}", 200, {'Content-Type': 'application/json; charset=utf-8'}
+    return '{"message": "success"}', 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+
+@app.route('/detail/<subjectName>')
+def detail(subjectName):
+    obj = get_subject(subjectName)
+    result = json.dumps(obj)
+    return result, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 app.run(host= '0.0.0.0')
+
+
