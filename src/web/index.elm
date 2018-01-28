@@ -7,44 +7,13 @@ import Html.Styled.Attributes exposing (css, href, src, placeholder, type_)
 import Html.Styled.Events exposing (..)
 import Http exposing (..)
 import Platform exposing (..)
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
+import Entities exposing (..)
+import Decoders exposing (..)
+import Json.Decode
 
 
 main =
     Html.program { init = init, view = view >> toUnstyled, update = update, subscriptions = subscriptions }
-
-
-
---Model
-
-
-type alias PageData =
-    { subjects : List Subject
-    , loading : Bool
-    , toasterMsg : String
-    }
-
-
-type alias Subject =
-    { name : String
-    , daysSinceLast : Int
-    , timeAlreadyInvested : String
-    , history : List StudyEntry
-    , open : Bool
-    , doneForm : Bool
-    }
-
-
-emptySubject =
-    Subject "" 0 "" [] False False
-
-
-type alias StudyEntry =
-    { date : String
-    , description : String
-    , subjectName : String
-    }
 
 
 
@@ -64,7 +33,9 @@ type Msg
     = NewList (Result Http.Error (List Subject))
     | ExpandSubject Subject
     | GetDetail (Result Http.Error Subject)
-    | Done Subject
+    | StartDone Subject
+    | CancelDone Subject
+    | None
 
 
 update : Msg -> PageData -> ( PageData, Cmd Msg )
@@ -82,52 +53,29 @@ update msg model =
                     ( model, getDetail { subject | open = True } )
 
                 _ ->
-                    ( { model | subjects = (List.map (\x -> replaceSame { subject | open = not subject.open } x) model.subjects) }, Cmd.none )
+                    ( (Entities.replaceSubjectFromList model { subject | open = not subject.open }), Cmd.none )
 
         GetDetail (Ok subject) ->
             let
                 currentSubject =
-                    subjectByName subject.name model.subjects
+                    Entities.subjectByName subject.name model.subjects
 
                 newSubject =
                     { subject | open = currentSubject.doneForm, doneForm = currentSubject.doneForm }
-
-                newSubjects =
-                    (List.map (\x -> replaceSame newSubject x) model.subjects)
             in
-                ( { model | subjects = newSubjects }, Cmd.none )
+                ( (Entities.replaceSubjectFromList model newSubject), Cmd.none )
 
         GetDetail (Err msg) ->
             ( { model | toasterMsg = (toString msg) }, Cmd.none )
 
-        Done subject ->
-            let
-                newSubject =
-                    { subject | doneForm = not subject.doneForm, open = not subject.open }
-            in
-                ( { model | subjects = replaceSubjectFromList model.subjects newSubject }, Cmd.none )
+        StartDone subject ->
+            ( (Entities.replaceSubjectFromList model { subject | doneForm = True, open = True }), Cmd.none )
 
+        CancelDone subject ->
+            ( (Entities.replaceSubjectFromList model { subject | doneForm = False }), Cmd.none )
 
-replaceSubjectFromList list subject =
-    (List.map (\x -> replaceSame subject x) list)
-
-
-subjectByName subjectName subjectList =
-    case List.filter (\x -> x.name == subjectName) subjectList of
-        a :: _ ->
-            a
-
-        _ ->
-            emptySubject
-
-
-replaceSame new orig =
-    case orig.name == new.name of
-        True ->
-            new
-
-        False ->
-            orig
+        None ->
+            ( model, Cmd.none )
 
 
 getDetail : Subject -> Cmd Msg
@@ -152,33 +100,6 @@ getList =
             Http.get url decodeSubjectList
     in
         Http.send NewList request
-
-
-decodeSubjectList : Decoder (List Subject)
-decodeSubjectList =
-    Json.Decode.list decodeSubject
-
-
-decodeSubject : Decoder Subject
-decodeSubject =
-    Json.Decode.Pipeline.decode Subject
-        |> Json.Decode.Pipeline.required "name" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "days_since_last_study" (Json.Decode.int)
-        |> Json.Decode.Pipeline.required "time_already_invested_str" (Json.Decode.string)
-        |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodeStudyEntry) []
-        |> Json.Decode.Pipeline.hardcoded False
-        |> Json.Decode.Pipeline.hardcoded False
-
-
-decodeSubjectHistory =
-    at [ "history" ] (Json.Decode.list decodeStudyEntry)
-
-
-decodeStudyEntry =
-    Json.Decode.Pipeline.decode StudyEntry
-        |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)
 
 
 
@@ -211,25 +132,49 @@ subjectToHtml subject =
         historyHtml =
             subjectHistory subject
 
-        doneHtml =
-            doneHtmlForSubject subject
+        doneForm =
+            doneFormForSubject subject
+
+        doneControlButtonsHtml =
+            doneControlButtons subject
     in
         li [ onClick (ExpandSubject subject), subjectCss subject ]
             [ div []
                 [ text
                     (subject.name ++ ":  " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested |> toString))
-                , button [ onWithOptions "click" { stopPropagation = True, preventDefault = True } (succeed (Done subject)), css [ Css.float right ] ] [ text "Done" ]
-                , doneHtml
-                , div []
-                    (historyHtml)
+                , doneControlButtonsHtml
+                , div
+                    [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed None)
+                    ]
+                    [ doneForm
+                    , div []
+                        (historyHtml)
+                    ]
                 ]
             ]
 
 
-doneHtmlForSubject subject =
+doneControlButtons subject =
     case subject.doneForm of
         True ->
-            div []
+            div [ css [ Css.float right ] ]
+                [ button [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed (CancelDone subject)) ]
+                    [ text "Cancel" ]
+                , button
+                    [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed (StartDone subject)) ]
+                    [ text "Confirm" ]
+                ]
+
+        False ->
+            div [ css [ Css.float right ] ]
+                [ button [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed (StartDone subject)) ] [ text "Done" ]
+                ]
+
+
+doneFormForSubject subject =
+    case subject.doneForm of
+        True ->
+            div [ css [ paddingTop (px 10) ] ]
                 [ input [ type_ "text", placeholder "Done" ] []
                 , input [ type_ "text", placeholder "Next Action" ] []
                 ]

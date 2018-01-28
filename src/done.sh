@@ -40,8 +40,8 @@ nextStep="$3"
     $EDITOR "$file"
     nextStep=$(cat "$file" | sed "/^\#.*/d" | tr "\n" "_") 
 
-    "$__dir"/gateway.sh addWhatToDoNextToSubjet "$subject" "$nextStep"
 }
+"$__dir"/gateway.sh addWhatToDoNextToSubjet "$subject" "$nextStep"
 
 goalsNamesBefore=$(NO_COLOR=1 "$__dir"/goals.sh | grep -v "100%" | cut -d ':' -f1)
 

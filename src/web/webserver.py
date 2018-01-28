@@ -29,12 +29,21 @@ def log():
 
     return content, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
-@app.route('/detail/<subjectName>')
+@app.route('/done/<subjectName>', methods = ['POST'])
 def detail(subjectName):
 
-    obj = get_subject(subjectName)
+    data=request.json
+    cmd = [
+            os.path.dirname(os.path.realpath(__file__)) + '/../done.sh',
+            subjectName,
+            data['description'],
+            data['whatToDoNext']
+        ]
 
-    result = json.dumps(obj)
-    return result, 200, {'Content-Type': 'application/json; charset=utf-8'}
+    my_env = os.environ.copy()
+    my_env["NO_ITERACTIVE"] = "1"
+    subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
+
+    return "{}", 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 app.run(host= '0.0.0.0')
