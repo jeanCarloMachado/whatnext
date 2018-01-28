@@ -6,6 +6,7 @@ type alias PageData =
     , loading : Bool
     , toasterMsg : String
     , tiredMode : Bool
+    , apiEndpoint : String
     }
 
 

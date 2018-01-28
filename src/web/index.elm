@@ -13,17 +13,21 @@ import Json.Decode
 import Json.Encode
 
 
+type alias Flags =
+    { apiEndpoint : String }
+
+
 main =
-    Html.program { init = init, view = view >> toUnstyled, update = update, subscriptions = subscriptions }
+    Html.programWithFlags { init = init, view = view >> toUnstyled, update = update, subscriptions = subscriptions }
 
 
 
 -- Init
 
 
-init : ( PageData, Cmd Msg )
-init =
-    ( PageData [] True "" False, getList False )
+init : Flags -> ( PageData, Cmd Msg )
+init flags =
+    ( PageData [] True "" False flags.apiEndpoint, getList flags.apiEndpoint False )
 
 
 
@@ -56,7 +60,7 @@ update msg model =
         ExpandSubject subject ->
             case subject.history of
                 [] ->
-                    ( model, getDetail { subject | open = True } )
+                    ( model, getDetail model.apiEndpoint { subject | open = True } )
 
                 _ ->
                     ( (Entities.replaceSubjectFromList model { subject | open = not subject.open }), Cmd.none )
@@ -107,10 +111,10 @@ update msg model =
                 ( Entities.replaceSubjectFromList model newSubject, Cmd.none )
 
         SubmitDone subject ->
-            ( model, doneRequest subject )
+            ( model, doneRequest model.apiEndpoint subject )
 
         DoneResult (Ok _) ->
-            ( model, getList model.tiredMode )
+            ( model, getList model.apiEndpoint model.tiredMode )
 
         DoneResult (Err msg) ->
             ( { model | toasterMsg = (toString msg) }, Cmd.none )
@@ -120,17 +124,17 @@ update msg model =
                 newModel =
                     { model | tiredMode = not model.tiredMode }
             in
-                ( newModel, getList newModel.tiredMode )
+                ( newModel, getList model.apiEndpoint newModel.tiredMode )
 
         None ->
             ( model, Cmd.none )
 
 
-doneRequest : Subject -> Cmd Msg
-doneRequest subject =
+doneRequest : String -> Subject -> Cmd Msg
+doneRequest endpoint subject =
     let
         url =
-            "http://whatnext:5000/done/" ++ subject.name
+            "http://" ++ endpoint ++ "/done/" ++ subject.name
 
         body =
             Json.Encode.object
@@ -144,11 +148,11 @@ doneRequest subject =
         Http.send DoneResult request
 
 
-getDetail : Subject -> Cmd Msg
-getDetail subject =
+getDetail : String -> Subject -> Cmd Msg
+getDetail endpoint subject =
     let
         url =
-            "http://whatnext:5000/detail/" ++ subject.name
+            "http://" ++ endpoint ++ "/detail/" ++ subject.name
 
         request =
             Http.get url decodeSubject
@@ -156,11 +160,11 @@ getDetail subject =
         Http.send GetDetail request
 
 
-getList : Bool -> Cmd Msg
-getList tiredMode =
+getList : String -> Bool -> Cmd Msg
+getList endpoint tiredMode =
     let
         url =
-            "http://whatnext:5000/scheduler" ++ (tiredMode |> toUrlBool)
+            "http://" ++ endpoint ++ "/scheduler" ++ (tiredMode |> toUrlBool)
 
         request =
             Http.get url decodeSubjectList
@@ -224,7 +228,7 @@ subjectToHtml subject =
         li [ onClick (ExpandSubject subject), subjectCss subject ]
             [ div []
                 [ text
-                    (subject.name ++ ":  " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested |> toString))
+                    (subject.name ++ ":  " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested))
                 , doneControlButtonsHtml
                 , div
                     [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed None)

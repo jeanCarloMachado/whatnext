@@ -1,11 +1,28 @@
-all:
-	elm-make index.elm --output index.js
-	${BROWSER} index.html
+all: build browserPage
+
+build: copyAssets
+	elm-make index.elm --output dist/index.js
+
+copyAssets:
+	mkdir dist || true
+	cp *.html dist/ || true
+	cp *.css dist/ || true
+
+
 install:
 	elm-package install elm-lang/http
 
-watch:
-	${BROWSER} index.html
+browserPage:
+	cd dist/ && ${BROWSER} index.html
+
+browserProduction:
+	${BROWSER} http://jeancarlomachado.com.br:5001
+
+deploy: build browserProduction
+	./deploy.sh
+
+watch: copyAssets
+	make browserPage
 	my_watch "elm-make index.elm --output index.js" .
 
 serve:
