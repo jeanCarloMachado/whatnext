@@ -20,6 +20,7 @@ decodeSubject =
         |> Json.Decode.Pipeline.hardcoded False
         |> Json.Decode.Pipeline.hardcoded False
         |> Json.Decode.Pipeline.hardcoded (DoneData "" "")
+        |> Json.Decode.Pipeline.required "what_to_do_next" (Json.Decode.string)
 
 
 decodeSubjectHistory =

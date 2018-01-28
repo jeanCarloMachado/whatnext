@@ -22,11 +22,12 @@ type alias Subject =
     , open : Bool
     , doneForm : Bool
     , doneData : DoneData
+    , whatToDoNext : String
     }
 
 
 emptySubject =
-    Subject "" 0 "" [] False False (DoneData "" "")
+    Subject "" 0 "" [] False False (DoneData "" "") ""
 
 
 type alias StudyEntry =

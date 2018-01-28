@@ -190,6 +190,9 @@ subjectToHtml subject =
         historyHtml =
             subjectHistory subject
 
+        nextStep =
+            nextStepHtml subject
+
         doneForm =
             doneFormForSubject subject
 
@@ -206,7 +209,9 @@ subjectToHtml subject =
                     ]
                     [ doneForm
                     , div []
-                        (historyHtml)
+                        (nextStep
+                            :: (historyHtml)
+                        )
                     ]
                 ]
             ]
@@ -240,6 +245,17 @@ doneFormForSubject subject =
         False ->
             div []
                 []
+
+
+nextStepHtml subject =
+    case subject.open of
+        True ->
+            div []
+                [ text <| "What to do next: " ++ subject.whatToDoNext
+                ]
+
+        False ->
+            div [] []
 
 
 subjectHistory subject =
