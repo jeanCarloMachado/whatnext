@@ -8,7 +8,6 @@ copyAssets:
 	cp *.html dist/ || true
 	cp *.css dist/ || true
 
-
 install:
 	elm-package install elm-lang/http
 
@@ -23,7 +22,7 @@ deploy: build browserProduction
 
 watch: copyAssets
 	make browserPage
-	my_watch "elm-make index.elm --output index.js" .
+	my_watch "make build" .
 
 serve:
 	source ../config.sh && python webserver.py

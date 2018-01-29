@@ -227,17 +227,19 @@ subjectToHtml subject =
     in
         li [ onClick (ExpandSubject subject), subjectCss subject ]
             [ div []
-                [ text
-                    (subject.name ++ ":  " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested))
-                , doneControlButtonsHtml
+                [ div [ css [ fontSize (Css.em 1.2) ] ]
+                    [ text
+                        (subject.name ++ ":  " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested))
+                    , doneControlButtonsHtml
+                    ]
                 , div
                     [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed None)
                     ]
-                    [ doneForm
-                    , div []
-                        (nextStep
-                            :: (historyHtml)
-                        )
+                    [ div []
+                        [ doneForm
+                        , nextStep
+                        ]
+                    , historyHtml
                     ]
                 ]
             ]
@@ -260,12 +262,16 @@ doneControlButtons subject =
                 ]
 
 
+inputCss =
+    css [ display block, width (px 300), margin (px 5), padding (px 10) ]
+
+
 doneFormForSubject subject =
     case subject.doneForm of
         True ->
             div [ css [ paddingTop (px 10) ] ]
-                [ input [ type_ "text", placeholder "Done", onInput (DoneChangeDescription subject) ] []
-                , input [ type_ "text", placeholder "Next Action", onInput (DoneChangeWhatToDoNext subject) ] []
+                [ input [ inputCss, type_ "text", placeholder "What was done?", onInput (DoneChangeDescription subject) ] []
+                , input [ inputCss, type_ "text", placeholder "What is to de done next?", onInput (DoneChangeWhatToDoNext subject) ] []
                 ]
 
         False ->
@@ -276,7 +282,7 @@ doneFormForSubject subject =
 nextStepHtml subject =
     case subject.open of
         True ->
-            div []
+            div [ css [ fontSize (Css.em 1.1) ] ]
                 [ text <| "What to do next: " ++ subject.whatToDoNext
                 ]
 
@@ -287,10 +293,13 @@ nextStepHtml subject =
 subjectHistory subject =
     case subject.open of
         True ->
-            List.map studyEntryToHtml subject.history
+            div []
+                [ text "History"
+                , div [] (List.map studyEntryToHtml subject.history)
+                ]
 
         False ->
-            []
+            div [] []
 
 
 subjectCss subject =
@@ -301,7 +310,7 @@ subjectCss subject =
 selectedColor subject =
     case subject.open of
         True ->
-            hex "f9ff98"
+            rgb 90 200 250
 
         _ ->
             hex "ffffff"
