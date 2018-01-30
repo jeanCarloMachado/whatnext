@@ -1,6 +1,9 @@
-all: build browserPage
+all: serve build browserPage
 
-build: copyAssets
+clear:
+	./clear.sh
+
+build: clear copyAssets
 	elm-make index.elm --output dist/index.js
 
 copyAssets:
@@ -12,7 +15,8 @@ install:
 	elm-package install elm-lang/http
 
 browserPage:
-	cd dist/ && ${BROWSER} index.html
+	cd dist/ && python -m http.server 5001 &
+	${BROWSER} http://localhost:5001/index.html?env=development
 
 browserProduction:
 	${BROWSER} http://jeancarlomachado.com.br:5001
@@ -24,5 +28,5 @@ watch: copyAssets
 	make browserPage
 	my_watch "make build" .
 
-serve:
-	source ../config.sh && python webserver.py
+serve: clear
+	source ../config.sh && python webserver.py &
