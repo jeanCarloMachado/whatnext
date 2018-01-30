@@ -1,6 +1,8 @@
 
-body{
+body {
     background-color: #f2f2f2;
     font-family: 'Roboto Slab', serif;
-    font-size: 16
+    font-size: 16;
+    margin: 0;
+    padding 0;
 }

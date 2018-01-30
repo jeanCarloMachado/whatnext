@@ -43,9 +43,9 @@ type Msg
     | ToggleTiredMode
     | StartDone Subject
     | CancelDone Subject
-    | None
     | DoneChangeDescription Subject String
     | DoneChangeWhatToDoNext Subject String
+    | None
 
 
 update : Msg -> PageData -> ( PageData, Cmd Msg )
@@ -55,7 +55,7 @@ update msg model =
             ( { model | toasterMsg = (toString msg) }, Cmd.none )
 
         NewList (Ok subjects) ->
-            ( { model | subjects = subjects }, Cmd.none )
+            ( { model | subjects = subjects, loading = False }, Cmd.none )
 
         ExpandSubject subject ->
             case subject.history of
@@ -111,13 +111,13 @@ update msg model =
                 ( Entities.replaceSubjectFromList model newSubject, Cmd.none )
 
         SubmitDone subject ->
-            ( model, doneRequest model.apiEndpoint subject )
+            ( { model | loading = True }, doneRequest model.apiEndpoint subject )
 
         DoneResult (Ok _) ->
-            ( model, getList model.apiEndpoint model.tiredMode )
+            ( { model | loading = False }, getList model.apiEndpoint model.tiredMode )
 
         DoneResult (Err msg) ->
-            ( { model | toasterMsg = (toString msg) }, Cmd.none )
+            ( { model | toasterMsg = (toString msg), loading = False }, Cmd.none )
 
         ToggleTiredMode ->
             let
@@ -186,21 +186,41 @@ toUrlBool bool =
 -- VIEW
 
 
+emptyNode =
+    text ""
+
+
+getLoadingHtml pageData =
+    case pageData.loading of
+        True ->
+            div [ css [ justifyContent center, alignItems center, position fixed, displayFlex, top (px 0), left (px 0), width (pct 100), height (pct 100), backgroundColor <| rgba 255 255 255 0.9 ] ]
+                [ text "Loading"
+                ]
+
+        False ->
+            emptyNode
+
+
 view : PageData -> Html.Styled.Html Msg
 view pageData =
-    div [ css [ position relative, top (px 0), left (px 0), margin (px 0), height (pct 100) ] ]
-        [ div [ css [ margin (pct 3) ] ]
-            [ div []
-                [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
-                , text "Tired mode"
-                ]
-            , getToasterHtml pageData
-            , div
-                []
-                [ subjectsToHtml pageData.subjects
+    let
+        loadingHtml =
+            getLoadingHtml pageData
+    in
+        div [ css [ top (px 0), left (px 0), margin (px 0), height (pct 100) ] ]
+            [ loadingHtml
+            , div [ css [ margin (pct 3) ] ]
+                [ div []
+                    [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
+                    , text "Tired mode"
+                    ]
+                , getToasterHtml pageData
+                , div
+                    []
+                    [ subjectsToHtml pageData.subjects
+                    ]
                 ]
             ]
-        ]
 
 
 subjectsToHtml list =

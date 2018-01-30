@@ -3,8 +3,9 @@ all: serve build browserPage
 clear:
 	./clear.sh
 
-build: clear copyAssets
+build: copyAssets
 	elm-make index.elm --output dist/index.js
+	elm-make log.elm --output dist/log.html
 
 copyAssets:
 	mkdir dist || true
