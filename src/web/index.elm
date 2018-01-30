@@ -214,6 +214,9 @@ view pageData =
                     [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
                     , text "Tired mode"
                     ]
+                , a [ href "index.html?env=development&page=log" ]
+                    [ text "Log"
+                    ]
                 , getToasterHtml pageData
                 , div
                     []

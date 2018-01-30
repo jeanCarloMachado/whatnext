@@ -7,8 +7,35 @@
 </head>
 <body>
   <script src="index.js"></script>
+  <script src="log.js"></script>
   <script type="text/javascript">
-    Elm.Main.fullscreen({apiEndpoint: "localhost:5000"})
+    function getParameterByName(name, url) {
+      if (!url) url = window.location.href;
+      name = name.replace(/[\[\]]/g, "\\$&");
+      var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+      if (!results) return null;
+      if (!results[2]) return '';
+      return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+
+    env = getParameterByName("env") || "production"
+    switch(env) {
+        case "production":
+          endpoint = "jeancarlomachado.com.br:5000"
+          break
+        default:
+          endpoint = "localhost:5000"
+    }
+
+    page = getParameterByName("page") || "index"
+    switch (page) {
+      case "log":
+        Elm.Log.fullscreen({apiEndpoint: endpoint})
+        break
+      default:
+        Elm.Main.fullscreen({apiEndpoint: endpoint})
+    }
   </script>
 </body>
 </html>

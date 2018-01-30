@@ -5,7 +5,7 @@ clear:
 
 build: copyAssets
 	elm-make index.elm --output dist/index.js
-	elm-make log.elm --output dist/log.html
+	elm-make log.elm --output dist/log.js
 
 copyAssets:
 	mkdir dist || true
