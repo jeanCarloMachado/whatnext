@@ -7,15 +7,53 @@ import Html.Styled.Attributes exposing (css, href, src, placeholder, type_)
 import Html.Styled.Events exposing (..)
 import Http exposing (..)
 import Platform exposing (..)
-import Entities exposing (..)
-import Decoders exposing (..)
 import Json.Decode
 import Json.Encode
 import Loading
+import Json.Decode exposing (..)
+import Json.Decode.Pipeline exposing (..)
 
 
 type alias Flags =
     { apiEndpoint : String }
+
+
+type alias PageData =
+    { subjects : List Subject
+    , loading : Bool
+    , toasterMsg : String
+    , tiredMode : Bool
+    , apiEndpoint : String
+    }
+
+
+type alias DoneData =
+    { description : String
+    , whatToDoNext : String
+    }
+
+
+type alias Subject =
+    { name : String
+    , daysSinceLast : Int
+    , timeAlreadyInvested : String
+    , history : List StudyEntry
+    , open : Bool
+    , doneForm : Bool
+    , doneData : DoneData
+    , whatToDoNext : String
+    }
+
+
+emptySubject =
+    Subject "" 0 "" [] False False (DoneData "" "") ""
+
+
+type alias StudyEntry =
+    { date : String
+    , description : String
+    , subjectName : String
+    }
 
 
 main =
@@ -64,26 +102,26 @@ update msg model =
                     ( model, getDetail model.apiEndpoint { subject | open = True } )
 
                 _ ->
-                    ( (Entities.replaceSubjectFromList model { subject | open = not subject.open }), Cmd.none )
+                    ( (replaceSubjectFromList model { subject | open = not subject.open }), Cmd.none )
 
         GetDetail (Ok subject) ->
             let
                 currentSubject =
-                    Entities.subjectByName subject.name model.subjects
+                    subjectByName subject.name model.subjects
 
                 newSubject =
                     { subject | open = currentSubject.doneForm, doneForm = currentSubject.doneForm }
             in
-                ( (Entities.replaceSubjectFromList model newSubject), Cmd.none )
+                ( (replaceSubjectFromList model newSubject), Cmd.none )
 
         GetDetail (Err msg) ->
             ( { model | toasterMsg = (toString msg) }, Cmd.none )
 
         StartDone subject ->
-            ( (Entities.replaceSubjectFromList model { subject | doneForm = True, open = True }), Cmd.none )
+            ( (replaceSubjectFromList model { subject | doneForm = True, open = True }), Cmd.none )
 
         CancelDone subject ->
-            ( (Entities.replaceSubjectFromList model { subject | doneForm = False }), Cmd.none )
+            ( (replaceSubjectFromList model { subject | doneForm = False }), Cmd.none )
 
         DoneChangeDescription subject description ->
             let
@@ -96,7 +134,7 @@ update msg model =
                 newSubject =
                     { subject | doneData = newDoneData }
             in
-                ( (Entities.replaceSubjectFromList model newSubject), Cmd.none )
+                ( (replaceSubjectFromList model newSubject), Cmd.none )
 
         DoneChangeWhatToDoNext subject next ->
             let
@@ -109,7 +147,7 @@ update msg model =
                 newSubject =
                     { subject | doneData = newDoneData }
             in
-                ( Entities.replaceSubjectFromList model newSubject, Cmd.none )
+                ( replaceSubjectFromList model newSubject, Cmd.none )
 
         SubmitDone subject ->
             ( { model | loading = True }, doneRequest model.apiEndpoint subject )
@@ -343,6 +381,65 @@ getToasterHtml pageData =
             div [ css [ borderStyle dashed, borderWidth (px 1), textAlign center ] ]
                 [ text pageData.toasterMsg
                 ]
+
+
+replaceSubjectFromList model subject =
+    let
+        newList =
+            (List.map (\x -> replaceSame subject x) model.subjects)
+    in
+        { model | subjects = newList }
+
+
+replaceSame new orig =
+    case orig.name == new.name of
+        True ->
+            new
+
+        False ->
+            orig
+
+
+subjectByName subjectName subjectList =
+    case List.filter (\x -> x.name == subjectName) subjectList of
+        a :: _ ->
+            a
+
+        _ ->
+            emptySubject
+
+
+decodeSubjectList : Decoder (List Subject)
+decodeSubjectList =
+    Json.Decode.list decodeSubject
+
+
+decodeSubject : Decoder Subject
+decodeSubject =
+    Json.Decode.Pipeline.decode Subject
+        |> Json.Decode.Pipeline.required "name" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "days_since_last_study" (Json.Decode.int)
+        |> Json.Decode.Pipeline.required "time_already_invested_str" (Json.Decode.string)
+        |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodeStudyEntry) []
+        |> Json.Decode.Pipeline.hardcoded False
+        |> Json.Decode.Pipeline.hardcoded False
+        |> Json.Decode.Pipeline.hardcoded (DoneData "" "")
+        |> Json.Decode.Pipeline.required "what_to_do_next" (Json.Decode.string)
+
+
+decodeSubjectHistory =
+    at [ "history" ] (Json.Decode.list decodeStudyEntry)
+
+
+decodeStudyEntry =
+    Json.Decode.Pipeline.decode StudyEntry
+        |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)
+
+
+decodeEmptyResult =
+    Json.Decode.succeed ""
 
 
 
