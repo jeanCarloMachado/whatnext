@@ -6,6 +6,7 @@ import Html.Styled exposing (..)
 import Json.Decode.Pipeline
 import Json.Decode
 import Html.Styled.Attributes exposing (css, href, src, placeholder, type_)
+import Loading
 
 
 type alias Flags =
@@ -24,12 +25,12 @@ type alias StudyEntry =
 
 
 type alias PageData =
-    { history : List StudyEntry, toasterMsg : String }
+    { history : List StudyEntry, toasterMsg : String, loading : Bool }
 
 
 init : Flags -> ( PageData, Cmd Msg )
 init flags =
-    ( PageData [] "", getHistory flags.apiEndpoint )
+    ( PageData [] "" True, getHistory flags.apiEndpoint )
 
 
 type Msg
@@ -40,7 +41,7 @@ type Msg
 update msg pageData =
     case msg of
         HistoryResult (Ok historyList) ->
-            ( { pageData | history = historyList }, Cmd.none )
+            ( { pageData | history = historyList, loading = False }, Cmd.none )
 
         HistoryResult (Err msg) ->
             ( { pageData | toasterMsg = toString msg }, Cmd.none )
@@ -75,9 +76,13 @@ view pageData =
     let
         historyHtml =
             getHistoryHtml pageData
+
+        loadingHtml =
+            Loading.getHtml pageData.loading
     in
         div []
-            [ div
+            [ loadingHtml
+            , div
                 []
                 [ a [ href "index.html?env=development" ]
                     [ text "Back"

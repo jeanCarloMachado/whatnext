@@ -11,6 +11,7 @@ import Entities exposing (..)
 import Decoders exposing (..)
 import Json.Decode
 import Json.Encode
+import Loading
 
 
 type alias Flags =
@@ -186,26 +187,11 @@ toUrlBool bool =
 -- VIEW
 
 
-emptyNode =
-    text ""
-
-
-getLoadingHtml pageData =
-    case pageData.loading of
-        True ->
-            div [ css [ justifyContent center, alignItems center, position fixed, displayFlex, top (px 0), left (px 0), width (pct 100), height (pct 100), backgroundColor <| rgba 255 255 255 0.9 ] ]
-                [ text "Loading"
-                ]
-
-        False ->
-            emptyNode
-
-
 view : PageData -> Html.Styled.Html Msg
 view pageData =
     let
         loadingHtml =
-            getLoadingHtml pageData
+            Loading.getHtml pageData.loading
     in
         div [ css [ top (px 0), left (px 0), margin (px 0), height (pct 100) ] ]
             [ loadingHtml
