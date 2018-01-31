@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Index exposing (..)
 
 import Css exposing (..)
 import Html

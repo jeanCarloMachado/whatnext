@@ -4,8 +4,8 @@ clear:
 	./clear.sh
 
 build: copyAssets
-	elm-make index.elm --output dist/index.js
-	elm-make log.elm --output dist/log.js
+	elm-make Index.elm --output dist/index.js
+	elm-make Log.elm --output dist/log.js
 
 copyAssets:
 	mkdir dist || true
