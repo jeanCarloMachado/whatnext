@@ -12,6 +12,7 @@ import Json.Encode
 import Loading
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
+import StudyEntry
 
 
 type alias Flags =
@@ -37,7 +38,7 @@ type alias Subject =
     { name : String
     , daysSinceLast : Int
     , timeAlreadyInvested : String
-    , history : List StudyEntry
+    , history : List StudyEntry.Data
     , open : Bool
     , doneForm : Bool
     , doneData : DoneData
@@ -49,28 +50,13 @@ emptySubject =
     Subject "" 0 "" [] False False (DoneData "" "") ""
 
 
-type alias StudyEntry =
-    { date : String
-    , description : String
-    , subjectName : String
-    }
-
-
 main =
     Html.programWithFlags { init = init, view = view >> toUnstyled, update = update, subscriptions = subscriptions }
-
-
-
--- Init
 
 
 init : Flags -> ( PageData, Cmd Msg )
 init flags =
     ( PageData [] True "" False flags.apiEndpoint, getList flags.apiEndpoint False )
-
-
-
--- UPDATE
 
 
 type Msg
@@ -342,7 +328,7 @@ subjectHistory subject =
         True ->
             div []
                 [ text "History"
-                , div [] (List.map studyEntryToHtml subject.history)
+                , div [] (List.map StudyEntry.toHtml subject.history)
                 ]
 
         False ->
@@ -361,15 +347,6 @@ selectedColor subject =
 
         _ ->
             hex "ffffff"
-
-
-studyEntryToHtml studyEntry =
-    div [ css [ padding (px 5) ] ]
-        [ text (studyEntry.date)
-        , span []
-            [ text (": " ++ studyEntry.description)
-            ]
-        ]
 
 
 getToasterHtml pageData =
@@ -420,7 +397,7 @@ decodeSubject =
         |> Json.Decode.Pipeline.required "name" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "days_since_last_study" (Json.Decode.int)
         |> Json.Decode.Pipeline.required "time_already_invested_str" (Json.Decode.string)
-        |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodeStudyEntry) []
+        |> Json.Decode.Pipeline.optional "history" (Json.Decode.list StudyEntry.decodeStudyEntry) []
         |> Json.Decode.Pipeline.hardcoded False
         |> Json.Decode.Pipeline.hardcoded False
         |> Json.Decode.Pipeline.hardcoded (DoneData "" "")
@@ -428,14 +405,7 @@ decodeSubject =
 
 
 decodeSubjectHistory =
-    at [ "history" ] (Json.Decode.list decodeStudyEntry)
-
-
-decodeStudyEntry =
-    Json.Decode.Pipeline.decode StudyEntry
-        |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)
+    at [ "history" ] (Json.Decode.list StudyEntry.decodeStudyEntry)
 
 
 decodeEmptyResult =

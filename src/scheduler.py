@@ -87,8 +87,7 @@ def sort_subjects(configured_subjects):
     return sorted(subjects_list, key=lambda x: x['weight'], reverse=True)
 
 
-# -- printing ---
-if __name__ == '__main__':
+def print_cli(subjects):
     orange = os.getenv('WN_COLOR_ORANGE').encode('utf-8').decode('unicode_escape')
     green = os.getenv('WN_COLOR_GREEN').encode('utf-8').decode('unicode_escape')
     red = os.getenv('WN_COLOR_RED').encode('utf-8').decode('unicode_escape')
@@ -103,7 +102,10 @@ if __name__ == '__main__':
         reset=''
         title=''
 
-    def get_days_since_last_study_str(subject):
+
+    counter = 1
+    first = True
+    for subject in subjects:
         days_since_last_study = subject['days_since_last_study']
 
         if days_since_last_study < 7:
@@ -118,23 +120,24 @@ if __name__ == '__main__':
         if days_since_last_study > 0:
             days_since_last_study_str =  daysColor  + str(days_since_last_study) + ' days ago'
 
-        return days_since_last_study_str
 
-    def print_result(subjects_configs):
-        sorted_subjects = sort_subjects(subjects_configs)
-        counter = 1
-        first = True
-        for data in sorted_subjects:
-            subject = data['name']
-            days_since_last_study_str = get_days_since_last_study_str(subjects_configs[subject])
-            time_invested = green + subjects_configs[subject]['time_already_invested_str'] +  reset
+        time_invested = green + subject['time_already_invested_str'] +  reset
 
-            time_invested = " - " + time_invested  if len(time_invested) > 4 else "" 
+        time_invested = " - " + time_invested  if len(time_invested) > 4 else "" 
 
-            print ( title + str(counter) + '. ' + subject + reset + ': ' + days_since_last_study_str + reset + time_invested + reset + ' ' + subjects_configs[subject]['what_to_do_next'] + reset)
-            counter += 1
+        print ( title + str(counter) + '. ' + subject['name'] + reset + ': ' + days_since_last_study_str + reset + time_invested + reset + ' ' + subject['what_to_do_next'] + reset)
+        counter += 1
 
+
+
+
+
+# -- printing ---
+if __name__ == '__main__':
     if os.environ.get('TIRED') is not None:
-        print_result(configure_subjects())
+        subjects = configure_subjects(True)
     else:
-        print_result(configure_subjects())
+        subjects = configure_subjects(False)
+
+    sorted_subjects = sort_subjects(subjects)
+    print_cli(sorted_subjects)

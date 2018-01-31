@@ -7,6 +7,7 @@ import Json.Decode.Pipeline
 import Json.Decode
 import Html.Styled.Attributes exposing (css, href, src, placeholder, type_)
 import Loading
+import StudyEntry
 
 
 type alias Flags =
@@ -17,15 +18,8 @@ main =
     Html.programWithFlags { init = init, view = view >> toUnstyled, update = update, subscriptions = subscriptions }
 
 
-type alias StudyEntry =
-    { date : String
-    , description : String
-    , subjectName : String
-    }
-
-
 type alias PageData =
-    { history : List StudyEntry, toasterMsg : String, loading : Bool }
+    { history : List StudyEntry.Data, toasterMsg : String, loading : Bool }
 
 
 init : Flags -> ( PageData, Cmd Msg )
@@ -35,7 +29,7 @@ init flags =
 
 type Msg
     = None
-    | HistoryResult (Result Http.Error (List StudyEntry))
+    | HistoryResult (Result Http.Error (List StudyEntry.Data))
 
 
 update msg pageData =
@@ -62,14 +56,7 @@ getHistory endpoint =
 
 
 decodeHistory =
-    Json.Decode.list decodeStudyEntry
-
-
-decodeStudyEntry =
-    Json.Decode.Pipeline.decode StudyEntry
-        |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)
+    Json.Decode.list StudyEntry.decodeStudyEntry
 
 
 view pageData =
@@ -96,15 +83,7 @@ view pageData =
 
 getHistoryHtml pageData =
     ul []
-        (List.map getStudyEntryHtml pageData.history)
-
-
-getStudyEntryHtml studyEntry =
-    li []
-        [ p [] [ text <| "Subject: " ++ studyEntry.subjectName ]
-        , p [] [ text <| "Date: " ++ studyEntry.date ]
-        , p [] [ text <| "Description: " ++ studyEntry.description ]
-        ]
+        (List.map StudyEntry.toHtml pageData.history)
 
 
 subscriptions : PageData -> Sub Msg

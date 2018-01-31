@@ -19,6 +19,7 @@ test_expect_success "expect intialized file" "
   $WHATNEXT_BIN init && grep -i \"myfirst\" $WHATNEXT_CONF
 "
 
+
 test_expect_success "expect empty history after initialization" "
     test -z $($WHATNEXT_BIN log)
 "

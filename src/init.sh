@@ -12,3 +12,5 @@
    touch "$WHATNEXT_GOALS"
 }
 
+
+exit 0
