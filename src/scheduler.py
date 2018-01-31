@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from functools import reduce
+import json
 import operator
 import subprocess
 import datetime
@@ -76,7 +77,7 @@ def configure_subjects(tiredMode=False):
             base = (1 / math.pow(subjects_configs[subject]['complexity'],9))
             subjects_configs[subject]['weight'] = subjects_configs[subject]['weight'] *  base 
 
-    return subjects_configs
+    return sort_subjects(subjects_configs)
 
 def sort_subjects(configured_subjects):
 
@@ -128,10 +129,6 @@ def print_cli(subjects):
         print ( title + str(counter) + '. ' + subject['name'] + reset + ': ' + days_since_last_study_str + reset + time_invested + reset + ' ' + subject['what_to_do_next'] + reset)
         counter += 1
 
-
-
-
-
 # -- printing ---
 if __name__ == '__main__':
     if os.environ.get('TIRED') is not None:
@@ -139,5 +136,9 @@ if __name__ == '__main__':
     else:
         subjects = configure_subjects(False)
 
-    sorted_subjects = sort_subjects(subjects)
-    print_cli(sorted_subjects)
+
+    if os.environ.get('TO_JSON') is not None:
+        print(json.dumps(subjects))
+        sys.exit()
+
+    print_cli(subjects)

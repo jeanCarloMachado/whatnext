@@ -23,12 +23,20 @@ CORS(app)
 def index():
     tiredMode = request.args.get('tiredMode', default = False, type = bool)
 
+
+    my_env = os.environ.copy()
+
     if tiredMode:
-        subjects = configure_subjects(True)
-    else:
-        subjects = configure_subjects()
-    sorted_subjects = sort_subjects(subjects)
-    content = json.dumps(sorted_subjects)
+        my_env["TIRED_MODE"] = "1"
+
+
+    cmd = [
+        os.path.dirname(os.path.realpath(__file__)) + '/../scheduler.py',
+    ]
+
+    my_env["TO_JSON"] = "1"
+    content = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE).stdout.decode('UTF-8')
+
 
     return content, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
@@ -41,14 +49,13 @@ def log():
 
 @app.route('/done/<subjectName>', methods = ['POST'])
 def done(subjectName):
-
     data=request.json
     cmd = [
-            os.path.dirname(os.path.realpath(__file__)) + '/../done.sh',
-            subjectName,
-            data['description'],
-            data['whatToDoNext']
-        ]
+        os.path.dirname(os.path.realpath(__file__)) + '/../done.sh',
+        subjectName,
+        data['description'],
+        data['whatToDoNext']
+    ]
 
     my_env = os.environ.copy()
     my_env["NO_ITERACTIVE"] = "1"
