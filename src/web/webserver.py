@@ -27,7 +27,7 @@ def index():
     my_env = os.environ.copy()
 
     if tiredMode:
-        my_env["TIRED_MODE"] = "1"
+        my_env["TIRED"] = "1"
 
 
     cmd = [
