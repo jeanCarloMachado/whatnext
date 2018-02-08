@@ -1,15 +1,17 @@
 .PHONY: test
+current_dir = $(shell pwd)
+
+all: serveApi build browserPage
+
 test:
 	./testsBootstrap.sh
-
-all: serve build browserPage
 
 clear:
 	./clear.sh
 
 build: copyAssets
-	cd src/web && elm-make Index.elm --output dist/index.js
-	cd src/web && elm-make Log.elm --output dist/log.js
+	cd src/web && elm-make Index.elm --output ../../dist/index.js
+	cd src/web && elm-make Log.elm --output ../../dist/log.js
 
 copyAssets:
 	mkdir dist || true
@@ -26,12 +28,18 @@ browserPage:
 browserProduction:
 	${BROWSER} http://thewhatnext.net
 
-deploy: build browserProduction
-	./deploy.sh
+deployFrontend:
+	scp -r dist/* blog:"/home/ubuntu/whatnext/frontend/"
+
+deployApi:
+	./deployApi.sh
+
+deploy: build browserProduction deployFrontend deployApi
+
 
 watch: copyAssets
 	make browserPage
 	my_watch "make build" .
 
-serve: clear
-	source ../config.sh && python webserver.py &
+serveApi: clear
+	source ${current_dir}/src/config.sh && cd ${current_dir}/src/web && python webserver.py &

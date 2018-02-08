@@ -1,3 +1,4 @@
 test-results
 *.zip
 dist
+distApi

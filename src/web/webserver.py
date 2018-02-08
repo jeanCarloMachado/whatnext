@@ -70,7 +70,5 @@ def detail(subjectName):
     result = json.dumps(obj)
     return result, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
-app.run(host= '0.0.0.0')
-
-
+app.run(host= '0.0.0.0', port=5000)
 
