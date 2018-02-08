@@ -225,7 +225,7 @@ view pageData =
                     [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
                     , text "Tired mode"
                     ]
-                , a [ href "index.html?env=development&page=log" ]
+                , a [ css [ padding (px 10) ], href "index.html?env=development&page=log" ]
                     [ text "Log"
                     ]
                 , a [ css [ padding (px 10) ], href "index.html?page=add" ]
@@ -282,20 +282,22 @@ subjectToHtml subject =
             ]
 
 
+subjectButton textStr msg subject =
+    button [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed (msg subject)) ]
+        [ text textStr ]
+
+
 doneControlButtons subject =
     case subject.doneForm of
         True ->
             div [ css [ Css.float right ] ]
-                [ button [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed (CancelDone subject)) ]
-                    [ text "Cancel" ]
-                , button
-                    [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed (SubmitDone subject)) ]
-                    [ text "Confirm" ]
+                [ subjectButton "Cancel" CancelDone subject
+                , subjectButton "Confirm" SubmitDone subject
                 ]
 
         False ->
             div [ css [ Css.float right ] ]
-                [ button [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed (StartDone subject)) ] [ text "Done" ]
+                [ subjectButton "Done" StartDone subject
                 ]
 
 
