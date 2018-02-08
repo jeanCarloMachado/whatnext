@@ -67,7 +67,7 @@ type Msg
     | DoneResult (Result Http.Error String)
     | SubmitDone Subject
     | ToggleTiredMode
-    | StartDone Subject
+    | ClickDone Subject
     | CancelDone Subject
     | DoneChangeDescription Subject String
     | DoneChangeWhatToDoNext Subject String
@@ -104,7 +104,7 @@ update msg model =
         GetDetail (Err msg) ->
             ( { model | toasterMsg = (toString msg) }, Cmd.none )
 
-        StartDone subject ->
+        ClickDone subject ->
             ( (replaceSubjectFromList model { subject | doneForm = True, open = True }), Cmd.none )
 
         CancelDone subject ->
@@ -265,8 +265,9 @@ subjectToHtml subject =
         li [ onClick (ExpandSubject subject), subjectCss subject ]
             [ div []
                 [ div [ css [ fontSize (Css.em 1.2) ] ]
-                    [ text
-                        (subject.name ++ ":  " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested))
+                    [ span [ css [ color defaultColors.textHighlight ] ] [ text subject.name ]
+                    , text
+                        (":  " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested))
                     , doneControlButtonsHtml
                     ]
                 , div
@@ -297,7 +298,7 @@ doneControlButtons subject =
 
         False ->
             div [ css [ Css.float right ] ]
-                [ subjectButton "Done" StartDone subject
+                [ subjectButton "Done" ClickDone subject
                 ]
 
 
