@@ -1,5 +1,6 @@
 module Log exposing (..)
 
+import Css exposing (..)
 import Html
 import Http
 import Html.Styled exposing (..)
@@ -82,7 +83,7 @@ view pageData =
 
 
 getHistoryHtml pageData =
-    ul []
+    ul [ css [ listStyleType none ] ]
         (List.map StudyEntry.toHtml pageData.history)
 
 

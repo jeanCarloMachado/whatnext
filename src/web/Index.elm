@@ -13,6 +13,7 @@ import Loading
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import StudyEntry
+import Colors exposing (defaultColors)
 
 
 type alias Flags =
@@ -343,10 +344,10 @@ subjectCss subject =
 selectedColor subject =
     case subject.open of
         True ->
-            rgb 90 200 250
+            defaultColors.selectedBackground
 
         _ ->
-            hex "ffffff"
+            defaultColors.normalBackground
 
 
 getToasterHtml pageData =
