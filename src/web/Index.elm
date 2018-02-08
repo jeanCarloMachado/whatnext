@@ -228,6 +228,9 @@ view pageData =
                 , a [ href "index.html?env=development&page=log" ]
                     [ text "Log"
                     ]
+                , a [ css [ padding (px 10) ], href "index.html?page=add" ]
+                    [ text "Add"
+                    ]
                 , getToasterHtml pageData
                 , div
                     []

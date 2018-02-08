@@ -9,7 +9,7 @@ import Json.Decode
 import Html.Styled.Attributes exposing (css, href, src, placeholder, type_)
 import Loading
 import StudyEntry
-import Colors exposing (defaultColors)
+import Global exposing (defaultColors)
 
 
 type alias Flags =
@@ -73,7 +73,7 @@ view pageData =
             [ loadingHtml
             , div
                 []
-                [ a [ href "index.html?env=development" ]
+                [ a [ href "index.html" ]
                     [ text "Back"
                     ]
                 ]

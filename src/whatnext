@@ -6,18 +6,20 @@ source $__dir/config.sh
 
 get_help() {
     command="whatnext"
-    echo "A tool to help schedule studies
-
+    echo "A tool to help schedule studies 
     Usage:
 
-    $command (edit-subjects|es)                                         opens the subjects on your editor
-    $command (edit-subject-description|esd)                                 edit the subject description
-    $command (edit-history|eh)                                             opens the history on your editor
     $command (done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor
     $command total                                                          show how much did you spent in any activity
     $command log                                                            shows the log
-    $command (status|s)                                                         get current status of your studies
-    $command goal             show your goals status $command (edit-goals|eg)                                                edit your goals
+    $command (status|s)                                                     get current status of your studies
+    $command goal                                                           show your goals status
+    $command (edit-goals|eg)                                                edit your goals
+    $command (edit-subjects|es)                                             opens the subjects on your editor
+    $command (add) <subject> <importance> <complexity>                      adds a new subject
+    $command (add) <subject>                                                remove a subject
+    $command (edit-subject-description|esd)                                 edit the subject description
+    $command (edit-history|eh)                                              opens the history on your editor
     "
 }
 
@@ -37,11 +39,25 @@ get_help() {
     $__dir/level.sh "$@"
     exit
 }
+
 [[ "$1"  =~ "detail" ]]  && {
     shift
     $__dir/detail.py "$@" | less
     exit
 }
+
+[[ "$1"  = "add" ]]  && {
+    shift
+    $__dir/add.sh "$@" | less
+    exit
+}
+
+[[ "$1"  = "rm" ]]  && {
+    shift
+    $__dir/rm.sh "$@" | less
+    exit
+}
+
 
 [[ "$*"  =~ "total" ]] && {
     shift

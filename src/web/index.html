@@ -2,13 +2,14 @@
 <html lang="en-US">
 <head>
 	<meta charset="UTF-8">
-	<title>Foo</title>
+	<title>What next</title>
   <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="main.css">
 </head>
 <body>
   <script src="index.js"></script>
   <script src="log.js"></script>
+  <script src="add.js"></script>
   <script type="text/javascript">
     function getParameterByName(name, url) {
       if (!url) url = window.location.href;
@@ -33,6 +34,9 @@
     switch (page) {
       case "log":
         Elm.Log.fullscreen({apiEndpoint: endpoint})
+        break
+      case "add":
+        Elm.Add.fullscreen({apiEndpoint: endpoint})
         break
       default:
         Elm.Index.fullscreen({apiEndpoint: endpoint})

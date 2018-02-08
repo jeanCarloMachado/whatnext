@@ -1,0 +1,139 @@
+[1mdiff --git a/Makefile b/Makefile[m
+[1mindex 9cc6b58..5b2cd07 100644[m
+[1m--- a/Makefile[m
+[1m+++ b/Makefile[m
+[36m@@ -12,6 +12,7 @@[m [mclear:[m
+ build: copyAssets[m
+ 	cd src/web && elm-make Index.elm --output ../../dist/index.js[m
+ 	cd src/web && elm-make Log.elm --output ../../dist/log.js[m
+[32m+[m	[32mcd src/web && elm-make Add.elm --output ../../dist/add.js[m
+ [m
+ copyAssets:[m
+ 	mkdir dist || true[m
+[1mdiff --git a/src/detail.py b/src/detail.py[m
+[1mindex 5e7866f..68dcf5c 100755[m
+[1m--- a/src/detail.py[m
+[1m+++ b/src/detail.py[m
+[36m@@ -8,7 +8,6 @@[m [mfrom timeToStr import minutes_to_str[m
+ from gateway import gateway, gatewaySuccess[m
+ import json[m
+ [m
+[31m-[m
+ def get_subject(name):[m
+     subject = {}[m
+     subject['name']  = name[m
+[1mdiff --git a/src/web/Index.elm b/src/web/Index.elm[m
+[1mindex 0920506..b21015c 100644[m
+[1m--- a/src/web/Index.elm[m
+[1m+++ b/src/web/Index.elm[m
+[36m@@ -296,10 +296,6 @@[m [mdoneControlButtons subject =[m
+                 ][m
+ [m
+ [m
+[31m-inputCss =[m
+[31m-    css [ display block, width (px 300), margin (px 5), padding (px 10) ][m
+[31m-[m
+[31m-[m
+ doneFormForSubject subject =[m
+     case subject.doneForm of[m
+         True ->[m
+[1mdiff --git a/src/web/index.html b/src/web/index.html[m
+[1mindex d3ec110..505f35b 100644[m
+[1m--- a/src/web/index.html[m
+[1m+++ b/src/web/index.html[m
+[36m@@ -2,7 +2,7 @@[m
+ <html lang="en-US">[m
+ <head>[m
+ 	<meta charset="UTF-8">[m
+[31m-	<title>Foo</title>[m
+[32m+[m	[32m<title>What next</title>[m
+   <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">[m
+   <link rel="stylesheet" type="text/css" href="main.css">[m
+ </head>[m
+[1mdiff --git a/src/web/webserver.py b/src/web/webserver.py[m
+[1mindex f32aa3d..ee82074 100644[m
+[1m--- a/src/web/webserver.py[m
+[1m+++ b/src/web/webserver.py[m
+[36m@@ -11,13 +11,11 @@[m [mimport json[m
+ from detail import get_subject[m
+ from nocache import nocache[m
+ [m
+[31m-[m
+ app = Flask(__name__)[m
+ app.debug=True[m
+ CORS(app)[m
+ [m
+ [m
+[31m-[m
+ @app.route('/scheduler')[m
+ @nocache[m
+ def index():[m
+[36m@@ -64,6 +62,20 @@[m [mdef done(subjectName):[m
+     return '{"message": "success"}', 200, {'Content-Type': 'application/json; charset=utf-8'}[m
+ [m
+ [m
+[32m+[m[32m@app.route('/add', methods = ['POST'])[m
+[32m+[m[32mdef add():[m
+[32m+[m[32m    data=request.json[m
+[32m+[m[32m    cmd = [[m
+[32m+[m[32m        os.path.dirname(os.path.realpath(__file__)) + '/../add.sh',[m
+[32m+[m[32m        data['name'],[m
+[32m+[m[32m        str(data['priority']),[m
+[32m+[m[32m        str(data['complexity'])[m
+[32m+[m[32m    ][m
+[32m+[m[32m    subprocess.run(cmd, stdout=subprocess.PIPE)[m
+[32m+[m
+[32m+[m[32m    return '{"message": "success"}', 200, {'Content-Type': 'application/json; charset=utf-8'}[m
+[32m+[m
+[32m+[m
+ @app.route('/detail/<subjectName>')[m
+ def detail(subjectName):[m
+     obj = get_subject(subjectName)[m
+[1mdiff --git a/src/whatnext b/src/whatnext[m
+[1mindex 8a50af0..1304a88 100755[m
+[1m--- a/src/whatnext[m
+[1m+++ b/src/whatnext[m
+[36m@@ -6,18 +6,18 @@[m [msource $__dir/config.sh[m
+ [m
+ get_help() {[m
+     command="whatnext"[m
+[31m-    echo "A tool to help schedule studies[m
+[31m-[m
+[32m+[m[32m    echo "A tool to help schedule studies[m[41m [m
+     Usage:[m
+ [m
+[31m-    $command (edit-subjects|es)                                         opens the subjects on your editor[m
+[31m-    $command (edit-subject-description|esd)                                 edit the subject description[m
+[31m-    $command (edit-history|eh)                                             opens the history on your editor[m
+     $command (done | -d ) <subject> <what was done> [what to do next]       opens the history on your editor[m
+     $command total                                                          show how much did you spent in any activity[m
+     $command log                                                            shows the log[m
+     $command (status|s)                                                         get current status of your studies[m
+     $command goal             show your goals status $command (edit-goals|eg)                                                edit your goals[m
+[32m+[m[32m    $command (edit-subjects|es)                                         opens the subjects on your editor[m
+[32m+[m[32m    $command (add) <subject> <importance> <complexity>                      adds a new subject[m
+[32m+[m[32m    $command (edit-subject-description|esd)                                 edit the subject description[m
+[32m+[m[32m    $command (edit-history|eh)                                             opens the history on your editor[m
+     "[m
+ }[m
+ [m
+[36m@@ -37,12 +37,19 @@[m [mget_help() {[m
+     $__dir/level.sh "$@"[m
+     exit[m
+ }[m
+[32m+[m
+ [[ "$1"  =~ "detail" ]]  && {[m
+     shift[m
+     $__dir/detail.py "$@" | less[m
+     exit[m
+ }[m
+ [m
+[32m+[m[32m[[ "$1"  = "add" ]]  && {[m
+[32m+[m[32m    shift[m
+[32m+[m[32m    $__dir/add.sh "$@" | less[m
+[32m+[m[32m    exit[m
+[32m+[m[32m}[m
+[32m+[m
+ [[ "$*"  =~ "total" ]] && {[m
+     shift[m
+     $__dir/timePerSubject.py human "$@" | less[m

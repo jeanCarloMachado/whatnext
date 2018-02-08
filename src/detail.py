@@ -8,7 +8,6 @@ from timeToStr import minutes_to_str
 from gateway import gateway, gatewaySuccess
 import json
 
-
 def get_subject(name):
     subject = {}
     subject['name']  = name

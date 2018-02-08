@@ -11,11 +11,9 @@ import json
 from detail import get_subject
 from nocache import nocache
 
-
 app = Flask(__name__)
 app.debug=True
 CORS(app)
-
 
 
 @app.route('/scheduler')
@@ -60,6 +58,31 @@ def done(subjectName):
     my_env = os.environ.copy()
     my_env["NO_ITERACTIVE"] = "1"
     subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
+
+    return '{"message": "success"}', 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+
+@app.route('/add', methods = ['POST'])
+def add():
+    data=request.json
+    cmd = [
+        os.path.dirname(os.path.realpath(__file__)) + '/../add.sh',
+        data['name'],
+        str(data['priority']),
+        str(data['complexity'])
+    ]
+    subprocess.run(cmd, stdout=subprocess.PIPE)
+
+    return '{"message": "success"}', 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+@app.route('/rm/<subjectName>', methods = ['POST'])
+def rm(subjectName):
+    data=request.json
+    cmd = [
+        os.path.dirname(os.path.realpath(__file__)) + '/../rm.sh',
+        subjectName
+    ]
+    subprocess.run(cmd, stdout=subprocess.PIPE)
 
     return '{"message": "success"}', 200, {'Content-Type': 'application/json; charset=utf-8'}
 

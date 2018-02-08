@@ -12,6 +12,7 @@ clear:
 build: copyAssets
 	cd src/web && elm-make Index.elm --output ../../dist/index.js
 	cd src/web && elm-make Log.elm --output ../../dist/log.js
+	cd src/web && elm-make Add.elm --output ../../dist/add.js
 
 copyAssets:
 	mkdir dist || true
