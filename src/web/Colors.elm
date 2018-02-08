@@ -5,6 +5,7 @@ import Css
 
 type alias Colors =
     { textHighlight : Css.Color
+    , textNormal : Css.Color
     , selectedBackground : Css.Color
     , normalBackground : Css.Color
     }
@@ -13,7 +14,8 @@ type alias Colors =
 defaultColors =
     Colors
         (Css.hex "b58900")
-        (Css.hex "93a1a1")
+        (Css.hex "657b83")
+        (Css.hex "fdf6e3")
         (Css.hex "ffffff")
 
 

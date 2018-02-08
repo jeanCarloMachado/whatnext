@@ -9,6 +9,7 @@ import Json.Decode
 import Html.Styled.Attributes exposing (css, href, src, placeholder, type_)
 import Loading
 import StudyEntry
+import Colors exposing (defaultColors)
 
 
 type alias Flags =
@@ -68,7 +69,7 @@ view pageData =
         loadingHtml =
             Loading.getHtml pageData.loading
     in
-        div []
+        div [ css [ color defaultColors.textNormal ] ]
             [ loadingHtml
             , div
                 []

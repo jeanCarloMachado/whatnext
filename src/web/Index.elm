@@ -218,7 +218,7 @@ view pageData =
         loadingHtml =
             Loading.getHtml pageData.loading
     in
-        div [ css [ top (px 0), left (px 0), margin (px 0), height (pct 100) ] ]
+        div [ css [ color defaultColors.textNormal, top (px 0), left (px 0), margin (px 0), height (pct 100) ] ]
             [ loadingHtml
             , div [ css [ margin (pct 3) ] ]
                 [ div []
