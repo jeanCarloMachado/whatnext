@@ -75,7 +75,7 @@ def add():
 
     return '{"message": "success"}', 200, {'Content-Type': 'application/json; charset=utf-8'}
 
-@app.route('/rm/<subjectName>', methods = ['POST'])
+@app.route('/rm/<subjectName>', methods = ['GET'])
 def rm(subjectName):
     data=request.json
     cmd = [

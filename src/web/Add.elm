@@ -7,7 +7,7 @@ import Css exposing (..)
 import Html.Styled.Events exposing (..)
 import Json.Decode
 import Json.Encode
-import Global
+import Models exposing (decodeEmptyResult)
 import Http exposing (..)
 
 
@@ -93,7 +93,7 @@ submitRequest pageData =
                 ]
 
         request =
-            Http.post url (Http.jsonBody body) Global.decodeEmptyResult
+            Http.post url (Http.jsonBody body) decodeEmptyResult
     in
         Http.send SubmitResult request
 

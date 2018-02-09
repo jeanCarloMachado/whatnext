@@ -7,9 +7,8 @@ import Html.Styled exposing (..)
 import Json.Decode.Pipeline
 import Json.Decode
 import Html.Styled.Attributes exposing (css, href, src, placeholder, type_)
-import Loading
-import StudyEntry
-import Global exposing (defaultColors)
+import View exposing (defaultColors, getLoadingHtml, studyEntryToHtml)
+import Models exposing (StudyEntry, decodeStudyEntry)
 
 
 type alias Flags =
@@ -21,7 +20,7 @@ main =
 
 
 type alias PageData =
-    { history : List StudyEntry.Data, toasterMsg : String, loading : Bool }
+    { history : List StudyEntry, toasterMsg : String, loading : Bool }
 
 
 init : Flags -> ( PageData, Cmd Msg )
@@ -31,7 +30,7 @@ init flags =
 
 type Msg
     = None
-    | HistoryResult (Result Http.Error (List StudyEntry.Data))
+    | HistoryResult (Result Http.Error (List StudyEntry))
 
 
 update msg pageData =
@@ -58,7 +57,7 @@ getHistory endpoint =
 
 
 decodeHistory =
-    Json.Decode.list StudyEntry.decodeStudyEntry
+    Json.Decode.list decodeStudyEntry
 
 
 view pageData =
@@ -67,7 +66,7 @@ view pageData =
             getHistoryHtml pageData
 
         loadingHtml =
-            Loading.getHtml pageData.loading
+            getLoadingHtml pageData.loading
     in
         div [ css [ color defaultColors.textNormal ] ]
             [ loadingHtml
@@ -85,7 +84,7 @@ view pageData =
 
 getHistoryHtml pageData =
     ul [ css [ listStyleType none ] ]
-        (List.map StudyEntry.toHtml pageData.history)
+        (List.map studyEntryToHtml pageData.history)
 
 
 subscriptions : PageData -> Sub Msg
