@@ -8,6 +8,8 @@ import Json.Encode
 import View exposing (..)
 import Models exposing (..)
 import Array exposing (Array)
+import Dom.Scroll
+import Task
 
 
 type alias Flags =
@@ -45,7 +47,7 @@ update msg model =
                 newModel =
                     (replaceSubjectFromList model subject)
             in
-                ( { newModel | loading = False }, Cmd.none )
+                ( { newModel | loading = False }, Task.attempt (always None) <| Dom.Scroll.toTop ("subject_" ++ toString (getOffsetOfSubject model.subjects subject)) )
 
         ClickDone subject ->
             ( (replaceSubjectFromList model { subject | doneForm = True }), Cmd.none )
@@ -108,6 +110,20 @@ update msg model =
 
         None ->
             ( model, Cmd.none )
+
+
+getOffsetOfSubject : List ( Int, Subject ) -> Subject -> Int
+getOffsetOfSubject subjects subject =
+    let
+        filtered =
+            List.filter (\x -> subject.name == (Tuple.second x).name) subjects
+    in
+        case filtered of
+            [ a ] ->
+                Tuple.first a
+
+            _ ->
+                0
 
 
 getDetailUpdateResult model indice subject =

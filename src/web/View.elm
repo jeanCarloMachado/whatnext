@@ -3,7 +3,7 @@ module View exposing (..)
 import Css exposing (..)
 import Html
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (css, href, src, placeholder, type_)
+import Html.Styled.Attributes exposing (css, href, src, placeholder, type_, id)
 import Html.Styled.Events exposing (..)
 import Models exposing (..)
 import Json.Decode
@@ -89,7 +89,7 @@ subjectsToHtml openedIndex list =
 
 subjectToHtml : Maybe Int -> ( Int, Subject ) -> Html.Styled.Html Msg
 subjectToHtml openedIndice ( indice, subject ) =
-    li [ onClick (ExpandSubjectClick ( indice, subject )), subjectCss openedIndice ( indice, subject ) ]
+    li [ onClick (ExpandSubjectClick ( indice, subject )), subjectCss openedIndice ( indice, subject ), id <| "subject_" ++ toString indice ]
         [ div []
             [ div [ css [ fontSize (Css.em 1.2) ] ]
                 [ span [ css [ color defaultColors.textHighlight ] ] [ text subject.name ]
