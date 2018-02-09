@@ -13,6 +13,7 @@ type alias Flags =
     { apiEndpoint : String }
 
 
+emptySubject : Subject
 emptySubject =
     Subject "" 0 "" [] False False (DoneData "" "") ""
 
@@ -41,13 +42,17 @@ update msg model =
                     ( (replaceSubjectFromList model { subject | open = False }), Cmd.none )
 
                 False ->
-                    ( (replaceSubjectFromList model subject), getDetail model.apiEndpoint subject )
+                    ( { model | loading = True }, getDetail model.apiEndpoint subject )
 
         GetDetail (Ok subject) ->
-            ( (replaceSubjectFromList model { subject | open = True }), Cmd.none )
+            let
+                newModel =
+                    (replaceSubjectFromList model { subject | open = True })
+            in
+                ( { newModel | loading = False }, Cmd.none )
 
         GetDetail (Err msg) ->
-            ( { model | toasterMsg = (toString msg) }, Cmd.none )
+            ( { model | toasterMsg = (toString msg), loading = False }, Cmd.none )
 
         ClickDone subject ->
             ( (replaceSubjectFromList model { subject | doneForm = True, open = True }), Cmd.none )
@@ -183,6 +188,7 @@ replaceSubjectFromList model subject =
         { model | subjects = newList }
 
 
+replaceSame : Subject -> Subject -> Subject
 replaceSame new orig =
     case orig.name == new.name of
         True ->
@@ -192,6 +198,7 @@ replaceSame new orig =
             orig
 
 
+subjectByName : String -> List Subject -> Subject
 subjectByName subjectName subjectList =
     case List.filter (\x -> x.name == subjectName) subjectList of
         a :: _ ->
