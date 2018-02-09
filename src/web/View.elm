@@ -9,6 +9,7 @@ import Models exposing (..)
 import Json.Decode
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
+import Array exposing (Array)
 
 
 type alias Colors =
@@ -71,24 +72,24 @@ view pageData =
                 , getToasterHtml pageData
                 , div
                     []
-                    [ subjectsToHtml pageData.subjects
+                    [ subjectsToHtml pageData.openedIndex pageData.subjects
                     ]
                 ]
             ]
 
 
-subjectsToHtml : List Subject -> Html.Styled.Html Msg
-subjectsToHtml list =
+subjectsToHtml : Maybe Int -> List ( Int, Subject ) -> Html.Styled.Html Msg
+subjectsToHtml openedIndex list =
     let
         innerList =
-            List.map subjectToHtml list
+            List.map (subjectToHtml openedIndex) list
     in
         ul [ css [ listStyle none ] ] innerList
 
 
-subjectToHtml : Subject -> Html.Styled.Html Msg
-subjectToHtml subject =
-    li [ onClick (ExpandSubject subject), subjectCss subject ]
+subjectToHtml : Maybe Int -> ( Int, Subject ) -> Html.Styled.Html Msg
+subjectToHtml openedIndice ( indice, subject ) =
+    li [ onClick (ExpandSubjectClick ( indice, subject )), subjectCss openedIndice ( indice, subject ) ]
         [ div []
             [ div [ css [ fontSize (Css.em 1.2) ] ]
                 [ span [ css [ color defaultColors.textHighlight ] ] [ text subject.name ]
@@ -96,33 +97,34 @@ subjectToHtml subject =
                     (" " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested))
                 , (doneControlButtons subject)
                 ]
-            , (hiddenSubjectHtml subject)
+            , (hiddenSubjectHtml openedIndice ( indice, subject ))
             ]
         ]
 
 
-hiddenSubjectHtml : Subject -> Html.Styled.Html Msg
-hiddenSubjectHtml subject =
-    case subject.open of
-        True ->
-            div
-                [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed None)
-                ]
-                [ div []
-                    [ (doneFormForSubject subject)
-                    , div [ css [ fontSize (Css.em 1.1) ] ]
-                        [ text <| "What to do next: " ++ subject.whatToDoNext
+hiddenSubjectHtml : Maybe Int -> ( Int, Subject ) -> Html.Styled.Html Msg
+hiddenSubjectHtml openedIndice ( indice, subject ) =
+    case openedIndice of
+        Just openedIndiceValue ->
+            if openedIndiceValue == indice then
+                div [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed None) ]
+                    [ div []
+                        [ (doneFormForSubject subject)
+                        , div [ css [ fontSize (Css.em 1.1) ] ]
+                            [ text <| "What to do next: " ++ subject.whatToDoNext
+                            ]
                         ]
+                    , div []
+                        [ text "History"
+                        , div [] (List.map studyEntryToHtml subject.history)
+                        ]
+                    , subjectButton "Remove" (RemoveClick subject)
                     ]
-                , div []
-                    [ text "History"
-                    , div [] (List.map studyEntryToHtml subject.history)
-                    ]
-                , subjectButton "Remove" (RemoveClick subject)
-                ]
+            else
+                emptyNode
 
-        False ->
-            div [] []
+        Nothing ->
+            emptyNode
 
 
 doneControlButtons : Subject -> Html.Styled.Html Msg
@@ -163,15 +165,18 @@ doneFormForSubject subject =
                 []
 
 
-subjectCss subject =
+subjectCss selectedIndex ( index, subject ) =
     css
-        [ borderRadius (px 10), display block, borderWidth (px 1), padding (px 20), marginBottom (px 1), selectedColor subject |> backgroundColor ]
+        [ borderRadius (px 10), display block, borderWidth (px 1), padding (px 20), marginBottom (px 1), backgroundColor (selectedColor selectedIndex ( index, subject )) ]
 
 
-selectedColor subject =
-    case subject.open of
-        True ->
-            defaultColors.selectedBackground
+selectedColor selectedIndex ( index, subject ) =
+    case selectedIndex of
+        Just x ->
+            if index == x then
+                defaultColors.selectedBackground
+            else
+                defaultColors.normalBackground
 
         _ ->
             defaultColors.normalBackground

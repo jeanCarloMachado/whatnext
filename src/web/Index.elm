@@ -7,15 +7,11 @@ import Platform exposing (..)
 import Json.Encode
 import View exposing (..)
 import Models exposing (..)
+import Array exposing (Array)
 
 
 type alias Flags =
     { apiEndpoint : String }
-
-
-emptySubject : Subject
-emptySubject =
-    Subject "" 0 "" [] False False (DoneData "" "") ""
 
 
 main =
@@ -24,38 +20,35 @@ main =
 
 init : Flags -> ( PageData, Cmd Msg )
 init flags =
-    ( PageData [] True "" False flags.apiEndpoint, getList flags.apiEndpoint False )
+    ( PageData [] Nothing True "" False flags.apiEndpoint, Models.getListRequest flags.apiEndpoint False )
 
 
 update : Msg -> PageData -> ( PageData, Cmd Msg )
 update msg model =
     case msg of
-        NewList (Err msg) ->
-            ( { model | toasterMsg = (toString msg) }, Cmd.none )
-
         NewList (Ok subjects) ->
-            ( { model | subjects = subjects, loading = False }, Cmd.none )
+            ( { model | subjects = Array.toIndexedList subjects, loading = False }, Cmd.none )
 
-        ExpandSubject subject ->
-            case subject.open of
-                True ->
-                    ( (replaceSubjectFromList model { subject | open = False }), Cmd.none )
+        ExpandSubjectClick ( indice, subject ) ->
+            case model.openedIndex of
+                Just val ->
+                    if val == indice then
+                        ( { model | loading = False, openedIndex = Nothing }, Cmd.none )
+                    else
+                        getDetailUpdateResult model indice subject
 
-                False ->
-                    ( { model | loading = True }, getDetail model.apiEndpoint subject )
+                Nothing ->
+                    getDetailUpdateResult model indice subject
 
         GetDetail (Ok subject) ->
             let
                 newModel =
-                    (replaceSubjectFromList model { subject | open = True })
+                    (replaceSubjectFromList model subject)
             in
                 ( { newModel | loading = False }, Cmd.none )
 
-        GetDetail (Err msg) ->
-            ( { model | toasterMsg = (toString msg), loading = False }, Cmd.none )
-
         ClickDone subject ->
-            ( (replaceSubjectFromList model { subject | doneForm = True, open = True }), Cmd.none )
+            ( (replaceSubjectFromList model { subject | doneForm = True }), Cmd.none )
 
         CancelDone subject ->
             ( (replaceSubjectFromList model { subject | doneForm = False }), Cmd.none )
@@ -87,129 +80,61 @@ update msg model =
                 ( replaceSubjectFromList model newSubject, Cmd.none )
 
         SubmitDone subject ->
-            ( { model | loading = True }, doneRequest model.apiEndpoint subject )
+            ( { model | loading = True }, Models.doneRequest model.apiEndpoint subject )
 
         DoneResult (Ok _) ->
-            ( { model | loading = False }, getList model.apiEndpoint model.tiredMode )
-
-        DoneResult (Err msg) ->
-            ( { model | toasterMsg = (toString msg), loading = False }, Cmd.none )
+            ( { model | loading = False }, Models.getListRequest model.apiEndpoint model.tiredMode )
 
         ToggleTiredMode ->
-            ( { model | tiredMode = not model.tiredMode }, getList model.apiEndpoint <| not model.tiredMode )
+            ( { model | tiredMode = not model.tiredMode }, Models.getListRequest model.apiEndpoint <| not model.tiredMode )
 
         RemoveClick subject ->
-            ( { model | loading = True }, removeRequest model.apiEndpoint subject )
+            ( { model | loading = True }, Models.removeRequest model.apiEndpoint subject )
 
         Remove (Ok _) ->
-            ( { model | loading = True }, getList model.apiEndpoint model.tiredMode )
+            ( { model | loading = True }, Models.getListRequest model.apiEndpoint model.tiredMode )
 
         Remove (Err msg) ->
-            ( { model | toasterMsg = (toString msg) }, Cmd.none )
+            errorResult model msg
+
+        DoneResult (Err msg) ->
+            errorResult model msg
+
+        GetDetail (Err msg) ->
+            errorResult model msg
+
+        NewList (Err msg) ->
+            errorResult model msg
 
         None ->
             ( model, Cmd.none )
 
 
-getDetail : String -> Subject -> Cmd Msg
-getDetail endpoint subject =
-    let
-        url =
-            "http://" ++ endpoint ++ "/detail/" ++ subject.name
-
-        request =
-            Http.get url decodeSubject
-    in
-        Http.send GetDetail request
+getDetailUpdateResult model indice subject =
+    ( { model | loading = True, openedIndex = Just indice }, Models.getDetail model.apiEndpoint subject )
 
 
-doneRequest : String -> Subject -> Cmd Msg
-doneRequest endpoint subject =
-    let
-        url =
-            "http://" ++ endpoint ++ "/done/" ++ subject.name
-
-        body =
-            Json.Encode.object
-                [ ( "description", Json.Encode.string subject.doneData.description )
-                , ( "whatToDoNext", Json.Encode.string subject.doneData.whatToDoNext )
-                ]
-
-        request =
-            Http.post url (Http.jsonBody body) decodeEmptyResult
-    in
-        Http.send DoneResult request
-
-
-removeRequest : String -> Subject -> Cmd Msg
-removeRequest endpoint subject =
-    let
-        url =
-            "http://" ++ endpoint ++ "/rm/" ++ subject.name
-
-        request =
-            Http.get url decodeEmptyResult
-    in
-        Http.send Remove request
-
-
-getList : String -> Bool -> Cmd Msg
-getList endpoint tiredMode =
-    let
-        url =
-            "http://" ++ endpoint ++ "/scheduler" ++ (tiredMode |> toUrlBool)
-
-        request =
-            Http.get url decodeSubjectList
-    in
-        Http.send NewList request
-
-
-toUrlBool : Bool -> String
-toUrlBool bool =
-    case bool of
-        True ->
-            "?tiredMode=True"
-
-        False ->
-            ""
-
-
-
--- VIEW
+errorResult model msg =
+    ( { model | toasterMsg = (toString msg), loading = False }, Cmd.none )
 
 
 replaceSubjectFromList : PageData -> Subject -> PageData
-replaceSubjectFromList model subject =
+replaceSubjectFromList pageData subject =
     let
         newList =
-            (List.map (\x -> replaceSame subject x) model.subjects)
+            (List.map (\x -> replaceSame subject x) pageData.subjects)
     in
-        { model | subjects = newList }
+        { pageData | subjects = newList }
 
 
-replaceSame : Subject -> Subject -> Subject
-replaceSame new orig =
+replaceSame : Subject -> ( Int, Subject ) -> ( Int, Subject )
+replaceSame new ( indice, orig ) =
     case orig.name == new.name of
         True ->
-            new
+            ( indice, new )
 
         False ->
-            orig
-
-
-subjectByName : String -> List Subject -> Subject
-subjectByName subjectName subjectList =
-    case List.filter (\x -> x.name == subjectName) subjectList of
-        a :: _ ->
-            a
-
-        _ ->
-            emptySubject
-
-
-
--- SUBSCRIPTIONS
+            ( indice, orig )
 
 
 subscriptions : PageData -> Sub Msg
