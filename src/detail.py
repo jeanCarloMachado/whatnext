@@ -20,8 +20,8 @@ def get_subject(name):
     days_since_last_study=gateway(['daysSinceLastStudy', subject['name']])
     days_since_last_study = days_since_last_study or 0
 
-    subject['priority'] = columns[1]
-    subject['complexity'] = columns[2]
+    subject['priority'] = int(columns[1])
+    subject['complexity'] = int(columns[2])
     subject['what_to_do_next'] = columns[3]
     subject['days_since_last_study'] = int(days_since_last_study)
     time_already_invested_of_subjects = time_of_subjects()

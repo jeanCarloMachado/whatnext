@@ -114,6 +114,7 @@ getDetailUpdateResult model indice subject =
     ( { model | loading = True, openedIndex = Just indice }, Models.getDetail model.apiEndpoint subject )
 
 
+errorResult : PageData -> Error -> ( PageData, Cmd Msg )
 errorResult model msg =
     ( { model | toasterMsg = (toString msg), loading = False }, Cmd.none )
 

@@ -42,6 +42,8 @@ type alias Subject =
     , doneForm : Bool
     , doneData : DoneData
     , whatToDoNext : String
+    , complexity : Int
+    , priority : Int
     }
 
 
@@ -60,7 +62,7 @@ type alias StudyEntry =
 
 emptySubject : Subject
 emptySubject =
-    Subject "" 0 "" [] False (DoneData "" "") ""
+    Subject "" 0 "" [] False (DoneData "" "") "" 0 0
 
 
 decodeSubjectList : Decoder (Array Subject)
@@ -78,6 +80,12 @@ decodeSubject =
         |> Json.Decode.Pipeline.hardcoded False
         |> Json.Decode.Pipeline.hardcoded (DoneData "" "")
         |> Json.Decode.Pipeline.required "what_to_do_next" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "complexity" (Json.Decode.int)
+        |> Json.Decode.Pipeline.required "priority" (Json.Decode.int)
+
+
+decodeSubjectHistory =
+    at [ "history" ] (Json.Decode.array decodeStudyEntry)
 
 
 decodeStudyEntry =
@@ -85,10 +93,6 @@ decodeStudyEntry =
         |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)
-
-
-decodeSubjectHistory =
-    at [ "history" ] (Json.Decode.array decodeStudyEntry)
 
 
 decodeEmptyResult =

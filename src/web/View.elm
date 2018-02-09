@@ -110,6 +110,14 @@ hiddenSubjectHtml openedIndice ( indice, subject ) =
                 div [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed None) ]
                     [ div []
                         [ (doneFormForSubject subject)
+                        , div []
+                            [ p []
+                                [ text <| "Priority: " ++ (toString subject.priority)
+                                ]
+                            , p []
+                                [ text <| "Complexity: " ++ (toString subject.complexity)
+                                ]
+                            ]
                         , div [ css [ fontSize (Css.em 1.1) ] ]
                             [ text <| "What to do next: " ++ subject.whatToDoNext
                             ]
@@ -148,6 +156,7 @@ subjectButton textStr msg =
         [ text textStr ]
 
 
+inputCss : Attribute Msg
 inputCss =
     css [ display block, width (px 300), margin (px 5), padding (px 10) ]
 
