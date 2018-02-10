@@ -37,6 +37,13 @@ def get_subject(name):
     return subject
 
 if __name__ == '__main__':
+
+    subject=get_subject(sys.argv[1])
+
+    if os.environ.get('TO_JSON') is not None:
+        print(json.dumps(subject))
+        sys.exit()
+
     orange = os.getenv('WN_COLOR_ORANGE').encode('utf-8').decode('unicode_escape')
     green = os.getenv('WN_COLOR_GREEN').encode('utf-8').decode('unicode_escape')
     red = os.getenv('WN_COLOR_RED').encode('utf-8').decode('unicode_escape')
@@ -50,8 +57,6 @@ if __name__ == '__main__':
         red=''
         reset=''
         title=''
-
-    subject=get_subject(sys.argv[1])
 
     days_since_last_study = "yesterday" if subject['days_since_last_study'] == 0 else str(subject['days_since_last_study']) + " days ago"
 

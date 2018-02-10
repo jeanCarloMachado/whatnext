@@ -3,6 +3,19 @@
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 
+getEmailByHash() {
+    loginHash=$1
+
+    grep "$loginHash" $WHATNEXT_USERS | cut -d '|' -f 1 | tr -d  "\n"
+}
+
+validLogin() {
+    email=$1
+    loginHash=$2
+
+    grep "$email|$loginHash" $WHATNEXT_USERS 1>/dev/null
+}
+
 logEntries() {
     tac "$WHATNEXT_HISTORY"
 }
