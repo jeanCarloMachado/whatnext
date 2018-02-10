@@ -33,8 +33,8 @@ update msg model =
 
         ExpandSubjectClick ( indice, subject ) ->
             case model.openedIndex of
-                Just val ->
-                    if val == indice then
+                Just indexVal ->
+                    if indexVal == indice then
                         ( { model | loading = False, openedIndex = Nothing }, Cmd.none )
                     else
                         getDetailUpdateResult model indice subject

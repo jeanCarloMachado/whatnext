@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import os, sys
 import subprocess
 
@@ -15,6 +16,7 @@ app = Flask(__name__)
 app.debug=True
 CORS(app)
 
+SUCCESS_MESSAGE = '{"message": "success"}'
 
 @app.route('/scheduler')
 @nocache
@@ -59,7 +61,7 @@ def done(subjectName):
     my_env["NO_ITERACTIVE"] = "1"
     subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
 
-    return '{"message": "success"}', 200, {'Content-Type': 'application/json; charset=utf-8'}
+    return SUCCESS_MESSAGE, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 
 @app.route('/add', methods = ['POST'])
@@ -73,7 +75,7 @@ def add():
     ]
     subprocess.run(cmd, stdout=subprocess.PIPE)
 
-    return '{"message": "success"}', 200, {'Content-Type': 'application/json; charset=utf-8'}
+    return SUCCESS_MESSAGE, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 @app.route('/rm/<subjectName>', methods = ['GET'])
 def rm(subjectName):
@@ -84,7 +86,7 @@ def rm(subjectName):
     ]
     subprocess.run(cmd, stdout=subprocess.PIPE)
 
-    return '{"message": "success"}', 200, {'Content-Type': 'application/json; charset=utf-8'}
+    return SUCCESS_MESSAGE, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 
 @app.route('/detail/<subjectName>')
@@ -93,5 +95,24 @@ def detail(subjectName):
     result = json.dumps(obj)
     return result, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
-app.run(host= '0.0.0.0', port=5000)
 
+
+
+@app.route('/signup', methods = ['POST'])
+def signup():
+    data=request.json
+    cmd = [
+        os.path.dirname(os.path.realpath(__file__)) + '/signup.sh',
+        data['email'],
+        data['password']
+    ]
+
+    result = subprocess.run(cmd, stdout=subprocess.PIPE)
+
+    if result.returncode != 0:
+        return '{"status": "'+str(result.returncode)+'" "message": "' + result.stdout.decode('UTF-8') + '"}', 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+
+    return SUCCESS_MESSAGE, 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+app.run(host= '0.0.0.0', port=5000)

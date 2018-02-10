@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source $__dir/config.sh
+scriptDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source $scriptDir/config.sh
 
 
 get_help() {
@@ -30,59 +30,59 @@ get_help() {
 
 [[ "$1"  == "-d" ]] || [[ "$1"  == "done" ]]  && {
     shift
-    $__dir/done.sh "$@"
+    $scriptDir/done.sh "$@"
     exit
 }
 
 [[ "$1"  == "level" ]]  && {
     shift
-    $__dir/level.sh "$@"
+    $scriptDir/level.sh "$@"
     exit
 }
 
 [[ "$1"  =~ "detail" ]]  && {
     shift
-    $__dir/detail.py "$@" | less
+    $scriptDir/detail.py "$@" | less
     exit
 }
 
 [[ "$1"  = "add" ]]  && {
     shift
-    $__dir/add.sh "$@" | less
+    $scriptDir/add.sh "$@" | less
     exit
 }
 
 [[ "$1"  = "rm" ]]  && {
     shift
-    $__dir/rm.sh "$@" | less
+    $scriptDir/rm.sh "$@" | less
     exit
 }
 
 
 [[ "$*"  =~ "total" ]] && {
     shift
-    $__dir/timePerSubject.py human "$@" | less
+    $scriptDir/timePerSubject.py human "$@" | less
     exit
 }
 [[ "$*"  =~ goal$ ]] && {
     shift
-    $__dir/goals.sh "$@"
+    $scriptDir/goals.sh "$@"
     exit
 }
 
 [[ "$*"  == "status" ]] || [[ "$*"  == "s" ]] && {
     shift
-    $__dir/status.sh "$@"
+    $scriptDir/status.sh "$@"
 
     echo ""
     echo -e "$sectionColor""Goals$resetColor"
-    $__dir/goals.sh | head -n 5
+    $scriptDir/goals.sh | head -n 5
 
     echo ""
     echo -e "$sectionColor""Top subjects$resetColor"
 
 
-    result=$($__dir/timePerSubject.py human)
+    result=$($scriptDir/timePerSubject.py human)
     echo "$result" | tail -n1
     echo "$result" | head -n 5
 
@@ -91,18 +91,18 @@ get_help() {
 
 [[ "$*"  == "init" ]] && {
     shift
-    $__dir/init.sh "$@"
+    $scriptDir/init.sh "$@"
     exit
 }
 
 [[ "$*"  =~ "log" ]] && {
     shift
-    $__dir/log.sh "$@" | less
+    $scriptDir/log.sh "$@" | less
     exit
 }
 
 [[ "$*"  == "list-subjects" ]] && {
-    $__dir/gateway.sh list_subjects_names
+    $scriptDir/gateway.sh list_subjects_names
     exit
 }
 
@@ -118,7 +118,7 @@ get_help() {
 
 [[ "$*"  =~ "edit-subject-description" ]] || [[ "$*"  =~ "esd" ]] && {
     shift
-    $__dir/editSubjectDescription.sh "$@"
+    $scriptDir/editSubjectDescription.sh "$@"
     exit
 }
 
@@ -134,8 +134,8 @@ get_help() {
 
 if [ ! -z ${NO_COLOR+x} ]
 then
-    $__dir/scheduler.py
+    $scriptDir/scheduler.py
 else
-    $__dir/scheduler.py | less
+    $scriptDir/scheduler.py | less
 fi
 
