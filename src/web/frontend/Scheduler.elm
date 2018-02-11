@@ -1,4 +1,4 @@
-module Index exposing (..)
+module Scheduler exposing (..)
 
 import Html
 import Html.Styled
