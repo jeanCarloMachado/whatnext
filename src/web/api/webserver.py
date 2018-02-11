@@ -185,7 +185,7 @@ def login():
 
 
     response = make_response(SUCCESS_MESSAGE)
-    response.set_cookie("Authorization", loginHash)
+    response.set_cookie("Authorization", loginHash, domain='.thewhatnext.dev', path = "/*")
 
     return response, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
