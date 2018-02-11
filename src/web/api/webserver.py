@@ -8,7 +8,7 @@ CLI_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 sys.path.append(CLI_PATH)
 from scheduler import configure_subjects, sort_subjects
 
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, make_response
 from flask_cors import CORS
 import json
 from detail import get_subject
@@ -18,22 +18,23 @@ app = Flask(__name__)
 app.debug=True
 CORS(app)
 
-SUCCESS_MESSAGE = '{"message": "success"}'
+SUCCESS_MESSAGE = '{"status": "success"}'
 
 
 def update_environemnt(my_env, email):
-    my_env['WHATNEXT_CONF'] = "/data/whatnext/users/"+email+"/whatnext.conf"
-    my_env['WHATNEXT_GOALS'] = "/data/whatnext/users/"+email+"/whatnext_goals.conf"
-    my_env['WHATNEXT_HISTORY'] = "/data/whatnext/users/"+email+"/whatnext_history.conf"
+    DATA_DIR="/data/whatnext/users/"
+    my_env['WHATNEXT_CONF'] = DATA_DIR+email+"/whatnext.conf"
+    my_env['WHATNEXT_GOALS'] = DATA_DIR+email+"/whatnext_goals.conf"
+    my_env['WHATNEXT_HISTORY'] = DATA_DIR+email+"/whatnext_history.conf"
 
     return my_env
 
 
 def check_authorization(request):
-    if not 'Authorization' in request.headers:
+    if not 'Authorization' in request.cookies:
         raise '{"message": "Token Required"}'
 
-    loginHash = request.headers['Authorization']
+    loginHash = request.cookies['Authorization']
     email = gateway(['getEmailByHash', loginHash])
     if email == '':
         raise '{"message": "Invalid token"}'
@@ -51,7 +52,7 @@ def index():
 
 
     cmd = [
-        os.path.dirname(os.path.realpath(__file__)) + '/../scheduler.py',
+        CLI_PATH + '/scheduler.py',
     ]
 
     my_env["TO_JSON"] = "1"
@@ -65,7 +66,7 @@ def log():
     email = check_authorization(request)
     my_env = update_environemnt(os.environ.copy(), email)
 
-    cmd = [ os.path.dirname(os.path.realpath(__file__)) + '/../log.sh', '--json']
+    cmd = [ CLI_PATH + '/log.sh', '--json']
     content =  subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE).stdout.decode('UTF-8')
 
     return content, 200, {'Content-Type': 'application/json; charset=utf-8'}
@@ -77,7 +78,7 @@ def done(subjectName):
 
     data=request.json
     cmd = [
-        os.path.dirname(os.path.realpath(__file__)) + '/../done.sh',
+        CLI_PATH + '/done.sh',
         subjectName,
         data['description'],
         data['whatToDoNext']
@@ -97,7 +98,7 @@ def add():
 
     data=request.json
     cmd = [
-        os.path.dirname(os.path.realpath(__file__)) + '/../add.sh',
+        CLI_PATH + '/add.sh',
         data['name'],
         str(data['priority']),
         str(data['complexity'])
@@ -113,7 +114,7 @@ def rm(subjectName):
 
     data=request.json
     cmd = [
-        os.path.dirname(os.path.realpath(__file__)) + '/../rm.sh',
+        CLI_PATH + '/rm.sh',
         subjectName
     ]
     subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
@@ -130,7 +131,7 @@ def detail(subjectName):
     my_env["TO_JSON"] = "1"
 
     cmd = [
-        os.path.dirname(os.path.realpath(__file__)) + '/../detail.py',
+        CLI_PATH + '/detail.py',
         subjectName
     ]
     result = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE).stdout.decode('UTF-8')
@@ -156,20 +157,17 @@ def signup():
     result = subprocess.run(cmd, stdout=subprocess.PIPE)
 
     if result.returncode != 0:
-        return '{"status": "'+str(result.returncode)+'" "message": "' + result.stdout.decode('UTF-8') + '"}', 200, {'Content-Type': 'application/json; charset=utf-8'}
+        return '{"status": "failure", "message": "' + result.stdout.decode('UTF-8') + '"}', 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 
     my_env = os.environ.copy()
     my_env = update_environemnt(my_env, data['email'])
 
     cmd = [
-        os.path.dirname(os.path.realpath(__file__)) + '/../init.sh',
+        CLI_PATH + '/init.sh',
     ]
 
     result = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
-    print(result)
-
-
 
     return SUCCESS_MESSAGE, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
@@ -178,15 +176,18 @@ def signup():
 def login():
     data=request.json
 
-
     m = hashlib.sha256()
     m.update(data['email'].encode('utf-8'))
     m.update(data['password'].encode('utf-8'))
     loginHash = m.hexdigest()
     if not gatewaySuccess(['validLogin', data['email'], loginHash]):
-        return '{"message": "Invalid user or password"}', 200, {'Content-Type': 'application/json; charset=utf-8'}
+        return '{"status": "failure", "message": "Invalid user or password"}', 401, {'Content-Type': 'application/json; charset=utf-8'}
 
-    return '{"hash": "'+loginHash+'"}', 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+    response = make_response(SUCCESS_MESSAGE)
+    response.set_cookie("Authorization", loginHash)
+
+    return response, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 
 app.run(host= '0.0.0.0', port=5000)

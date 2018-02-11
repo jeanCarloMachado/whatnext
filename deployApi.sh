@@ -3,7 +3,7 @@
 REMOTE_SERVE_DIR=/home/ubuntu/whatnext/api/
 rm -rf distApi/*
 cp -rf src/* distApi/
-rm -rf distApi/web/elm-stuff
+rm -rf distApi/web/frontend
 scp -r distApi/* blog:"$REMOTE_SERVE_DIR"
 
 ssh blog -t '

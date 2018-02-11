@@ -10,6 +10,7 @@ import Json.Decode
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Array exposing (Array)
+import Toaster exposing (html)
 
 
 type alias Colors =
@@ -69,7 +70,7 @@ view pageData =
                 , a [ css [ padding (px 10) ], href "index.html?page=add" ]
                     [ text "Add"
                     ]
-                , getToasterHtml pageData
+                , Toaster.html pageData.toasterMsg
                 , div
                     []
                     [ subjectsToHtml pageData.openedIndex pageData.subjects
@@ -189,17 +190,6 @@ selectedColor selectedIndex ( index, subject ) =
 
         _ ->
             defaultColors.normalBackground
-
-
-getToasterHtml pageData =
-    case String.length pageData.toasterMsg of
-        0 ->
-            div [] []
-
-        _ ->
-            div [ css [ borderStyle dashed, borderWidth (px 1), textAlign center ] ]
-                [ text pageData.toasterMsg
-                ]
 
 
 studyEntryToHtml studyEntry =

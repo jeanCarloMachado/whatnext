@@ -3,10 +3,12 @@ module Login exposing (..)
 import Html
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (placeholder)
-import Html.Styled.Events exposing (onClick)
+import Html.Styled.Events exposing (onClick, onInput)
 import Http
 import Json.Decode
 import Json.Encode
+import Toaster
+import Navigation
 
 
 type alias Flags =
@@ -21,12 +23,13 @@ type alias Model =
     { email : String
     , password : String
     , apiEndpoint : String
+    , errorMessage : String
     }
 
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( Model "" "" flags.apiEndpoint, Cmd.none )
+    ( Model "" "" flags.apiEndpoint "", Cmd.none )
 
 
 type Msg
@@ -46,13 +49,18 @@ update msg model =
             ( { model | password = password }, Cmd.none )
 
         Login ->
-            ( model, loginRequest model )
+            ( { model | errorMessage = "" }, loginRequest model )
 
-        LoginResult (Ok _) ->
-            ( model, Cmd.none )
+        LoginResult (Ok message) ->
+            ( model, Navigation.newUrl "http://google.com" )
 
         LoginResult (Err msg) ->
-            ( model, Cmd.none )
+            case msg of
+                Http.BadStatus res ->
+                    ( { model | errorMessage = res.status.message }, Cmd.none )
+
+                _ ->
+                    ( { model | errorMessage = toString msg }, Cmd.none )
 
         None ->
             ( model, Cmd.none )
@@ -81,9 +89,14 @@ decodeEmptyResult =
 
 view model =
     div []
-        [ input [ placeholder "Email" ] []
-        , input [ placeholder "Password" ] []
-        , button [ onClick Login ] [ text "Enter" ]
+        [ div []
+            [ input [ placeholder "Email", onInput UpdateEmail ] []
+            , input [ placeholder "Password", onInput UpdatePassword ] []
+            , button [ onClick Login ] [ text "Enter" ]
+            ]
+        , div []
+            [ Toaster.html model.errorMessage
+            ]
         ]
 
 

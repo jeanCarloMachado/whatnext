@@ -6,7 +6,7 @@ set -o nounset
 # set -o xtrace
 scriptDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-source $scriptDir/../config.sh
+source $scriptDir/../../config.sh
 
 email=$1
 password=$2
