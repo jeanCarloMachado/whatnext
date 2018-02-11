@@ -14,6 +14,7 @@ build: copyAssets
 	cd src/web/frontend && elm-make Scheduler.elm --output ${dist_dir}/scheduler.js
 	cd src/web/frontend && elm-make Log.elm --output ${dist_dir}/log.js
 	cd src/web/frontend && elm-make Add.elm --output ${dist_dir}/add.js
+	cd src/web/frontend && elm-make Login.elm --output ${dist_dir}/login.js
 
 copyAssets:
 	mkdir dist || true
@@ -44,4 +45,4 @@ watch: copyAssets
 	my_watch "make build" .
 
 serveApi: clear
-	source ${current_dir}/src/config.sh && cd ${current_dir}/src/web/frontend && python webserver.py &
+	source ${current_dir}/src/config.sh && cd ${current_dir}/src/web/api && python webserver.py &

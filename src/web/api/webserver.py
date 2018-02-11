@@ -4,7 +4,8 @@ import os, sys
 import subprocess
 import hashlib
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+CLI_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(CLI_PATH)
 from scheduler import configure_subjects, sort_subjects
 
 from flask import Flask, request, jsonify, Response
