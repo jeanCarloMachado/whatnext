@@ -52,7 +52,7 @@ update msg model =
             ( { model | errorMessage = "" }, loginRequest model )
 
         LoginResult (Ok message) ->
-            ( model, Navigation.newUrl "http://google.com" )
+            ( model, Navigation.load "http://app.thewatnext.dev?page=scheduler" )
 
         LoginResult (Err msg) ->
             case msg of

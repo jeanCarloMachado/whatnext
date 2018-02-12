@@ -3,6 +3,7 @@
 import os, sys
 import subprocess
 import hashlib
+import datetime
 
 CLI_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(CLI_PATH)
@@ -185,7 +186,9 @@ def login():
 
 
     response = make_response(SUCCESS_MESSAGE)
-    response.set_cookie("Authorization", loginHash, domain='.thewhatnext.dev', path = "/*")
+    expire_date = datetime.datetime.now()
+    expire_date = expire_date + datetime.timedelta(days=90)
+    response.set_cookie("Authorization", loginHash, domain='.thewhatnext.dev', path = "/",  expires=expire_date)
 
     return response, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
