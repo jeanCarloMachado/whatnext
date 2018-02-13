@@ -1,19 +1,32 @@
 module Scheduler exposing (..)
 
+--view imports
+
 import Html
 import Html.Styled
+import Html.Styled exposing (..)
+import Html.Styled.Attributes exposing (css, href, src, placeholder, type_, id)
+import Html.Styled.Events exposing (..)
+import Dom.Scroll
+import Toaster exposing (..)
+import Css exposing (..)
+import Colors exposing (defaultColors)
+
+
+-- json
+
+import Json.Decode
+import Json.Encode
+import Json.Decode exposing (..)
+import Json.Decode.Pipeline
+
+
+--rest
+
 import Http exposing (..)
 import Platform exposing (..)
-import Json.Encode
-import View exposing (..)
-import Models exposing (..)
 import Array exposing (Array)
-import Dom.Scroll
 import Task
-
-
-type alias Flags =
-    { apiEndpoint : String }
 
 
 main =
@@ -22,7 +35,76 @@ main =
 
 init : Flags -> ( PageData, Cmd Msg )
 init flags =
-    ( PageData [] Nothing True "" False flags.apiEndpoint, Models.getListRequest flags.apiEndpoint False )
+    ( PageData [] Nothing True "" False flags.apiEndpoint, getListRequest flags.apiEndpoint False )
+
+
+
+-- Model
+
+
+type Msg
+    = NewList (Result Http.Error (Array Subject))
+    | ExpandSubjectClick ( Int, Subject )
+    | GetDetail (Result Http.Error Subject)
+    | DoneResult (Result Http.Error String)
+    | SubmitDone Subject
+    | ToggleTiredMode
+    | ClickDone Subject
+    | CancelDone Subject
+    | DoneChangeDescription Subject String
+    | DoneChangeWhatToDoNext Subject String
+    | Remove (Result Http.Error String)
+    | RemoveClick Subject
+    | None
+
+
+type alias PageData =
+    { subjects : List ( Int, Subject )
+    , openedIndex : Maybe Int
+    , loading : Bool
+    , toasterMsg : String
+    , tiredMode : Bool
+    , apiEndpoint : String
+    }
+
+
+type alias Subject =
+    { name : String
+    , daysSinceLast : Int
+    , timeAlreadyInvested : String
+    , history : List StudyEntry
+    , doneForm : Bool
+    , doneData : DoneData
+    , whatToDoNext : String
+    , complexity : Int
+    , priority : Int
+    }
+
+
+type alias DoneData =
+    { description : String
+    , whatToDoNext : String
+    }
+
+
+type alias StudyEntry =
+    { date : String
+    , description : String
+    , subjectName : String
+    }
+
+
+emptySubject : Subject
+emptySubject =
+    Subject "" 0 "" [] False (DoneData "" "") "" 0 0
+
+
+type alias Flags =
+    { apiEndpoint : String }
+
+
+
+-- update
 
 
 update : Msg -> PageData -> ( PageData, Cmd Msg )
@@ -82,19 +164,19 @@ update msg model =
                 ( replaceSubjectFromList model newSubject, Cmd.none )
 
         SubmitDone subject ->
-            ( { model | loading = True }, Models.doneRequest model.apiEndpoint subject )
+            ( { model | loading = True }, doneRequest model.apiEndpoint subject )
 
         DoneResult (Ok _) ->
-            ( { model | loading = False }, Models.getListRequest model.apiEndpoint model.tiredMode )
+            ( { model | loading = False }, getListRequest model.apiEndpoint model.tiredMode )
 
         ToggleTiredMode ->
-            ( { model | tiredMode = not model.tiredMode }, Models.getListRequest model.apiEndpoint <| not model.tiredMode )
+            ( { model | tiredMode = not model.tiredMode }, getListRequest model.apiEndpoint <| not model.tiredMode )
 
         RemoveClick subject ->
-            ( { model | loading = True }, Models.removeRequest model.apiEndpoint subject )
+            ( { model | loading = True }, removeRequest model.apiEndpoint subject )
 
         Remove (Ok _) ->
-            ( { model | loading = True }, Models.getListRequest model.apiEndpoint model.tiredMode )
+            ( { model | loading = True }, getListRequest model.apiEndpoint model.tiredMode )
 
         Remove (Err msg) ->
             errorResult model msg
@@ -127,7 +209,7 @@ getOffsetOfSubject subjects subject =
 
 
 getDetailUpdateResult model indice subject =
-    ( { model | loading = True, openedIndex = Just indice }, Models.getDetail model.apiEndpoint subject )
+    ( { model | loading = True, openedIndex = Just indice }, getDetail model.apiEndpoint subject )
 
 
 errorResult : PageData -> Error -> ( PageData, Cmd Msg )
@@ -157,3 +239,277 @@ replaceSame new ( indice, orig ) =
 subscriptions : PageData -> Sub Msg
 subscriptions model =
     Sub.none
+
+
+
+-- requests
+
+
+decodeSubjectList : Decoder (Array Subject)
+decodeSubjectList =
+    Json.Decode.array decodeSubject
+
+
+decodeSubject : Decoder Subject
+decodeSubject =
+    Json.Decode.Pipeline.decode Subject
+        |> Json.Decode.Pipeline.required "name" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "days_since_last_study" (Json.Decode.int)
+        |> Json.Decode.Pipeline.required "time_already_invested_str" (Json.Decode.string)
+        |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodeStudyEntry) []
+        |> Json.Decode.Pipeline.hardcoded False
+        |> Json.Decode.Pipeline.hardcoded (DoneData "" "")
+        |> Json.Decode.Pipeline.required "what_to_do_next" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "complexity" (Json.Decode.int)
+        |> Json.Decode.Pipeline.required "priority" (Json.Decode.int)
+
+
+decodeSubjectHistory =
+    at [ "history" ] (Json.Decode.array decodeStudyEntry)
+
+
+decodeStudyEntry =
+    Json.Decode.Pipeline.decode StudyEntry
+        |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)
+
+
+decodeEmptyResult =
+    Json.Decode.succeed ""
+
+
+getListRequest : String -> Bool -> Cmd Msg
+getListRequest endpoint tiredMode =
+    let
+        url =
+            "https://" ++ endpoint ++ "/scheduler" ++ (tiredMode |> toUrlBool)
+
+        request =
+            Http.request
+                { method = "GET"
+                , headers = [ Http.header "Content-Type" "application/json" ]
+                , url = url
+                , body = Http.emptyBody
+                , expect = (Http.expectJson decodeSubjectList)
+                , timeout = Nothing
+                , withCredentials = True
+                }
+    in
+        Http.send NewList request
+
+
+toUrlBool : Bool -> String
+toUrlBool bool =
+    case bool of
+        True ->
+            "?tiredMode=True"
+
+        False ->
+            ""
+
+
+removeRequest : String -> Subject -> Cmd Msg
+removeRequest endpoint subject =
+    let
+        url =
+            "https://" ++ endpoint ++ "/rm/" ++ subject.name
+
+        request =
+            Http.get url decodeEmptyResult
+    in
+        Http.send Remove request
+
+
+getDetail : String -> Subject -> Cmd Msg
+getDetail endpoint subject =
+    let
+        url =
+            "https://" ++ endpoint ++ "/detail/" ++ subject.name
+
+        request =
+            Http.get url decodeSubject
+    in
+        Http.send GetDetail request
+
+
+doneRequest : String -> Subject -> Cmd Msg
+doneRequest endpoint subject =
+    let
+        url =
+            "https://" ++ endpoint ++ "/done/" ++ subject.name
+
+        body =
+            Json.Encode.object
+                [ ( "description", Json.Encode.string subject.doneData.description )
+                , ( "whatToDoNext", Json.Encode.string subject.doneData.whatToDoNext )
+                ]
+
+        request =
+            Http.post url (Http.jsonBody body) decodeEmptyResult
+    in
+        Http.send DoneResult request
+
+
+view : PageData -> Html.Styled.Html Msg
+view pageData =
+    let
+        loadingHtml =
+            getLoadingHtml pageData.loading
+    in
+        div [ css [ color defaultColors.textNormal, top (px 0), left (px 0), margin (px 0), height (pct 100) ] ]
+            [ loadingHtml
+            , div [ css [ margin (pct 3) ] ]
+                [ div []
+                    [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
+                    , text "Tired mode"
+                    ]
+                , a [ css [ padding (px 10) ], href "index.html?env=development&page=log" ]
+                    [ text "Log"
+                    ]
+                , a [ css [ padding (px 10) ], href "index.html?page=add" ]
+                    [ text "Add"
+                    ]
+                , Toaster.html pageData.toasterMsg
+                , div
+                    []
+                    [ subjectsToHtml pageData.openedIndex pageData.subjects
+                    ]
+                ]
+            ]
+
+
+subjectsToHtml : Maybe Int -> List ( Int, Subject ) -> Html.Styled.Html Msg
+subjectsToHtml openedIndex list =
+    let
+        innerList =
+            List.map (subjectToHtml openedIndex) list
+    in
+        ul [ css [ listStyle none ] ] innerList
+
+
+subjectToHtml : Maybe Int -> ( Int, Subject ) -> Html.Styled.Html Msg
+subjectToHtml openedIndice ( indice, subject ) =
+    li [ onClick (ExpandSubjectClick ( indice, subject )), subjectCss openedIndice ( indice, subject ), id <| "subject_" ++ toString indice ]
+        [ div []
+            [ div [ css [ fontSize (Css.em 1.2) ] ]
+                [ span [ css [ color defaultColors.textHighlight ] ] [ text subject.name ]
+                , text
+                    (" " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested))
+                , (doneControlButtons subject)
+                ]
+            , (hiddenSubjectHtml openedIndice ( indice, subject ))
+            ]
+        ]
+
+
+hiddenSubjectHtml : Maybe Int -> ( Int, Subject ) -> Html.Styled.Html Msg
+hiddenSubjectHtml openedIndice ( indice, subject ) =
+    case openedIndice of
+        Just openedIndiceValue ->
+            if openedIndiceValue == indice then
+                div [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed None) ]
+                    [ div []
+                        [ (doneFormForSubject subject)
+                        , div []
+                            [ p []
+                                [ text <| "Priority: " ++ (toString subject.priority)
+                                ]
+                            , p []
+                                [ text <| "Complexity: " ++ (toString subject.complexity)
+                                ]
+                            ]
+                        , div [ css [ fontSize (Css.em 1.1) ] ]
+                            [ text <| "What to do next: " ++ subject.whatToDoNext
+                            ]
+                        ]
+                    , div []
+                        [ text "History"
+                        , div [] (List.map studyEntryToHtml subject.history)
+                        ]
+                    , subjectButton "Remove" (RemoveClick subject)
+                    ]
+            else
+                emptyNode
+
+        Nothing ->
+            emptyNode
+
+
+doneControlButtons : Subject -> Html.Styled.Html Msg
+doneControlButtons subject =
+    case subject.doneForm of
+        True ->
+            div [ css [ Css.float right ] ]
+                [ subjectButton "Cancel" (CancelDone subject)
+                , subjectButton "Confirm" (SubmitDone subject)
+                ]
+
+        False ->
+            div [ css [ Css.float right ] ]
+                [ subjectButton "Done" (ClickDone subject)
+                ]
+
+
+subjectButton : String -> Msg -> Html.Styled.Html Msg
+subjectButton textStr msg =
+    button [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed msg) ]
+        [ text textStr ]
+
+
+inputCss : Attribute Msg
+inputCss =
+    css [ display block, width (px 300), margin (px 5), padding (px 10) ]
+
+
+doneFormForSubject subject =
+    case subject.doneForm of
+        True ->
+            div [ css [ paddingTop (px 10) ] ]
+                [ input [ inputCss, type_ "text", placeholder "What was done?", onInput (DoneChangeDescription subject) ] []
+                , input [ inputCss, type_ "text", placeholder "What is to de done next?", onInput (DoneChangeWhatToDoNext subject) ] []
+                ]
+
+        False ->
+            div []
+                []
+
+
+subjectCss selectedIndex ( index, subject ) =
+    css
+        [ borderRadius (px 10), display block, borderWidth (px 1), padding (px 20), marginBottom (px 1), backgroundColor (selectedColor selectedIndex ( index, subject )) ]
+
+
+selectedColor selectedIndex ( index, subject ) =
+    case selectedIndex of
+        Just x ->
+            if index == x then
+                defaultColors.selectedBackground
+            else
+                defaultColors.normalBackground
+
+        _ ->
+            defaultColors.normalBackground
+
+
+studyEntryToHtml studyEntry =
+    li []
+        [ p [ css [ color defaultColors.textHighlight ] ] [ text <| "Subject: " ++ studyEntry.subjectName ]
+        , p [] [ text <| "Date: " ++ studyEntry.date ]
+        , p [] [ text <| "  " ++ studyEntry.description ]
+        ]
+
+
+emptyNode =
+    text ""
+
+
+getLoadingHtml enabled =
+    case enabled of
+        True ->
+            div [ css [ justifyContent center, alignItems center, position fixed, displayFlex, top (px 0), left (px 0), width (pct 100), height (pct 100), backgroundColor <| rgba 255 255 255 0.9 ] ]
+                [ text "Loading"
+                ]
+
+        False ->
+            emptyNode

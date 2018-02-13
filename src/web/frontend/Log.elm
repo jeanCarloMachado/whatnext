@@ -7,8 +7,7 @@ import Html.Styled exposing (..)
 import Json.Decode.Pipeline
 import Json.Decode
 import Html.Styled.Attributes exposing (css, href, src, placeholder, type_)
-import View exposing (defaultColors, getLoadingHtml, studyEntryToHtml)
-import Models exposing (StudyEntry, decodeStudyEntry)
+import Colors exposing (defaultColors)
 
 
 type alias Flags =
@@ -21,6 +20,13 @@ main =
 
 type alias PageData =
     { history : List StudyEntry, toasterMsg : String, loading : Bool }
+
+
+type alias StudyEntry =
+    { date : String
+    , description : String
+    , subjectName : String
+    }
 
 
 init : Flags -> ( PageData, Cmd Msg )
@@ -90,3 +96,33 @@ getHistoryHtml pageData =
 subscriptions : PageData -> Sub Msg
 subscriptions pageData =
     Sub.none
+
+
+studyEntryToHtml studyEntry =
+    li []
+        [ p [ css [ color defaultColors.textHighlight ] ] [ text <| "Subject: " ++ studyEntry.subjectName ]
+        , p [] [ text <| "Date: " ++ studyEntry.date ]
+        , p [] [ text <| "  " ++ studyEntry.description ]
+        ]
+
+
+decodeStudyEntry =
+    Json.Decode.Pipeline.decode StudyEntry
+        |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)
+
+
+emptyNode =
+    text ""
+
+
+getLoadingHtml enabled =
+    case enabled of
+        True ->
+            div [ css [ justifyContent center, alignItems center, position fixed, displayFlex, top (px 0), left (px 0), width (pct 100), height (pct 100), backgroundColor <| rgba 255 255 255 0.9 ] ]
+                [ text "Loading"
+                ]
+
+        False ->
+            emptyNode

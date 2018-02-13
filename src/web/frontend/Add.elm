@@ -7,7 +7,6 @@ import Css exposing (..)
 import Html.Styled.Events exposing (..)
 import Json.Decode
 import Json.Encode
-import Models exposing (decodeEmptyResult)
 import Http exposing (..)
 
 
@@ -121,3 +120,7 @@ view pageData =
 subscriptions : PageData -> Sub Msg
 subscriptions pageData =
     Sub.none
+
+
+decodeEmptyResult =
+    Json.Decode.succeed ""
