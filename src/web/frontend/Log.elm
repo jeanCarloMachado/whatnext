@@ -57,7 +57,15 @@ getHistory endpoint =
             "https://" ++ endpoint ++ "/log"
 
         request =
-            Http.get url decodeHistory
+            Http.request
+                { method = "GET"
+                , headers = [ Http.header "Content-Type" "application/json" ]
+                , url = url
+                , body = Http.emptyBody
+                , expect = (Http.expectJson decodeHistory)
+                , timeout = Nothing
+                , withCredentials = True
+                }
     in
         Http.send HistoryResult request
 

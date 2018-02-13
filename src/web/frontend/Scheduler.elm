@@ -208,6 +208,7 @@ getOffsetOfSubject subjects subject =
                 0
 
 
+getDetailUpdateResult : PageData -> Int -> Subject -> ( PageData, Cmd Msg )
 getDetailUpdateResult model indice subject =
     ( { model | loading = True, openedIndex = Just indice }, getDetail model.apiEndpoint subject )
 
@@ -243,40 +244,6 @@ subscriptions model =
 
 
 -- requests
-
-
-decodeSubjectList : Decoder (Array Subject)
-decodeSubjectList =
-    Json.Decode.array decodeSubject
-
-
-decodeSubject : Decoder Subject
-decodeSubject =
-    Json.Decode.Pipeline.decode Subject
-        |> Json.Decode.Pipeline.required "name" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "days_since_last_study" (Json.Decode.int)
-        |> Json.Decode.Pipeline.required "time_already_invested_str" (Json.Decode.string)
-        |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodeStudyEntry) []
-        |> Json.Decode.Pipeline.hardcoded False
-        |> Json.Decode.Pipeline.hardcoded (DoneData "" "")
-        |> Json.Decode.Pipeline.required "what_to_do_next" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "complexity" (Json.Decode.int)
-        |> Json.Decode.Pipeline.required "priority" (Json.Decode.int)
-
-
-decodeSubjectHistory =
-    at [ "history" ] (Json.Decode.array decodeStudyEntry)
-
-
-decodeStudyEntry =
-    Json.Decode.Pipeline.decode StudyEntry
-        |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)
-
-
-decodeEmptyResult =
-    Json.Decode.succeed ""
 
 
 getListRequest : String -> Bool -> Cmd Msg
@@ -316,7 +283,15 @@ removeRequest endpoint subject =
             "https://" ++ endpoint ++ "/rm/" ++ subject.name
 
         request =
-            Http.get url decodeEmptyResult
+            Http.request
+                { method = "GET"
+                , headers = [ Http.header "Content-Type" "application/json" ]
+                , url = url
+                , body = Http.emptyBody
+                , expect = (Http.expectJson decodeEmptyResult)
+                , timeout = Nothing
+                , withCredentials = True
+                }
     in
         Http.send Remove request
 
@@ -328,7 +303,15 @@ getDetail endpoint subject =
             "https://" ++ endpoint ++ "/detail/" ++ subject.name
 
         request =
-            Http.get url decodeSubject
+            Http.request
+                { method = "GET"
+                , headers = [ Http.header "Content-Type" "application/json" ]
+                , url = url
+                , body = Http.emptyBody
+                , expect = (Http.expectJson decodeSubject)
+                , timeout = Nothing
+                , withCredentials = True
+                }
     in
         Http.send GetDetail request
 
@@ -346,9 +329,59 @@ doneRequest endpoint subject =
                 ]
 
         request =
-            Http.post url (Http.jsonBody body) decodeEmptyResult
+            Http.request
+                { method = "POST"
+                , headers = [ Http.header "Content-Type" "application/json" ]
+                , url = url
+                , body = (Http.jsonBody body)
+                , expect = (Http.expectJson decodeEmptyResult)
+                , timeout = Nothing
+                , withCredentials = True
+                }
     in
         Http.send DoneResult request
+
+
+
+-- decoders
+
+
+decodeSubjectList : Decoder (Array Subject)
+decodeSubjectList =
+    Json.Decode.array decodeSubject
+
+
+decodeSubject : Decoder Subject
+decodeSubject =
+    Json.Decode.Pipeline.decode Subject
+        |> Json.Decode.Pipeline.required "name" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "days_since_last_study" (Json.Decode.int)
+        |> Json.Decode.Pipeline.required "time_already_invested_str" (Json.Decode.string)
+        |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodeStudyEntry) []
+        |> Json.Decode.Pipeline.hardcoded False
+        |> Json.Decode.Pipeline.hardcoded (DoneData "" "")
+        |> Json.Decode.Pipeline.required "what_to_do_next" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "complexity" (Json.Decode.int)
+        |> Json.Decode.Pipeline.required "priority" (Json.Decode.int)
+
+
+decodeSubjectHistory =
+    at [ "history" ] (Json.Decode.array decodeStudyEntry)
+
+
+decodeStudyEntry =
+    Json.Decode.Pipeline.decode StudyEntry
+        |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)
+
+
+decodeEmptyResult =
+    Json.Decode.succeed ""
+
+
+
+-- view
 
 
 view : PageData -> Html.Styled.Html Msg

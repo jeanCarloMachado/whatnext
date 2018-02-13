@@ -92,7 +92,15 @@ submitRequest pageData =
                 ]
 
         request =
-            Http.post url (Http.jsonBody body) decodeEmptyResult
+            Http.request
+                { method = "POST"
+                , headers = [ Http.header "Content-Type" "application/json" ]
+                , url = url
+                , body = (Http.jsonBody body)
+                , expect = (Http.expectJson decodeEmptyResult)
+                , timeout = Nothing
+                , withCredentials = True
+                }
     in
         Http.send SubmitResult request
 
