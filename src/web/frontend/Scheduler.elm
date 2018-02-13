@@ -44,18 +44,22 @@ init flags =
 
 type Msg
     = NewList (Result Http.Error (Array Subject))
-    | ExpandSubjectClick ( Int, Subject )
-    | GetDetail (Result Http.Error Subject)
-    | DoneResult (Result Http.Error String)
-    | SubmitDone Subject
     | ToggleTiredMode
+    | None
+    | MySubjectMsg SubjectMsg
+
+
+type SubjectMsg
+    = DoneResult (Result Http.Error String)
+    | ExpandSubjectClick ( Int, Subject )
     | ClickDone Subject
     | CancelDone Subject
     | DoneChangeDescription Subject String
     | DoneChangeWhatToDoNext Subject String
     | Remove (Result Http.Error String)
     | RemoveClick Subject
-    | None
+    | GetDetail (Result Http.Error Subject)
+    | SubmitDone Subject
 
 
 type alias PageData =
@@ -113,6 +117,22 @@ update msg model =
         NewList (Ok subjects) ->
             ( { model | subjects = Array.toIndexedList subjects, loading = False }, Cmd.none )
 
+        MySubjectMsg a ->
+            updateSubject a model
+
+        NewList (Err msg) ->
+            errorResult model msg
+
+        None ->
+            ( model, Cmd.none )
+
+        ToggleTiredMode ->
+            ( { model | tiredMode = not model.tiredMode }, getListRequest model.apiEndpoint <| not model.tiredMode )
+
+
+updateSubject : SubjectMsg -> PageData -> ( PageData, Cmd Msg )
+updateSubject msg model =
+    case msg of
         ExpandSubjectClick ( indice, subject ) ->
             case model.openedIndex of
                 Just indexVal ->
@@ -169,9 +189,6 @@ update msg model =
         DoneResult (Ok _) ->
             ( { model | loading = False }, getListRequest model.apiEndpoint model.tiredMode )
 
-        ToggleTiredMode ->
-            ( { model | tiredMode = not model.tiredMode }, getListRequest model.apiEndpoint <| not model.tiredMode )
-
         RemoveClick subject ->
             ( { model | loading = True }, removeRequest model.apiEndpoint subject )
 
@@ -186,12 +203,6 @@ update msg model =
 
         GetDetail (Err msg) ->
             errorResult model msg
-
-        NewList (Err msg) ->
-            errorResult model msg
-
-        None ->
-            ( model, Cmd.none )
 
 
 getOffsetOfSubject : List ( Int, Subject ) -> Subject -> Int
@@ -293,7 +304,7 @@ removeRequest endpoint subject =
                 , withCredentials = True
                 }
     in
-        Http.send Remove request
+        Http.send (MySubjectMsg << Remove) request
 
 
 getDetail : String -> Subject -> Cmd Msg
@@ -313,7 +324,7 @@ getDetail endpoint subject =
                 , withCredentials = True
                 }
     in
-        Http.send GetDetail request
+        Http.send (MySubjectMsg << GetDetail) request
 
 
 doneRequest : String -> Subject -> Cmd Msg
@@ -339,7 +350,7 @@ doneRequest endpoint subject =
                 , withCredentials = True
                 }
     in
-        Http.send DoneResult request
+        Http.send (MySubjectMsg << DoneResult) request
 
 
 
@@ -423,7 +434,7 @@ subjectsToHtml openedIndex list =
 
 subjectToHtml : Maybe Int -> ( Int, Subject ) -> Html.Styled.Html Msg
 subjectToHtml openedIndice ( indice, subject ) =
-    li [ onClick (ExpandSubjectClick ( indice, subject )), subjectCss openedIndice ( indice, subject ), id <| "subject_" ++ toString indice ]
+    li [ onClick ((MySubjectMsg << ExpandSubjectClick) ( indice, subject )), subjectCss openedIndice ( indice, subject ), id <| "subject_" ++ toString indice ]
         [ div []
             [ div [ css [ fontSize (Css.em 1.2) ] ]
                 [ span [ css [ color defaultColors.textHighlight ] ] [ text subject.name ]
@@ -460,7 +471,7 @@ hiddenSubjectHtml openedIndice ( indice, subject ) =
                         [ text "History"
                         , div [] (List.map studyEntryToHtml subject.history)
                         ]
-                    , subjectButton "Remove" (RemoveClick subject)
+                    , subjectButton "Remove" ((MySubjectMsg << RemoveClick) subject)
                     ]
             else
                 emptyNode
@@ -474,13 +485,13 @@ doneControlButtons subject =
     case subject.doneForm of
         True ->
             div [ css [ Css.float right ] ]
-                [ subjectButton "Cancel" (CancelDone subject)
-                , subjectButton "Confirm" (SubmitDone subject)
+                [ subjectButton "Cancel" ((MySubjectMsg << CancelDone) subject)
+                , subjectButton "Confirm" ((MySubjectMsg << SubmitDone) subject)
                 ]
 
         False ->
             div [ css [ Css.float right ] ]
-                [ subjectButton "Done" (ClickDone subject)
+                [ subjectButton "Done" ((MySubjectMsg << ClickDone) subject)
                 ]
 
 
@@ -499,8 +510,8 @@ doneFormForSubject subject =
     case subject.doneForm of
         True ->
             div [ css [ paddingTop (px 10) ] ]
-                [ input [ inputCss, type_ "text", placeholder "What was done?", onInput (DoneChangeDescription subject) ] []
-                , input [ inputCss, type_ "text", placeholder "What is to de done next?", onInput (DoneChangeWhatToDoNext subject) ] []
+                [ input [ inputCss, type_ "text", placeholder "What was done?", onInput (MySubjectMsg << DoneChangeDescription subject) ] []
+                , input [ inputCss, type_ "text", placeholder "What is to de done next?", onInput (MySubjectMsg << DoneChangeWhatToDoNext subject) ] []
                 ]
 
         False ->
