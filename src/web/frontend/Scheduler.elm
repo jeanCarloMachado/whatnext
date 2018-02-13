@@ -72,6 +72,12 @@ type alias PageData =
     }
 
 
+type alias Loading r =
+    { r
+        | loading : Bool
+    }
+
+
 type alias Subject =
     { name : String
     , daysSinceLast : Int
@@ -137,7 +143,7 @@ updateSubject msg model =
             case model.openedIndex of
                 Just indexVal ->
                     if indexVal == indice then
-                        ( { model | loading = False, openedIndex = Nothing }, Cmd.none )
+                        ( clickedSameIndex model, Cmd.none )
                     else
                         getDetailUpdateResult model indice subject
 
@@ -149,7 +155,7 @@ updateSubject msg model =
                 newModel =
                     (replaceSubjectFromList model subject)
             in
-                ( { newModel | loading = False }, Task.attempt (always None) <| Dom.Scroll.toTop ("subject_" ++ toString (getOffsetOfSubject model.subjects subject)) )
+                ( model |> disableLoading, Task.attempt (always None) <| Dom.Scroll.toTop ("subject_" ++ toString (getOffsetOfSubject model.subjects subject)) )
 
         ClickDone subject ->
             ( (replaceSubjectFromList model { subject | doneForm = True }), Cmd.none )
@@ -184,16 +190,16 @@ updateSubject msg model =
                 ( replaceSubjectFromList model newSubject, Cmd.none )
 
         SubmitDone subject ->
-            ( { model | loading = True }, doneRequest model.apiEndpoint subject )
+            ( model |> startLoading, doneRequest model.apiEndpoint subject )
 
         DoneResult (Ok _) ->
             ( { model | loading = False }, getListRequest model.apiEndpoint model.tiredMode )
 
         RemoveClick subject ->
-            ( { model | loading = True }, removeRequest model.apiEndpoint subject )
+            ( model |> startLoading, removeRequest model.apiEndpoint subject )
 
         Remove (Ok _) ->
-            ( { model | loading = True }, getListRequest model.apiEndpoint model.tiredMode )
+            ( model |> startLoading, getListRequest model.apiEndpoint model.tiredMode )
 
         Remove (Err msg) ->
             errorResult model msg
@@ -203,6 +209,19 @@ updateSubject msg model =
 
         GetDetail (Err msg) ->
             errorResult model msg
+
+
+clickedSameIndex model =
+    { model | openedIndex = Nothing } |> disableLoading
+
+
+disableLoading : Loading r -> Loading r
+disableLoading model =
+    { model | loading = False }
+
+
+startLoading model =
+    { model | loading = True }
 
 
 getOffsetOfSubject : List ( Int, Subject ) -> Subject -> Int
@@ -544,10 +563,6 @@ studyEntryToHtml studyEntry =
         ]
 
 
-emptyNode =
-    text ""
-
-
 getLoadingHtml enabled =
     case enabled of
         True ->
@@ -557,3 +572,7 @@ getLoadingHtml enabled =
 
         False ->
             emptyNode
+
+
+emptyNode =
+    text ""
