@@ -83,7 +83,7 @@ submitRequest : PageData -> Cmd Msg
 submitRequest pageData =
     let
         url =
-            "http://" ++ pageData.apiEndpoint ++ "/add"
+            "https://" ++ pageData.apiEndpoint ++ "/add"
 
         body =
             Json.Encode.object

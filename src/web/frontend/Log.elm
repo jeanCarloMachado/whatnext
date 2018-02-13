@@ -48,7 +48,7 @@ update msg pageData =
 getHistory endpoint =
     let
         url =
-            "http://" ++ endpoint ++ "/log"
+            "https://" ++ endpoint ++ "/log"
 
         request =
             Http.get url decodeHistory

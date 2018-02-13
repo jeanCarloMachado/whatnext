@@ -99,26 +99,22 @@ decodeEmptyResult =
     Json.Decode.succeed ""
 
 
-removeRequest : String -> Subject -> Cmd Msg
-removeRequest endpoint subject =
-    let
-        url =
-            "http://" ++ endpoint ++ "/rm/" ++ subject.name
-
-        request =
-            Http.get url decodeEmptyResult
-    in
-        Http.send Remove request
-
-
 getListRequest : String -> Bool -> Cmd Msg
 getListRequest endpoint tiredMode =
     let
         url =
-            "http://" ++ endpoint ++ "/scheduler" ++ (tiredMode |> toUrlBool)
+            "https://" ++ endpoint ++ "/scheduler" ++ (tiredMode |> toUrlBool)
 
         request =
-            Http.get url decodeSubjectList
+            Http.request
+                { method = "GET"
+                , headers = [ Http.header "Content-Type" "application/json" ]
+                , url = url
+                , body = Http.emptyBody
+                , expect = (Http.expectJson decodeSubjectList)
+                , timeout = Nothing
+                , withCredentials = True
+                }
     in
         Http.send NewList request
 
@@ -133,11 +129,23 @@ toUrlBool bool =
             ""
 
 
+removeRequest : String -> Subject -> Cmd Msg
+removeRequest endpoint subject =
+    let
+        url =
+            "https://" ++ endpoint ++ "/rm/" ++ subject.name
+
+        request =
+            Http.get url decodeEmptyResult
+    in
+        Http.send Remove request
+
+
 getDetail : String -> Subject -> Cmd Msg
 getDetail endpoint subject =
     let
         url =
-            "http://" ++ endpoint ++ "/detail/" ++ subject.name
+            "https://" ++ endpoint ++ "/detail/" ++ subject.name
 
         request =
             Http.get url decodeSubject
@@ -149,7 +157,7 @@ doneRequest : String -> Subject -> Cmd Msg
 doneRequest endpoint subject =
     let
         url =
-            "http://" ++ endpoint ++ "/done/" ++ subject.name
+            "https://" ++ endpoint ++ "/done/" ++ subject.name
 
         body =
             Json.Encode.object

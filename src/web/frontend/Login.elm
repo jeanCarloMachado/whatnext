@@ -52,7 +52,7 @@ update msg model =
             ( { model | errorMessage = "" }, loginRequest model )
 
         LoginResult (Ok message) ->
-            ( model, Navigation.load "http://app.thewatnext.dev?page=scheduler" )
+            ( model, Navigation.load "https://app.thewhatnext.net?page=scheduler" )
 
         LoginResult (Err msg) ->
             case msg of
@@ -69,7 +69,7 @@ update msg model =
 loginRequest model =
     let
         url =
-            "http://" ++ model.apiEndpoint ++ "/login"
+            "https://" ++ model.apiEndpoint ++ "/login"
 
         body =
             Json.Encode.object
@@ -78,7 +78,15 @@ loginRequest model =
                 ]
 
         request =
-            Http.post url (Http.jsonBody body) decodeEmptyResult
+            Http.request
+                { method = "POST"
+                , headers = [ Http.header "Content-Type" "application/json" ]
+                , url = url
+                , body = (Http.jsonBody body)
+                , expect = Http.expectString
+                , timeout = Nothing
+                , withCredentials = True
+                }
     in
         Http.send LoginResult request
 

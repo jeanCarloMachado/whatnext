@@ -182,13 +182,13 @@ def login():
     m.update(data['password'].encode('utf-8'))
     loginHash = m.hexdigest()
     if not gatewaySuccess(['validLogin', data['email'], loginHash]):
-        return '{"status": "failure", "message": "Invalid user or password"}', 401, {'Content-Type': 'application/json; charset=utf-8'}
+        return '{"loginHash": "'+loginHash+'", "status": "failure", "message": "Invalid user or password"}', 401, {'Content-Type': 'application/json; charset=utf-8'}
 
 
     response = make_response(SUCCESS_MESSAGE)
     expire_date = datetime.datetime.now()
     expire_date = expire_date + datetime.timedelta(days=90)
-    response.set_cookie("Authorization", loginHash, domain='.thewhatnext.dev', path = "/",  expires=expire_date)
+    response.set_cookie("Authorization", loginHash, domain='.thewhatnext.net', path = "/",  expires=expire_date)
 
     return response, 200, {'Content-Type': 'application/json; charset=utf-8'}
 

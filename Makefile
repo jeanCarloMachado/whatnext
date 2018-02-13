@@ -26,10 +26,10 @@ install:
 
 browserPage:
 	cd dist/ && python -m http.server 5001 &
-	${BROWSER} http://localhost:5001/index.html?env=development
+	${BROWSER} https://app.thewhatnext.net
 
 browserProduction:
-	${BROWSER} http://thewhatnext.net
+	${BROWSER} https://app.thewhatnext.net
 
 deployFrontend:
 	scp -r dist/* blog:"/home/ubuntu/whatnext/frontend/"

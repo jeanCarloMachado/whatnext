@@ -22,16 +22,8 @@
       return decodeURIComponent(results[2].replace(/\+/g, " "));
     }
 
-    env = getParameterByName("env") || "production"
-    switch(env) {
-        case "production":
-          endpoint = "api.thewhatnext.net"
-          break
-        default:
-          endpoint = "api.thewhatnext.dev"
-    }
+    endpoint = "api.thewhatnext.net"
 
-    endpoint = "api.thewhatnext.dev"
     page = getParameterByName("page") || "index"
     switch (page) {
       case "log":
