@@ -63,7 +63,8 @@ type DoneMsg
     | DoneResult (Result Http.Error String)
     | DoneChangeDescription String
     | DoneChangeWhatToDoNext String
-    | SubmitDone Subject
+    | SubmitDone
+    | CancelDone
 
 
 type alias State =
@@ -124,7 +125,7 @@ updateSubject msg model =
                     enableLoading model
 
                 differentIndexFunc =
-                    Subject.setCurrentDoneSubject (clickDifferentIndex newModel <| Just indice) subject.name
+                    clickDifferentIndex newModel <| Just indice
             in
                 case model.openedIndex of
                     Just indexVal ->
@@ -172,7 +173,7 @@ updateDone msg model =
             errorResult model msg
 
         ClickDone subject ->
-            ( model, Cmd.none )
+            ( { model | doneSubjectName = subject.name }, Cmd.none )
 
         DoneChangeDescription description ->
             ( { model | doneDescription = description }, Cmd.none )
@@ -180,15 +181,22 @@ updateDone msg model =
         DoneChangeWhatToDoNext next ->
             ( { model | doneWhatToDoNext = next }, Cmd.none )
 
-        SubmitDone subject ->
+        SubmitDone ->
             let
                 doneHttp =
                     Http.send (MySubjectMsg << MyDoneMsg << DoneResult) <| Subject.doneRequest model.apiEndpoint model
             in
-                ( model |> enableLoading, doneHttp )
+                ( model |> enableLoading |> resetCurrentDone, doneHttp )
+
+        CancelDone ->
+            ( model |> resetCurrentDone, Cmd.none )
 
         DoneResult (Ok _) ->
             ( { model | loading = False }, getListRequest model.apiEndpoint model.tiredMode )
+
+
+resetCurrentDone state =
+    { state | doneSubjectName = "", doneDescription = "", doneWhatToDoNext = "" }
 
 
 clickedSameIndex model =
@@ -230,17 +238,7 @@ errorResult model msg =
 
 replaceSubjectFromList : List ( Int, Subject ) -> Subject -> List ( Int, Subject )
 replaceSubjectFromList list subject =
-    (List.map (\x -> replaceSame subject x) list)
-
-
-replaceSame : Subject -> ( Int, Subject ) -> ( Int, Subject )
-replaceSame new ( indice, orig ) =
-    case orig.name == new.name of
-        True ->
-            ( indice, new )
-
-        False ->
-            ( indice, orig )
+    (List.map (\x -> Subject.replaceSame subject x) list)
 
 
 subscriptions : State -> Sub Msg
@@ -307,7 +305,7 @@ view state =
     in
         div [ css [ color defaultColors.textNormal, top (px 0), left (px 0), margin (px 0), height (pct 100) ] ]
             [ loadingHtml
-            , div [ css [ margin (pct 3) ] ]
+            , div []
                 [ div []
                     [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
                     , text "Tired mode"
@@ -319,6 +317,9 @@ view state =
                     [ text "Add"
                     ]
                 , Toaster.html state.toasterMsg
+                , doneForm state
+
+                --subject list
                 , div
                     []
                     [ subjectsToHtml state.openedIndex state.subjects
@@ -344,10 +345,17 @@ subjectToHtml openedIndice ( indice, subject ) =
                 [ span [ css [ color defaultColors.textHighlight ] ] [ text subject.name ]
                 , text
                     (" " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested))
-                , (doneControlButtons subject)
+                , (doneStart subject)
                 ]
             , (hiddenSubjectHtml openedIndice ( indice, subject ))
             ]
+        ]
+
+
+doneStart : Subject -> Html.Styled.Html Msg
+doneStart subject =
+    div [ css [ Css.float right ] ]
+        [ subjectButton "Done" ((MySubjectMsg << MyDoneMsg << ClickDone) subject)
         ]
 
 
@@ -358,8 +366,7 @@ hiddenSubjectHtml openedIndice ( indice, subject ) =
             if openedIndiceValue == indice then
                 div [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed None) ]
                     [ div []
-                        [ (doneFormForSubject subject)
-                        , div [ css [ margin (px 10) ] ]
+                        [ div [ css [ margin (px 10) ] ]
                             [ p [ css [ margin (px 3) ] ]
                                 [ text <| "Priority: " ++ (toString subject.priority)
                                 ]
@@ -384,18 +391,19 @@ hiddenSubjectHtml openedIndice ( indice, subject ) =
             emptyNode
 
 
-doneControlButtons : Subject -> Html.Styled.Html Msg
-doneControlButtons subject =
-    div [ css [ Css.float right ] ]
-        [ subjectButton "Done" ((MySubjectMsg << MyDoneMsg << SubmitDone) subject)
-        ]
+doneForm : Subject.DoneData r -> Html Msg
+doneForm doneInfo =
+    case String.length doneInfo.doneSubjectName of
+        0 ->
+            emptyNode
 
-
-doneFormForSubject subject =
-    div [ css [ paddingTop (px 10) ] ]
-        [ input [ inputCss, type_ "text", placeholder "What was done?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeDescription) ] []
-        , input [ inputCss, type_ "text", placeholder "What is to de done next?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeWhatToDoNext) ] []
-        ]
+        _ ->
+            div [ modalCss ]
+                [ input [ inputCss, type_ "text", placeholder "What was done?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeDescription) ] []
+                , input [ inputCss, type_ "text", placeholder "What is to de done next?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeWhatToDoNext) ] []
+                , button [ onClick (MySubjectMsg << MyDoneMsg <| CancelDone) ] [ text "Cancel" ]
+                , button [ onClick (MySubjectMsg << MyDoneMsg <| SubmitDone) ] [ text "Confirm" ]
+                ]
 
 
 subjectButton : String -> Msg -> Html.Styled.Html Msg
@@ -437,12 +445,16 @@ studyEntryToHtml studyEntry =
 getLoadingHtml enabled =
     case enabled of
         True ->
-            div [ css [ justifyContent center, alignItems center, position fixed, displayFlex, top (px 0), left (px 0), width (pct 100), height (pct 100), backgroundColor <| rgba 255 255 255 0.9 ] ]
+            div [ modalCss ]
                 [ text "Loading"
                 ]
 
         False ->
             emptyNode
+
+
+modalCss =
+    css [ justifyContent center, alignItems center, position fixed, displayFlex, top (px 0), left (px 0), width (pct 100), height (pct 100), backgroundColor <| rgba 255 255 255 0.9 ]
 
 
 emptyNode =

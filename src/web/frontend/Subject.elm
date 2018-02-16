@@ -42,6 +42,16 @@ setCurrentDoneSubject doneData name =
     { doneData | doneSubjectName = name }
 
 
+replaceSame : Subject -> ( Int, Subject ) -> ( Int, Subject )
+replaceSame new ( indice, orig ) =
+    case orig.name == new.name of
+        True ->
+            ( indice, new )
+
+        False ->
+            ( indice, orig )
+
+
 
 --decoders
 
