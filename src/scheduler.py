@@ -14,6 +14,9 @@ from gateway import gateway
 
 def factory_subjects():
     subjects = gateway(['listSubjects'])
+    if len(subjects) < 10:
+        print ("[]")
+        sys.exit()
     intested_time_of_subjects = time_of_subjects()
     #build the initial dic
     subjects_configs = {}
@@ -138,7 +141,11 @@ if __name__ == '__main__':
 
 
     if os.environ.get('TO_JSON') is not None:
-        print(json.dumps(subjects))
+        if not subjects:
+            print("[]")
+        else:
+            print(json.dumps(subjects))
+
         sys.exit()
 
     print_cli(subjects)

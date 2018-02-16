@@ -334,10 +334,11 @@ view state =
                 [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
                 , text "Tired mode"
                 ]
-            , a [ css [ padding (px 10) ], href "index.html?page=log" ]
+            , a [ css [ padding (px 10) ], href "?page=log" ]
                 [ text "Log"
                 ]
             , button [ onClick ToggleAddSubjectModal ] [ text "Add Subject" ]
+            , a [ href "/" ] [ text "Logout" ]
             , Toaster.html state.toasterMsg
             , doneForm state
             , addSubjectModal state.addSubjectModal

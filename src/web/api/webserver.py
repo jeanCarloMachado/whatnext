@@ -7,7 +7,6 @@ import datetime
 
 CLI_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(CLI_PATH)
-from scheduler import configure_subjects, sort_subjects
 
 from flask import Flask, request, jsonify, Response, make_response
 from flask_cors import CORS
@@ -104,7 +103,9 @@ def add():
         str(data['priority']),
         str(data['complexity'])
     ]
-    subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
+    response = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
+    if response.stdout.decode('UTF-8') != "":
+        return response.stdout.decode('UTF-8'), 500, {'Content-Type': 'application/json; charset=utf-8'}
 
     return SUCCESS_MESSAGE, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
@@ -113,12 +114,13 @@ def rm(subjectName):
     email = check_authorization(request)
     my_env = update_environemnt(os.environ.copy(), email)
 
-    data=request.json
     cmd = [
         CLI_PATH + '/rm.sh',
         subjectName
     ]
-    subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
+    response = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
+    if response.stdout.decode('UTF-8') != "":
+        return response.stdout.decode('UTF-8'), 500, {'Content-Type': 'application/json; charset=utf-8'}
 
     return SUCCESS_MESSAGE, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
