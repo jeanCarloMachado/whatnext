@@ -9,6 +9,7 @@
 <body>
   <script src="scheduler.js"></script>
   <script src="login.js"></script>
+  <script src="signup.js"></script>
   <script src="log.js"></script>
   <script src="add.js"></script>
   <script type="text/javascript">
@@ -34,6 +35,9 @@
         break
       case "scheduler":
         Elm.Scheduler.fullscreen({apiEndpoint: endpoint})
+        break
+      case "signup":
+        Elm.Signup.fullscreen({apiEndpoint: endpoint})
         break
       default:
         Elm.Login.fullscreen({apiEndpoint: endpoint})

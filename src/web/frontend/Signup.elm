@@ -1,4 +1,4 @@
-module Login exposing (..)
+module Signup exposing (..)
 
 import Html
 import Html.Styled exposing (..)
@@ -36,8 +36,8 @@ type Msg
     = None
     | UpdateEmail String
     | UpdatePassword String
-    | Login
-    | LoginResult (Result Http.Error String)
+    | Signup
+    | SignupResult (Result Http.Error String)
 
 
 update msg model =
@@ -48,13 +48,13 @@ update msg model =
         UpdatePassword password ->
             ( { model | password = password }, Cmd.none )
 
-        Login ->
-            ( { model | errorMessage = "" }, loginRequest model )
+        Signup ->
+            ( { model | errorMessage = "" }, signupRequest model )
 
-        LoginResult (Ok message) ->
-            ( model, Navigation.load "https://app.thewhatnext.net?page=scheduler" )
+        SignupResult (Ok message) ->
+            ( model, Navigation.load "https://app.thewhatnext.net" )
 
-        LoginResult (Err msg) ->
+        SignupResult (Err msg) ->
             case msg of
                 Http.BadStatus res ->
                     ( { model | errorMessage = res.status.message }, Cmd.none )
@@ -66,10 +66,10 @@ update msg model =
             ( model, Cmd.none )
 
 
-loginRequest model =
+signupRequest model =
     let
         url =
-            "https://" ++ model.apiEndpoint ++ "/login"
+            "https://" ++ model.apiEndpoint ++ "/signup"
 
         body =
             Json.Encode.object
@@ -88,7 +88,7 @@ loginRequest model =
                 , withCredentials = True
                 }
     in
-        Http.send LoginResult request
+        Http.send SignupResult request
 
 
 decodeEmptyResult =
@@ -98,11 +98,11 @@ decodeEmptyResult =
 view model =
     div []
         [ div []
-            [ h1 [] [ text "Login" ]
+            [ h1 [] [ text "Signup" ]
             , input [ placeholder "Email", onInput UpdateEmail ] []
             , input [ placeholder "Password", onInput UpdatePassword ] []
-            , button [ onClick Login ] [ text "Enter" ]
-            , a [ href "https://app.thewhatnext.net?page=signup" ] [ text "Sign up" ]
+            , button [ onClick Signup ] [ text "Register" ]
+            , a [ href "https://app.thewhatnext.net" ] [ text "Login" ]
             ]
         , div []
             [ Toaster.html model.errorMessage

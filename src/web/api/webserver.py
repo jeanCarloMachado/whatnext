@@ -86,7 +86,6 @@ def done(subjectName):
         data['whatToDoNext']
     ]
 
-    my_env = os.environ.copy()
     my_env["NO_ITERACTIVE"] = "1"
     subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
 

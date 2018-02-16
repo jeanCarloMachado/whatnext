@@ -86,7 +86,7 @@ view pageData =
             [ loadingHtml
             , div
                 []
-                [ a [ href "index.html" ]
+                [ a [ href "index.html?page=scheduler" ]
                     [ text "Back"
                     ]
                 ]

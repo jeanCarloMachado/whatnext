@@ -15,6 +15,7 @@ build: copyAssets
 	cd src/web/frontend && elm-make Log.elm --output ${dist_dir}/log.js
 	cd src/web/frontend && elm-make Add.elm --output ${dist_dir}/add.js
 	cd src/web/frontend && elm-make Login.elm --output ${dist_dir}/login.js
+	cd src/web/frontend && elm-make Signup.elm --output ${dist_dir}/signup.js
 
 copyAssets:
 	mkdir dist || true

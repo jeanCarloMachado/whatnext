@@ -33,9 +33,9 @@ main =
     Html.programWithFlags { init = init, view = view >> Html.Styled.toUnstyled, update = update, subscriptions = subscriptions }
 
 
-init : Flags -> ( PageData, Cmd Msg )
+init : Flags -> ( State, Cmd Msg )
 init flags =
-    ( PageData [] Nothing True "" False flags.apiEndpoint, getListRequest flags.apiEndpoint False )
+    ( State [] Nothing True "" False flags.apiEndpoint "" "" "", getListRequest flags.apiEndpoint False )
 
 
 
@@ -50,25 +50,32 @@ type Msg
 
 
 type SubjectMsg
-    = DoneResult (Result Http.Error String)
-    | ExpandSubjectClick ( Int, Subject )
-    | ClickDone Subject
-    | CancelDone Subject
-    | DoneChangeDescription Subject String
-    | DoneChangeWhatToDoNext Subject String
+    = ExpandSubjectClick ( Int, Subject )
     | Remove (Result Http.Error String)
     | RemoveClick Subject
     | GetDetail (Result Http.Error Subject)
+    | MyDoneMsg DoneMsg
+
+
+type DoneMsg
+    = ClickDone Subject
+    | CancelDone Subject
+    | DoneResult (Result Http.Error String)
+    | DoneChangeDescription String
+    | DoneChangeWhatToDoNext String
     | SubmitDone Subject
 
 
-type alias PageData =
+type alias State =
     { subjects : List ( Int, Subject )
     , openedIndex : Maybe Int
     , loading : Bool
     , toasterMsg : String
     , tiredMode : Bool
     , apiEndpoint : String
+    , doneSubjectName : String
+    , doneDescription : String
+    , doneWhatToDoNext : String
     }
 
 
@@ -83,17 +90,17 @@ type alias Subject =
     , daysSinceLast : Int
     , timeAlreadyInvested : String
     , history : List StudyEntry
-    , doneForm : Bool
-    , doneData : DoneData
     , whatToDoNext : String
     , complexity : Int
     , priority : Int
     }
 
 
-type alias DoneData =
-    { description : String
-    , whatToDoNext : String
+type alias DoneData r =
+    { r
+        | doneSubjectName : String
+        , doneDescription : String
+        , doneWhatToDoNext : String
     }
 
 
@@ -106,7 +113,7 @@ type alias StudyEntry =
 
 emptySubject : Subject
 emptySubject =
-    Subject "" 0 "" [] False (DoneData "" "") "" 0 0
+    Subject "" 0 "" [] "" 0 0
 
 
 type alias Flags =
@@ -117,7 +124,7 @@ type alias Flags =
 -- update
 
 
-update : Msg -> PageData -> ( PageData, Cmd Msg )
+update : Msg -> State -> ( State, Cmd Msg )
 update msg model =
     case msg of
         NewList (Ok subjects) ->
@@ -136,83 +143,91 @@ update msg model =
             ( { model | tiredMode = not model.tiredMode }, getListRequest model.apiEndpoint <| not model.tiredMode )
 
 
-updateSubject : SubjectMsg -> PageData -> ( PageData, Cmd Msg )
+updateSubject : SubjectMsg -> State -> ( State, Cmd Msg )
 updateSubject msg model =
     case msg of
         ExpandSubjectClick ( indice, subject ) ->
-            case model.openedIndex of
-                Just indexVal ->
-                    if indexVal == indice then
-                        ( clickedSameIndex model, Cmd.none )
-                    else
-                        getDetailUpdateResult model indice subject
+            let
+                detailCmd =
+                    getDetail model.apiEndpoint subject
 
-                Nothing ->
-                    getDetailUpdateResult model indice subject
+                newModel =
+                    enableLoading model
+
+                differentIndexFunc =
+                    setCurrentDoneSubject (clickDifferentIndex newModel <| Just indice) subject.name
+            in
+                case model.openedIndex of
+                    Just indexVal ->
+                        if indexVal == indice then
+                            ( (clickedSameIndex newModel |> disableLoading), Cmd.none )
+                        else
+                            ( differentIndexFunc, detailCmd )
+
+                    Nothing ->
+                        ( differentIndexFunc, detailCmd )
 
         GetDetail (Ok subject) ->
             let
                 newModel =
-                    (replaceSubjectFromList model subject)
+                    { model | subjects = replaceSubjectFromList model.subjects subject }
             in
-                ( model |> disableLoading, Task.attempt (always None) <| Dom.Scroll.toTop ("subject_" ++ toString (getOffsetOfSubject model.subjects subject)) )
-
-        ClickDone subject ->
-            ( (replaceSubjectFromList model { subject | doneForm = True }), Cmd.none )
-
-        CancelDone subject ->
-            ( (replaceSubjectFromList model { subject | doneForm = False }), Cmd.none )
-
-        DoneChangeDescription subject description ->
-            let
-                doneData =
-                    subject.doneData
-
-                newDoneData =
-                    { doneData | description = description }
-
-                newSubject =
-                    { subject | doneData = newDoneData }
-            in
-                ( (replaceSubjectFromList model newSubject), Cmd.none )
-
-        DoneChangeWhatToDoNext subject next ->
-            let
-                doneData =
-                    subject.doneData
-
-                newDoneData =
-                    { doneData | whatToDoNext = next }
-
-                newSubject =
-                    { subject | doneData = newDoneData }
-            in
-                ( replaceSubjectFromList model newSubject, Cmd.none )
-
-        SubmitDone subject ->
-            ( model |> startLoading, doneRequest model.apiEndpoint subject )
-
-        DoneResult (Ok _) ->
-            ( { model | loading = False }, getListRequest model.apiEndpoint model.tiredMode )
+                ( newModel |> disableLoading, Cmd.none )
 
         RemoveClick subject ->
-            ( model |> startLoading, removeRequest model.apiEndpoint subject )
+            ( model |> enableLoading, removeRequest model.apiEndpoint subject )
 
         Remove (Ok _) ->
-            ( model |> startLoading, getListRequest model.apiEndpoint model.tiredMode )
+            ( model |> enableLoading, getListRequest model.apiEndpoint model.tiredMode )
 
         Remove (Err msg) ->
             errorResult model msg
 
+        GetDetail (Err msg) ->
+            errorResult
+                model
+                msg
+
+        MyDoneMsg a ->
+            updateDone a model
+
+
+updateDone : DoneMsg -> State -> ( State, Cmd Msg )
+updateDone msg model =
+    case msg of
         DoneResult (Err msg) ->
             errorResult model msg
 
-        GetDetail (Err msg) ->
-            errorResult model msg
+        ClickDone subject ->
+            ( model, Cmd.none )
+
+        CancelDone subject ->
+            ( model, Cmd.none )
+
+        DoneChangeDescription description ->
+            ( { model | doneDescription = description }, Cmd.none )
+
+        DoneChangeWhatToDoNext next ->
+            ( { model | doneWhatToDoNext = next }, Cmd.none )
+
+        SubmitDone subject ->
+            ( model |> enableLoading, doneRequest model.apiEndpoint model )
+
+        DoneResult (Ok _) ->
+            ( { model | loading = False }, getListRequest model.apiEndpoint model.tiredMode )
+
+
+setCurrentDoneSubject : DoneData r -> String -> DoneData r
+setCurrentDoneSubject doneData name =
+    { doneData | doneSubjectName = name }
 
 
 clickedSameIndex model =
-    { model | openedIndex = Nothing } |> disableLoading
+    { model | openedIndex = Nothing }
+
+
+clickDifferentIndex model index =
+    { model | openedIndex = index }
 
 
 disableLoading : Loading r -> Loading r
@@ -220,7 +235,8 @@ disableLoading model =
     { model | loading = False }
 
 
-startLoading model =
+enableLoading : Loading r -> Loading r
+enableLoading model =
     { model | loading = True }
 
 
@@ -238,23 +254,14 @@ getOffsetOfSubject subjects subject =
                 0
 
 
-getDetailUpdateResult : PageData -> Int -> Subject -> ( PageData, Cmd Msg )
-getDetailUpdateResult model indice subject =
-    ( { model | loading = True, openedIndex = Just indice }, getDetail model.apiEndpoint subject )
-
-
-errorResult : PageData -> Error -> ( PageData, Cmd Msg )
+errorResult : State -> Error -> ( State, Cmd Msg )
 errorResult model msg =
     ( { model | toasterMsg = (toString msg), loading = False }, Cmd.none )
 
 
-replaceSubjectFromList : PageData -> Subject -> PageData
-replaceSubjectFromList pageData subject =
-    let
-        newList =
-            (List.map (\x -> replaceSame subject x) pageData.subjects)
-    in
-        { pageData | subjects = newList }
+replaceSubjectFromList : List ( Int, Subject ) -> Subject -> List ( Int, Subject )
+replaceSubjectFromList list subject =
+    (List.map (\x -> replaceSame subject x) list)
 
 
 replaceSame : Subject -> ( Int, Subject ) -> ( Int, Subject )
@@ -267,7 +274,7 @@ replaceSame new ( indice, orig ) =
             ( indice, orig )
 
 
-subscriptions : PageData -> Sub Msg
+subscriptions : State -> Sub Msg
 subscriptions model =
     Sub.none
 
@@ -346,16 +353,16 @@ getDetail endpoint subject =
         Http.send (MySubjectMsg << GetDetail) request
 
 
-doneRequest : String -> Subject -> Cmd Msg
-doneRequest endpoint subject =
+doneRequest : String -> DoneData r -> Cmd Msg
+doneRequest endpoint doneData =
     let
         url =
-            "https://" ++ endpoint ++ "/done/" ++ subject.name
+            "https://" ++ endpoint ++ "/done/" ++ doneData.doneSubjectName
 
         body =
             Json.Encode.object
-                [ ( "description", Json.Encode.string subject.doneData.description )
-                , ( "whatToDoNext", Json.Encode.string subject.doneData.whatToDoNext )
+                [ ( "description", Json.Encode.string doneData.doneDescription )
+                , ( "whatToDoNext", Json.Encode.string doneData.doneWhatToDoNext )
                 ]
 
         request =
@@ -369,7 +376,7 @@ doneRequest endpoint subject =
                 , withCredentials = True
                 }
     in
-        Http.send (MySubjectMsg << DoneResult) request
+        Http.send (MySubjectMsg << MyDoneMsg << DoneResult) request
 
 
 
@@ -388,8 +395,6 @@ decodeSubject =
         |> Json.Decode.Pipeline.required "days_since_last_study" (Json.Decode.int)
         |> Json.Decode.Pipeline.required "time_already_invested_str" (Json.Decode.string)
         |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodeStudyEntry) []
-        |> Json.Decode.Pipeline.hardcoded False
-        |> Json.Decode.Pipeline.hardcoded (DoneData "" "")
         |> Json.Decode.Pipeline.required "what_to_do_next" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "complexity" (Json.Decode.int)
         |> Json.Decode.Pipeline.required "priority" (Json.Decode.int)
@@ -414,11 +419,11 @@ decodeEmptyResult =
 -- view
 
 
-view : PageData -> Html.Styled.Html Msg
-view pageData =
+view : State -> Html.Styled.Html Msg
+view state =
     let
         loadingHtml =
-            getLoadingHtml pageData.loading
+            getLoadingHtml state.loading
     in
         div [ css [ color defaultColors.textNormal, top (px 0), left (px 0), margin (px 0), height (pct 100) ] ]
             [ loadingHtml
@@ -427,16 +432,16 @@ view pageData =
                     [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
                     , text "Tired mode"
                     ]
-                , a [ css [ padding (px 10) ], href "index.html?env=development&page=log" ]
+                , a [ css [ padding (px 10) ], href "index.html?page=log" ]
                     [ text "Log"
                     ]
                 , a [ css [ padding (px 10) ], href "index.html?page=add" ]
                     [ text "Add"
                     ]
-                , Toaster.html pageData.toasterMsg
+                , Toaster.html state.toasterMsg
                 , div
                     []
-                    [ subjectsToHtml pageData.openedIndex pageData.subjects
+                    [ subjectsToHtml state.openedIndex state.subjects
                     ]
                 ]
             ]
@@ -501,17 +506,17 @@ hiddenSubjectHtml openedIndice ( indice, subject ) =
 
 doneControlButtons : Subject -> Html.Styled.Html Msg
 doneControlButtons subject =
-    case subject.doneForm of
-        True ->
-            div [ css [ Css.float right ] ]
-                [ subjectButton "Cancel" ((MySubjectMsg << CancelDone) subject)
-                , subjectButton "Confirm" ((MySubjectMsg << SubmitDone) subject)
-                ]
+    div [ css [ Css.float right ] ]
+        [ subjectButton "Cancel" ((MySubjectMsg << MyDoneMsg << CancelDone) subject)
+        , subjectButton "Confirm" ((MySubjectMsg << MyDoneMsg << SubmitDone) subject)
+        ]
 
-        False ->
-            div [ css [ Css.float right ] ]
-                [ subjectButton "Done" ((MySubjectMsg << ClickDone) subject)
-                ]
+
+doneFormForSubject subject =
+    div [ css [ paddingTop (px 10) ] ]
+        [ input [ inputCss, type_ "text", placeholder "What was done?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeDescription) ] []
+        , input [ inputCss, type_ "text", placeholder "What is to de done next?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeWhatToDoNext) ] []
+        ]
 
 
 subjectButton : String -> Msg -> Html.Styled.Html Msg
@@ -523,19 +528,6 @@ subjectButton textStr msg =
 inputCss : Attribute Msg
 inputCss =
     css [ display block, width (px 300), margin (px 5), padding (px 10) ]
-
-
-doneFormForSubject subject =
-    case subject.doneForm of
-        True ->
-            div [ css [ paddingTop (px 10) ] ]
-                [ input [ inputCss, type_ "text", placeholder "What was done?", onInput (MySubjectMsg << DoneChangeDescription subject) ] []
-                , input [ inputCss, type_ "text", placeholder "What is to de done next?", onInput (MySubjectMsg << DoneChangeWhatToDoNext subject) ] []
-                ]
-
-        False ->
-            div []
-                []
 
 
 subjectCss selectedIndex ( index, subject ) =
@@ -555,10 +547,10 @@ selectedColor selectedIndex ( index, subject ) =
             defaultColors.normalBackground
 
 
+studyEntryToHtml : StudyEntry -> Html Msg
 studyEntryToHtml studyEntry =
     li []
-        [ p [ css [ color defaultColors.textHighlight ] ] [ text <| "Subject: " ++ studyEntry.subjectName ]
-        , p [] [ text <| "Date: " ++ studyEntry.date ]
+        [ p [ css [ color defaultColors.textHighlight ] ] [ text studyEntry.date ]
         , p [] [ text <| "  " ++ studyEntry.description ]
         ]
 
