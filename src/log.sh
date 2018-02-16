@@ -20,7 +20,6 @@ IFS='
     exit 0
 }
 
-
 filter=""
 if [[ "$*" =~ "--filter"  ]]
 then

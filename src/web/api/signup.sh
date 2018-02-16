@@ -16,5 +16,8 @@ grep "$email" "$WHATNEXT_USERS" 1>/dev/null && {
     exit 1
 }
 
+
 creationDate=$(date "+%Y-%m-%d %H:%M:%S")
 echo "$email|$password|$creationDate"  >> "$WHATNEXT_USERS"
+
+

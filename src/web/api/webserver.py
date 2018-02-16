@@ -23,22 +23,22 @@ SUCCESS_MESSAGE = '{"status": "success"}'
 
 
 def update_environemnt(my_env, email):
-    DATA_DIR="/data/whatnext/users/"
-    my_env['WHATNEXT_CONF'] = DATA_DIR+email+"/whatnext.conf"
-    my_env['WHATNEXT_GOALS'] = DATA_DIR+email+"/whatnext_goals.conf"
-    my_env['WHATNEXT_HISTORY'] = DATA_DIR+email+"/whatnext_history.conf"
+    DATA_DIR="/data/whatnext/users"
+    my_env['WHATNEXT_CONF'] = DATA_DIR + "/" + email + "/whatnext.conf"
+    my_env['WHATNEXT_GOALS'] = DATA_DIR + "/" + email + "/whatnext_goals.conf"
+    my_env['WHATNEXT_HISTORY'] = DATA_DIR + "/" + email + "/whatnext_history"
 
     return my_env
 
 
 def check_authorization(request):
     if not 'Authorization' in request.cookies:
-        raise '{"message": "Token Required"}'
+        raise NameError('No authorization cookie')
 
-    loginHash = request.cookies['Authorization']
-    email = gateway(['getEmailByHash', loginHash])
+    authHash = request.cookies['Authorization']
+    email = gateway(['getEmailByHash', authHash])
     if email == '':
-        raise '{"message": "Invalid token"}'
+        raise NameError('Invalid token')
 
     return email
 
@@ -69,6 +69,7 @@ def log():
 
     cmd = [ CLI_PATH + '/log.sh', '--json']
     content =  subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE).stdout.decode('UTF-8')
+    print(content)
 
     return content, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
@@ -146,13 +147,13 @@ def signup():
     m = hashlib.sha256()
     m.update(data['email'].encode('utf-8'))
     m.update(data['password'].encode('utf-8'))
-    loginHash = m.hexdigest()
+    authHash = m.hexdigest()
 
 
     cmd = [
         os.path.dirname(os.path.realpath(__file__)) + '/signup.sh',
         data['email'],
-        loginHash
+        authHash
     ]
 
     result = subprocess.run(cmd, stdout=subprocess.PIPE)
@@ -180,15 +181,15 @@ def login():
     m = hashlib.sha256()
     m.update(data['email'].encode('utf-8'))
     m.update(data['password'].encode('utf-8'))
-    loginHash = m.hexdigest()
-    if not gatewaySuccess(['validLogin', data['email'], loginHash]):
-        return '{"loginHash": "'+loginHash+'", "status": "failure", "message": "Invalid user or password"}', 401, {'Content-Type': 'application/json; charset=utf-8'}
+    authHash = m.hexdigest()
+    if not gatewaySuccess(['validLogin', data['email'], authHash]):
+        return '{"authHash": "'+authHash+'", "status": "failure", "message": "Invalid user or password"}', 401, {'Content-Type': 'application/json; charset=utf-8'}
 
 
     response = make_response(SUCCESS_MESSAGE)
     expire_date = datetime.datetime.now()
     expire_date = expire_date + datetime.timedelta(days=90)
-    response.set_cookie("Authorization", loginHash, domain='.thewhatnext.net', path = "/",  expires=expire_date)
+    response.set_cookie("Authorization", authHash, domain='.thewhatnext.net', path = "/",  expires=expire_date)
 
     return response, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
