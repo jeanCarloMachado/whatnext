@@ -27,6 +27,7 @@ import Http exposing (..)
 import Platform exposing (..)
 import Array exposing (Array)
 import Task
+import Subject exposing (Subject, StudyEntry, DoneData)
 
 
 main =
@@ -59,7 +60,6 @@ type SubjectMsg
 
 type DoneMsg
     = ClickDone Subject
-    | CancelDone Subject
     | DoneResult (Result Http.Error String)
     | DoneChangeDescription String
     | DoneChangeWhatToDoNext String
@@ -83,37 +83,6 @@ type alias Loading r =
     { r
         | loading : Bool
     }
-
-
-type alias Subject =
-    { name : String
-    , daysSinceLast : Int
-    , timeAlreadyInvested : String
-    , history : List StudyEntry
-    , whatToDoNext : String
-    , complexity : Int
-    , priority : Int
-    }
-
-
-type alias DoneData r =
-    { r
-        | doneSubjectName : String
-        , doneDescription : String
-        , doneWhatToDoNext : String
-    }
-
-
-type alias StudyEntry =
-    { date : String
-    , description : String
-    , subjectName : String
-    }
-
-
-emptySubject : Subject
-emptySubject =
-    Subject "" 0 "" [] "" 0 0
 
 
 type alias Flags =
@@ -149,13 +118,13 @@ updateSubject msg model =
         ExpandSubjectClick ( indice, subject ) ->
             let
                 detailCmd =
-                    getDetail model.apiEndpoint subject
+                    Http.send (MySubjectMsg << GetDetail) <| Subject.getDetail model.apiEndpoint subject
 
                 newModel =
                     enableLoading model
 
                 differentIndexFunc =
-                    setCurrentDoneSubject (clickDifferentIndex newModel <| Just indice) subject.name
+                    Subject.setCurrentDoneSubject (clickDifferentIndex newModel <| Just indice) subject.name
             in
                 case model.openedIndex of
                     Just indexVal ->
@@ -175,7 +144,11 @@ updateSubject msg model =
                 ( newModel |> disableLoading, Cmd.none )
 
         RemoveClick subject ->
-            ( model |> enableLoading, removeRequest model.apiEndpoint subject )
+            let
+                removeHttp =
+                    Http.send (MySubjectMsg << Remove) <| Subject.removeRequest model.apiEndpoint subject
+            in
+                ( model |> enableLoading, removeHttp )
 
         Remove (Ok _) ->
             ( model |> enableLoading, getListRequest model.apiEndpoint model.tiredMode )
@@ -201,9 +174,6 @@ updateDone msg model =
         ClickDone subject ->
             ( model, Cmd.none )
 
-        CancelDone subject ->
-            ( model, Cmd.none )
-
         DoneChangeDescription description ->
             ( { model | doneDescription = description }, Cmd.none )
 
@@ -211,15 +181,14 @@ updateDone msg model =
             ( { model | doneWhatToDoNext = next }, Cmd.none )
 
         SubmitDone subject ->
-            ( model |> enableLoading, doneRequest model.apiEndpoint model )
+            let
+                doneHttp =
+                    Http.send (MySubjectMsg << MyDoneMsg << DoneResult) <| Subject.doneRequest model.apiEndpoint model
+            in
+                ( model |> enableLoading, doneHttp )
 
         DoneResult (Ok _) ->
             ( { model | loading = False }, getListRequest model.apiEndpoint model.tiredMode )
-
-
-setCurrentDoneSubject : DoneData r -> String -> DoneData r
-setCurrentDoneSubject doneData name =
-    { doneData | doneSubjectName = name }
 
 
 clickedSameIndex model =
@@ -313,102 +282,13 @@ toUrlBool bool =
             ""
 
 
-removeRequest : String -> Subject -> Cmd Msg
-removeRequest endpoint subject =
-    let
-        url =
-            "https://" ++ endpoint ++ "/rm/" ++ subject.name
-
-        request =
-            Http.request
-                { method = "GET"
-                , headers = [ Http.header "Content-Type" "application/json" ]
-                , url = url
-                , body = Http.emptyBody
-                , expect = (Http.expectJson decodeEmptyResult)
-                , timeout = Nothing
-                , withCredentials = True
-                }
-    in
-        Http.send (MySubjectMsg << Remove) request
-
-
-getDetail : String -> Subject -> Cmd Msg
-getDetail endpoint subject =
-    let
-        url =
-            "https://" ++ endpoint ++ "/detail/" ++ subject.name
-
-        request =
-            Http.request
-                { method = "GET"
-                , headers = [ Http.header "Content-Type" "application/json" ]
-                , url = url
-                , body = Http.emptyBody
-                , expect = (Http.expectJson decodeSubject)
-                , timeout = Nothing
-                , withCredentials = True
-                }
-    in
-        Http.send (MySubjectMsg << GetDetail) request
-
-
-doneRequest : String -> DoneData r -> Cmd Msg
-doneRequest endpoint doneData =
-    let
-        url =
-            "https://" ++ endpoint ++ "/done/" ++ doneData.doneSubjectName
-
-        body =
-            Json.Encode.object
-                [ ( "description", Json.Encode.string doneData.doneDescription )
-                , ( "whatToDoNext", Json.Encode.string doneData.doneWhatToDoNext )
-                ]
-
-        request =
-            Http.request
-                { method = "POST"
-                , headers = [ Http.header "Content-Type" "application/json" ]
-                , url = url
-                , body = (Http.jsonBody body)
-                , expect = (Http.expectJson decodeEmptyResult)
-                , timeout = Nothing
-                , withCredentials = True
-                }
-    in
-        Http.send (MySubjectMsg << MyDoneMsg << DoneResult) request
-
-
 
 -- decoders
 
 
 decodeSubjectList : Decoder (Array Subject)
 decodeSubjectList =
-    Json.Decode.array decodeSubject
-
-
-decodeSubject : Decoder Subject
-decodeSubject =
-    Json.Decode.Pipeline.decode Subject
-        |> Json.Decode.Pipeline.required "name" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "days_since_last_study" (Json.Decode.int)
-        |> Json.Decode.Pipeline.required "time_already_invested_str" (Json.Decode.string)
-        |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodeStudyEntry) []
-        |> Json.Decode.Pipeline.required "what_to_do_next" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "complexity" (Json.Decode.int)
-        |> Json.Decode.Pipeline.required "priority" (Json.Decode.int)
-
-
-decodeSubjectHistory =
-    at [ "history" ] (Json.Decode.array decodeStudyEntry)
-
-
-decodeStudyEntry =
-    Json.Decode.Pipeline.decode StudyEntry
-        |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)
+    Json.Decode.array Subject.decodeSubject
 
 
 decodeEmptyResult =
@@ -479,11 +359,11 @@ hiddenSubjectHtml openedIndice ( indice, subject ) =
                 div [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed None) ]
                     [ div []
                         [ (doneFormForSubject subject)
-                        , div []
-                            [ p []
+                        , div [ css [ margin (px 10) ] ]
+                            [ p [ css [ margin (px 3) ] ]
                                 [ text <| "Priority: " ++ (toString subject.priority)
                                 ]
-                            , p []
+                            , p [ css [ margin (px 3) ] ]
                                 [ text <| "Complexity: " ++ (toString subject.complexity)
                                 ]
                             ]
@@ -507,8 +387,7 @@ hiddenSubjectHtml openedIndice ( indice, subject ) =
 doneControlButtons : Subject -> Html.Styled.Html Msg
 doneControlButtons subject =
     div [ css [ Css.float right ] ]
-        [ subjectButton "Cancel" ((MySubjectMsg << MyDoneMsg << CancelDone) subject)
-        , subjectButton "Confirm" ((MySubjectMsg << MyDoneMsg << SubmitDone) subject)
+        [ subjectButton "Done" ((MySubjectMsg << MyDoneMsg << SubmitDone) subject)
         ]
 
 
