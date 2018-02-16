@@ -33,6 +33,14 @@ type alias DoneData r =
     }
 
 
+type alias NewSubjectData r =
+    { r
+        | newSubjectName : String
+        , newPriority : String
+        , newComplexity : String
+    }
+
+
 
 --- api
 
@@ -138,6 +146,30 @@ getDetail endpoint subject =
                 }
     in
         request
+
+
+addSubjectRequest : String -> NewSubjectData r -> Http.Request String
+addSubjectRequest endpoint state =
+    let
+        url =
+            "https://" ++ endpoint ++ "/add"
+
+        body =
+            Json.Encode.object
+                [ ( "name", Json.Encode.string state.newSubjectName )
+                , ( "complexity", Json.Encode.string state.newComplexity )
+                , ( "priority", Json.Encode.string state.newPriority )
+                ]
+    in
+        Http.request
+            { method = "POST"
+            , headers = [ Http.header "Content-Type" "application/json" ]
+            , url = url
+            , body = (Http.jsonBody body)
+            , expect = (Http.expectJson decodeEmptyResult)
+            , timeout = Nothing
+            , withCredentials = True
+            }
 
 
 decodeEmptyResult =

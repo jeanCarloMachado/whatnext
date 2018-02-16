@@ -36,7 +36,7 @@ main =
 
 init : Flags -> ( State, Cmd Msg )
 init flags =
-    ( State [] Nothing True "" False flags.apiEndpoint "" "" "", getListRequest flags.apiEndpoint False )
+    ( State [] Nothing True "" False flags.apiEndpoint "" "" "" False "" "" "", getListRequest flags.apiEndpoint False )
 
 
 
@@ -48,6 +48,12 @@ type Msg
     | ToggleTiredMode
     | None
     | MySubjectMsg SubjectMsg
+    | ToggleAddSubjectModal
+    | ChangeNewSubjectName String
+    | ChangeNewPriority String
+    | ChangeNewComplexity String
+    | SubmitNewSubject
+    | NewSubjectResult (Result Http.Error String)
 
 
 type SubjectMsg
@@ -77,6 +83,10 @@ type alias State =
     , doneSubjectName : String
     , doneDescription : String
     , doneWhatToDoNext : String
+    , addSubjectModal : Bool
+    , newComplexity : String
+    , newPriority : String
+    , newSubjectName : String
     }
 
 
@@ -97,11 +107,11 @@ type alias Flags =
 update : Msg -> State -> ( State, Cmd Msg )
 update msg model =
     case msg of
-        NewList (Ok subjects) ->
-            ( { model | subjects = Array.toIndexedList subjects, loading = False }, Cmd.none )
-
         MySubjectMsg a ->
             updateSubject a model
+
+        NewList (Ok subjects) ->
+            ( { model | subjects = Array.toIndexedList subjects, loading = False }, Cmd.none )
 
         NewList (Err msg) ->
             errorResult model msg
@@ -111,6 +121,24 @@ update msg model =
 
         ToggleTiredMode ->
             ( { model | tiredMode = not model.tiredMode }, getListRequest model.apiEndpoint <| not model.tiredMode )
+
+        ToggleAddSubjectModal ->
+            ( { model | addSubjectModal = not model.addSubjectModal }, Cmd.none )
+
+        ChangeNewComplexity complexity ->
+            ( { model | newComplexity = complexity }, Cmd.none )
+
+        ChangeNewPriority priority ->
+            ( { model | newPriority = priority }, Cmd.none )
+
+        ChangeNewSubjectName subjectName ->
+            ( { model | newSubjectName = subjectName }, Cmd.none )
+
+        SubmitNewSubject ->
+            ( model, Http.send NewSubjectResult <| Subject.addSubjectRequest model.apiEndpoint model )
+
+        NewSubjectResult _ ->
+            ( { model | addSubjectModal = False }, getListRequest model.apiEndpoint model.tiredMode )
 
 
 updateSubject : SubjectMsg -> State -> ( State, Cmd Msg )
@@ -299,33 +327,47 @@ decodeEmptyResult =
 
 view : State -> Html.Styled.Html Msg
 view state =
-    let
-        loadingHtml =
-            getLoadingHtml state.loading
-    in
-        div [ css [ color defaultColors.textNormal, top (px 0), left (px 0), margin (px 0), height (pct 100) ] ]
-            [ loadingHtml
-            , div []
-                [ div []
-                    [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
-                    , text "Tired mode"
-                    ]
-                , a [ css [ padding (px 10) ], href "index.html?page=log" ]
-                    [ text "Log"
-                    ]
-                , a [ css [ padding (px 10) ], href "index.html?page=add" ]
-                    [ text "Add"
-                    ]
-                , Toaster.html state.toasterMsg
-                , doneForm state
+    div [ css [ color defaultColors.textNormal, top (px 0), left (px 0), margin (px 0), height (pct 100) ] ]
+        [ getLoadingHtml state.loading
+        , div []
+            [ div []
+                [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
+                , text "Tired mode"
+                ]
+            , a [ css [ padding (px 10) ], href "index.html?page=log" ]
+                [ text "Log"
+                ]
+            , button [ onClick ToggleAddSubjectModal ] [ text "Add Subject" ]
+            , Toaster.html state.toasterMsg
+            , doneForm state
+            , addSubjectModal state.addSubjectModal
 
-                --subject list
-                , div
-                    []
-                    [ subjectsToHtml state.openedIndex state.subjects
-                    ]
+            --subject list
+            , div
+                []
+                [ subjectsToHtml state.openedIndex state.subjects
                 ]
             ]
+        ]
+
+
+addSubjectModal isOpen =
+    case isOpen of
+        True ->
+            div [ modalCss ]
+                [ input [ inputCss, type_ "text", placeholder "Subject name", onInput ChangeNewSubjectName ] []
+                , input [ inputCss, type_ "number", placeholder "Priority", onInput ChangeNewPriority ] []
+                , input [ inputCss, type_ "number", placeholder "Complexity", onInput ChangeNewComplexity ] []
+                , button
+                    [ onClick SubmitNewSubject ]
+                    [ text "Confirm" ]
+                , button
+                    [ onClick ToggleAddSubjectModal ]
+                    [ text "Cancel" ]
+                ]
+
+        False ->
+            emptyNode
 
 
 subjectsToHtml : Maybe Int -> List ( Int, Subject ) -> Html.Styled.Html Msg
@@ -366,17 +408,9 @@ hiddenSubjectHtml openedIndice ( indice, subject ) =
             if openedIndiceValue == indice then
                 div [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed None) ]
                     [ div []
-                        [ div [ css [ margin (px 10) ] ]
-                            [ p [ css [ margin (px 3) ] ]
-                                [ text <| "Priority: " ++ (toString subject.priority)
-                                ]
-                            , p [ css [ margin (px 3) ] ]
-                                [ text <| "Complexity: " ++ (toString subject.complexity)
-                                ]
-                            ]
-                        , div [ css [ fontSize (Css.em 1.1) ] ]
-                            [ text <| "What to do next: " ++ subject.whatToDoNext
-                            ]
+                        [ subjectProperty "Priority" <| toString subject.priority
+                        , subjectProperty "Complexity" <| toString subject.complexity
+                        , subjectProperty "What to do next" subject.whatToDoNext
                         ]
                     , div []
                         [ text "History"
@@ -389,6 +423,12 @@ hiddenSubjectHtml openedIndice ( indice, subject ) =
 
         Nothing ->
             emptyNode
+
+
+subjectProperty name value =
+    p [ css [ margin (px 3) ] ]
+        [ text <| name ++ ": " ++ value
+        ]
 
 
 doneForm : Subject.DoneData r -> Html Msg
