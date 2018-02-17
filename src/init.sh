@@ -9,6 +9,9 @@ mkdir -p $(dirname "$WHATNEXT_CONF")
 
 [ ! -f "$WHATNEXT_HISTORY" ] && {
    touch "$WHATNEXT_HISTORY"
+   signupDate=$(date "+%Y-%m-%d %H:%M:%S")
+   echo "$signupDate|studies|started using whatnext!|" > "$WHATNEXT_HISTORY"
+
 }
 
 [ ! -f "$WHATNEXT_GOALS" ] && {

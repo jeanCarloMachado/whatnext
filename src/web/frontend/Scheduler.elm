@@ -272,17 +272,6 @@ replaceSubjectFromList list subject =
 -- view
 
 
-debugBorders css =
-    let
-        addWidth =
-            borderWidth (px 1) :: css
-
-        addStyle =
-            borderStyle solid :: addWidth
-    in
-        addStyle
-
-
 view : State -> Html.Styled.Html Msg
 view state =
     div [ css [ color defaultColors.textNormal ] ]
@@ -324,19 +313,35 @@ view state =
         ]
 
 
+debugBorders css =
+    let
+        addWidth =
+            borderWidth (px 1) :: css
+
+        addStyle =
+            borderStyle solid :: addWidth
+    in
+        addStyle
+
+
 addSubjectModal isOpen =
     case isOpen of
         True ->
             div [ modalCss ]
-                [ input [ inputCss, type_ "text", placeholder "Subject name", onInput ChangeNewSubjectName ] []
-                , input [ inputCss, type_ "number", placeholder "Priority", onInput ChangeNewPriority ] []
-                , input [ inputCss, type_ "number", placeholder "Complexity", onInput ChangeNewComplexity ] []
-                , button
-                    [ onClick SubmitNewSubject ]
-                    [ text "Confirm" ]
-                , button
-                    [ onClick ToggleAddSubjectModal ]
-                    [ text "Cancel" ]
+                [ div []
+                    [ h1 [] [ text "Add a subject" ]
+                    , div [ css [ marginTop (px 10), marginBottom (px 10) ] ]
+                        [ input [ inputCss, type_ "text", placeholder "Subject name", onInput ChangeNewSubjectName ] []
+                        , input [ inputCss, type_ "number", placeholder "Priority", onInput ChangeNewPriority ] []
+                        , input [ inputCss, type_ "number", placeholder "Complexity", onInput ChangeNewComplexity ] []
+                        ]
+                    , button
+                        [ onClick SubmitNewSubject ]
+                        [ text "Confirm" ]
+                    , button
+                        [ onClick ToggleAddSubjectModal ]
+                        [ text "Cancel" ]
+                    ]
                 ]
 
         False ->
@@ -430,10 +435,15 @@ doneModal doneInfo =
 
         _ ->
             div [ modalCss ]
-                [ input [ inputCss, type_ "text", placeholder "What was done?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeDescription) ] []
-                , input [ inputCss, type_ "text", placeholder "What is to de done next?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeWhatToDoNext) ] []
-                , button [ onClick (MySubjectMsg << MyDoneMsg <| CancelDone) ] [ text "Cancel" ]
-                , button [ onClick (MySubjectMsg << MyDoneMsg <| SubmitDone) ] [ text "Confirm" ]
+                [ div []
+                    [ h1 [] [ text "Record session" ]
+                    , input [ inputCss, type_ "text", placeholder "What was done?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeDescription) ] []
+                    , input [ inputCss, type_ "text", placeholder "What is to de done next?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeWhatToDoNext) ] []
+                    , div []
+                        [ button [ onClick (MySubjectMsg << MyDoneMsg <| CancelDone) ] [ text "Cancel" ]
+                        , button [ onClick (MySubjectMsg << MyDoneMsg <| SubmitDone) ] [ text "Confirm" ]
+                        ]
+                    ]
                 ]
 
 
@@ -445,7 +455,7 @@ subjectButton textStr msg =
 
 inputCss : Attribute Msg
 inputCss =
-    css [ display block, width (px 300), margin (px 5), padding (px 10) ]
+    css [ display block, width (px 300), margin (px 1), marginBottom (px 3), padding (px 10) ]
 
 
 subjectCss selectedIndex ( index, subject ) =
@@ -476,7 +486,7 @@ studyEntryToHtml studyEntry =
 getLoadingHtml enabled =
     case enabled of
         True ->
-            div [ modalCss ]
+            div [ css [ justifyContent center, alignItems center, position fixed, displayFlex, top (px 0), left (px 0), width (pct 100), height (pct 100), backgroundColor <| rgba 255 255 255 0.9 ] ]
                 [ text "Loading"
                 ]
 
@@ -485,7 +495,7 @@ getLoadingHtml enabled =
 
 
 modalCss =
-    css [ justifyContent center, alignItems center, position fixed, displayFlex, top (px 0), left (px 0), width (pct 100), height (pct 100), backgroundColor <| rgba 255 255 255 0.9 ]
+    css [ justifyContent center, alignItems center, position fixed, displayFlex, top (px 0), left (px 0), width (pct 100), height (pct 100), backgroundColor <| rgba 255 255 255 1 ]
 
 
 emptyNode =
