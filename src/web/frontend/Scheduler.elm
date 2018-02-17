@@ -324,27 +324,52 @@ decodeEmptyResult =
 -- view
 
 
+debugBorders css =
+    let
+        addWidth =
+            borderWidth (px 1) :: css
+
+        addStyle =
+            borderStyle solid :: addWidth
+    in
+        addStyle
+
+
 view : State -> Html.Styled.Html Msg
 view state =
-    div [ css [ color defaultColors.textNormal, top (px 0), left (px 0), margin (px 0), height (pct 100) ] ]
-        [ getLoadingHtml state.loading
-        , div []
-            [ div []
-                [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
-                , text "Tired mode"
+    div [ css [ color defaultColors.textNormal ] ]
+        [ --header container
+          div [ css [ displayFlex, justifyContent flexEnd ] ]
+            [ div [ css [] ]
+                [ a [ css [ padding (px 10) ], href "?page=log" ]
+                    [ text "Complete History"
+                    ]
+                , a [ css [ margin (px 30) ], href "/" ] [ text "Logout" ]
                 ]
-            , a [ css [ padding (px 10) ], href "?page=log" ]
-                [ text "Log"
-                ]
-            , button [ onClick ToggleAddSubjectModal ] [ text "Add Subject" ]
-            , a [ href "/" ] [ text "Logout" ]
-            , Toaster.html state.toasterMsg
-            , doneForm state
+            ]
+        , --main content
+          div
+            [ css [ marginTop (px 50), marginLeft (px 10), marginRight (px 10) ] ]
+            [ -- conditional loading, modals
+              getLoadingHtml state.loading
+            , doneModal state
             , addSubjectModal state.addSubjectModal
+            , Toaster.html state.toasterMsg
+
+            -- action menu container
+            , div
+                [ css [ displayFlex, margin (px 20) ] ]
+                [ div [ css [ displayFlex, justifyContent spaceBetween, width (pct 100) ] ]
+                    [ div []
+                        [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
+                        , text " Tired mode"
+                        ]
+                    , button [ onClick ToggleAddSubjectModal ] [ text "Add Subject" ]
+                    ]
+                ]
 
             --subject list
-            , div
-                []
+            , div []
                 [ subjectsToHtml state.openedIndex state.subjects
                 ]
             ]
@@ -431,8 +456,8 @@ subjectProperty name value =
         ]
 
 
-doneForm : Subject.DoneData r -> Html Msg
-doneForm doneInfo =
+doneModal : Subject.DoneData r -> Html Msg
+doneModal doneInfo =
     case String.length doneInfo.doneSubjectName of
         0 ->
             emptyNode
