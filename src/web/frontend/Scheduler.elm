@@ -3,7 +3,6 @@ module Scheduler exposing (..)
 --view imports
 
 import Html
-import Html.Styled
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, src, placeholder, type_, id)
 import Html.Styled.Events exposing (..)

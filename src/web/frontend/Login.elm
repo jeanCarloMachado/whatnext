@@ -2,9 +2,10 @@ module Login exposing (..)
 
 import Html
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (placeholder, href)
+import Html.Styled.Attributes exposing (placeholder, href, type_, css)
 import Html.Styled.Events exposing (onClick, onInput)
 import Http
+import Css exposing (..)
 import Json.Decode
 import Json.Encode
 import Toaster
@@ -95,17 +96,25 @@ decodeEmptyResult =
     Json.Decode.succeed ""
 
 
+inputCss =
+    css [ minWidth (px 300), padding (px 5), margin (px 10) ]
+
+
 view model =
-    div []
-        [ div []
-            [ h1 [] [ text "Login" ]
-            , input [ placeholder "Email", onInput UpdateEmail ] []
-            , input [ placeholder "Password", onInput UpdatePassword ] []
-            , button [ onClick Login ] [ text "Enter" ]
-            , a [ href "https://app.thewhatnext.net?page=signup" ] [ text "Sign up" ]
-            ]
-        , div []
-            [ Toaster.html model.errorMessage
+    div [ css [ displayFlex, justifyContent center, alignItems center, height (px 300) ] ]
+        [ div [ css [ backgroundColor (Css.hex "ffffff"), padding (px 20), displayFlex, flexDirection column ] ]
+            [ h2 [] [ text "Login" ]
+            , input [ inputCss, placeholder "Email", onInput UpdateEmail ] []
+            , input [ inputCss, placeholder "Password", type_ "password", onInput UpdatePassword ] []
+            , div [ css [ displayFlex, justifyContent flexEnd ] ]
+                [ div [ css [] ]
+                    [ a [ href "https://app.thewhatnext.net?page=signup" ] [ text "Sign up" ]
+                    , button [ css [ margin (px 10) ], onClick Login ] [ text "Enter" ]
+                    ]
+                ]
+            , div []
+                [ Toaster.html model.errorMessage
+                ]
             ]
         ]
 
