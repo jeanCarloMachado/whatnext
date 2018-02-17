@@ -20,25 +20,32 @@ main =
     Html.programWithFlags { init = init, view = view >> toUnstyled, update = update, subscriptions = subscriptions }
 
 
+type PageMode
+    = LoginPage
+    | SignupPage
+
+
 type alias Model =
     { email : String
     , password : String
     , apiEndpoint : String
     , errorMessage : String
+    , pageMode : PageMode
     }
 
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( Model "" "" flags.apiEndpoint "", Cmd.none )
+    ( Model "" "" flags.apiEndpoint "" LoginPage, Cmd.none )
 
 
 type Msg
     = None
     | UpdateEmail String
     | UpdatePassword String
-    | Login
-    | LoginResult (Result Http.Error String)
+    | SubmitForm
+    | RequestResult (Result Http.Error String)
+    | TogglePageMode
 
 
 update msg model =
@@ -49,13 +56,23 @@ update msg model =
         UpdatePassword password ->
             ( { model | password = password }, Cmd.none )
 
-        Login ->
-            ( { model | errorMessage = "" }, loginRequest model )
+        SubmitForm ->
+            case model.pageMode of
+                SignupPage ->
+                    ( { model | errorMessage = "" }, Http.send RequestResult <| request model "signup" )
 
-        LoginResult (Ok message) ->
-            ( model, Navigation.load "https://app.thewhatnext.net?page=scheduler" )
+                LoginPage ->
+                    ( { model | errorMessage = "" }, Http.send RequestResult <| request model "login" )
 
-        LoginResult (Err msg) ->
+        RequestResult (Ok message) ->
+            case model.pageMode of
+                LoginPage ->
+                    ( model, Navigation.load "https://app.thewhatnext.net?page=scheduler" )
+
+                SignupPage ->
+                    ( { model | pageMode = togglePageMode model.pageMode }, Cmd.none )
+
+        RequestResult (Err msg) ->
             case msg of
                 Http.BadStatus res ->
                     ( { model | errorMessage = res.status.message }, Cmd.none )
@@ -63,33 +80,50 @@ update msg model =
                 _ ->
                     ( { model | errorMessage = toString msg }, Cmd.none )
 
+        TogglePageMode ->
+            ( { model | pageMode = togglePageMode model.pageMode }, Cmd.none )
+
         None ->
             ( model, Cmd.none )
 
 
-loginRequest model =
+togglePageMode pageMode =
+    case pageMode of
+        LoginPage ->
+            SignupPage
+
+        SignupPage ->
+            LoginPage
+
+
+
+-- requests
+
+
+request model service =
     let
         url =
-            "https://" ++ model.apiEndpoint ++ "/login"
+            "https://" ++ model.apiEndpoint ++ "/" ++ service
 
         body =
             Json.Encode.object
                 [ ( "email", Json.Encode.string model.email )
                 , ( "password", Json.Encode.string model.password )
                 ]
-
-        request =
-            Http.request
-                { method = "POST"
-                , headers = [ Http.header "Content-Type" "application/json" ]
-                , url = url
-                , body = (Http.jsonBody body)
-                , expect = Http.expectString
-                , timeout = Nothing
-                , withCredentials = True
-                }
     in
-        Http.send LoginResult request
+        Http.request
+            { method = "POST"
+            , headers = [ Http.header "Content-Type" "application/json" ]
+            , url = url
+            , body = (Http.jsonBody body)
+            , expect = Http.expectString
+            , timeout = Nothing
+            , withCredentials = True
+            }
+
+
+
+-- view
 
 
 decodeEmptyResult =
@@ -100,20 +134,47 @@ inputCss =
     css [ minWidth (px 300), padding (px 5), margin (px 10) ]
 
 
+getPageTitle pageMode =
+    case pageMode of
+        LoginPage ->
+            "Login"
+
+        SignupPage ->
+            "SignUp"
+
+
+getAccessOtherPageText pageMode =
+    case pageMode of
+        LoginPage ->
+            "Signup"
+
+        SignupPage ->
+            "Login"
+
+
+getSubmitText pageMode =
+    case pageMode of
+        LoginPage ->
+            "Enter"
+
+        SignupPage ->
+            "Join"
+
+
 view model =
     div [ css [ displayFlex, justifyContent center, alignItems center, height (px 300) ] ]
         [ div [ css [ backgroundColor (Css.hex "ffffff"), padding (px 20), displayFlex, flexDirection column ] ]
-            [ h2 [] [ text "Login" ]
+            [ h2 [] [ text <| getPageTitle model.pageMode ]
             , input [ inputCss, placeholder "Email", onInput UpdateEmail ] []
             , input [ inputCss, placeholder "Password", type_ "password", onInput UpdatePassword ] []
-            , div [ css [ displayFlex, justifyContent flexEnd ] ]
-                [ div [ css [] ]
-                    [ a [ href "https://app.thewhatnext.net?page=signup" ] [ text "Sign up" ]
-                    , button [ css [ margin (px 10) ], onClick Login ] [ text "Enter" ]
-                    ]
-                ]
             , div []
                 [ Toaster.html model.errorMessage
+                ]
+            , div [ css [ displayFlex, justifyContent flexEnd ] ]
+                [ div [ css [] ]
+                    [ button [ onClick TogglePageMode ] [ text <| getAccessOtherPageText model.pageMode ]
+                    , button [ css [ margin (px 10) ], onClick SubmitForm ] [ text <| getSubmitText model.pageMode ]
+                    ]
                 ]
             ]
         ]
