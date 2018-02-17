@@ -2,7 +2,7 @@ module Login exposing (..)
 
 import Html
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (placeholder, href, type_, css)
+import Html.Styled.Attributes exposing (placeholder, href, type_, css, type_)
 import Html.Styled.Events exposing (onClick, onInput)
 import Http
 import Css exposing (..)
@@ -165,7 +165,7 @@ view model =
     div [ css [ displayFlex, justifyContent center, alignItems center, height (pct 100), width (pct 100), position fixed ] ]
         [ div [ css [ backgroundColor (Css.hex "ffffff"), padding (px 20), displayFlex, flexDirection column ] ]
             [ h2 [] [ text <| getPageTitle model.pageMode ]
-            , input [ inputCss, placeholder "Email", onInput UpdateEmail ] []
+            , input [ inputCss, placeholder "Email", onInput UpdateEmail, type_ "email" ] []
             , input [ inputCss, placeholder "Password", type_ "password", onInput UpdatePassword ] []
             , div []
                 [ Toaster.html model.errorMessage
