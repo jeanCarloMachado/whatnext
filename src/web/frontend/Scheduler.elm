@@ -374,7 +374,7 @@ hiddenHtml subject =
     div [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed None) ]
         [ --properity container
           div [ css [ displayFlex ] ]
-            [ div [ css [ displayFlex, justifyContent spaceBetween, width (pct 70) ] ]
+            [ div [ css [ displayFlex, justifyContent spaceBetween, width (pct 70), flexWrap wrap ] ]
                 [ div []
                     [ subjectProperty "Priority" <| toString subject.priority
                     , subjectProperty "Complexity" <| toString subject.complexity

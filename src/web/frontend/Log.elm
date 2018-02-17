@@ -74,6 +74,10 @@ decodeHistory =
     Json.Decode.list decodeStudyEntry
 
 
+
+-- view
+
+
 view pageData =
     let
         historyHtml =
@@ -85,10 +89,13 @@ view pageData =
         div [ css [ color defaultColors.textNormal ] ]
             [ loadingHtml
             , div
-                []
+                [ css [ margin (px 10), marginTop (px 0) ] ]
                 [ a [ href "?page=scheduler" ]
                     [ text "Back"
                     ]
+                ]
+            , div []
+                [ h1 [ css [ margin (px 20), fontSize <| Css.em 1.9, textAlign center ] ] [ text "History" ]
                 ]
             , div []
                 [ historyHtml
@@ -97,7 +104,7 @@ view pageData =
 
 
 getHistoryHtml pageData =
-    ul [ css [ listStyleType none ] ]
+    ul [ css [ listStyleType none, width (pct 100) ] ]
         (List.map studyEntryToHtml pageData.history)
 
 
@@ -108,9 +115,13 @@ subscriptions pageData =
 
 studyEntryToHtml studyEntry =
     li []
-        [ p [ css [ color defaultColors.textHighlight ] ] [ text <| "Subject: " ++ studyEntry.subjectName ]
-        , p [] [ text <| "Date: " ++ studyEntry.date ]
-        , p [] [ text <| "  " ++ studyEntry.description ]
+        [ div [ css [] ]
+            [ div [ css [ backgroundColor <| Css.hex "fff", margin (px 30), padding (px 10) ] ]
+                [ h2 [ css [ color defaultColors.textHighlight, fontSize <| Css.em 1.6 ] ] [ text <| studyEntry.subjectName ]
+                , p [] [ text studyEntry.date ]
+                , div [ css [ margin (px 20) ] ] [ text studyEntry.description ]
+                ]
+            ]
         ]
 
 
