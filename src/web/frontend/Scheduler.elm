@@ -268,58 +268,6 @@ replaceSubjectFromList list subject =
     (List.map (\x -> Subject.replaceSame subject x) list)
 
 
-subscriptions : State -> Sub Msg
-subscriptions model =
-    Sub.none
-
-
-
--- requests
-
-
-getListRequest : String -> Bool -> Cmd Msg
-getListRequest endpoint tiredMode =
-    let
-        url =
-            "https://" ++ endpoint ++ "/scheduler" ++ (tiredMode |> toUrlBool)
-
-        request =
-            Http.request
-                { method = "GET"
-                , headers = [ Http.header "Content-Type" "application/json" ]
-                , url = url
-                , body = Http.emptyBody
-                , expect = (Http.expectJson decodeSubjectList)
-                , timeout = Nothing
-                , withCredentials = True
-                }
-    in
-        Http.send NewList request
-
-
-toUrlBool : Bool -> String
-toUrlBool bool =
-    case bool of
-        True ->
-            "?tiredMode=True"
-
-        False ->
-            ""
-
-
-
--- decoders
-
-
-decodeSubjectList : Decoder (Array Subject)
-decodeSubjectList =
-    Json.Decode.array Subject.decodeSubject
-
-
-decodeEmptyResult =
-    Json.Decode.succeed ""
-
-
 
 -- view
 
@@ -409,14 +357,56 @@ subjectToHtml openedIndice ( indice, subject ) =
     li [ onClick ((MySubjectMsg << ExpandSubjectClick) ( indice, subject )), subjectCss openedIndice ( indice, subject ), id <| "subject_" ++ toString indice ]
         [ div []
             [ div [ css [ fontSize (Css.em 1.2) ] ]
-                [ span [ css [ color defaultColors.textHighlight ] ] [ text subject.name ]
-                , text
-                    (" " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested))
+                [ h1 [ css [ display inline, color defaultColors.textHighlight, marginRight (px 20) ] ] [ text subject.name ]
+                , maybePredicate openedIndice (\a -> a == indice) emptyNode <| inlineInfoOfSubject subject
                 , (doneStart subject)
                 ]
-            , (hiddenSubjectHtml openedIndice ( indice, subject ))
+            , maybePredicate openedIndice (\a -> a == indice) (hiddenHtml subject) emptyNode
             ]
         ]
+
+
+inlineInfoOfSubject subject =
+    span [ css [ fontSize (Css.em 0.7) ] ] [ text (" " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested)) ]
+
+
+hiddenHtml subject =
+    div [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed None) ]
+        [ --properity container
+          div [ css [ displayFlex ] ]
+            [ div [ css [ displayFlex, justifyContent spaceBetween, width (pct 70) ] ]
+                [ div []
+                    [ subjectProperty "Priority" <| toString subject.priority
+                    , subjectProperty "Complexity" <| toString subject.complexity
+                    ]
+                , div []
+                    [ subjectProperty "Time since last" <| toString subject.daysSinceLast ++ " days"
+                    , subjectProperty "Hours already invested" <| subject.timeAlreadyInvested
+                    ]
+                ]
+            ]
+        , div
+            []
+            [ subjectProperty "Next Action" subject.whatToDoNext
+            ]
+        , div []
+            [ h2 [ css [ textAlign center, marginTop (px 50), fontWeight bold ] ] [ text "History" ]
+            , div [ css [ margin (px 30) ] ] (List.map studyEntryToHtml subject.history)
+            ]
+        , subjectButton "Remove" ((MySubjectMsg << RemoveClick) subject)
+        ]
+
+
+maybePredicate maybeValue predicate ifTrue ifFalse =
+    case maybeValue of
+        Just maybeValue ->
+            if (predicate maybeValue) then
+                ifTrue
+            else
+                ifFalse
+
+        Nothing ->
+            ifFalse
 
 
 doneStart : Subject -> Html.Styled.Html Msg
@@ -426,32 +416,8 @@ doneStart subject =
         ]
 
 
-hiddenSubjectHtml : Maybe Int -> ( Int, Subject ) -> Html.Styled.Html Msg
-hiddenSubjectHtml openedIndice ( indice, subject ) =
-    case openedIndice of
-        Just openedIndiceValue ->
-            if openedIndiceValue == indice then
-                div [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed None) ]
-                    [ div []
-                        [ subjectProperty "Priority" <| toString subject.priority
-                        , subjectProperty "Complexity" <| toString subject.complexity
-                        , subjectProperty "What to do next" subject.whatToDoNext
-                        ]
-                    , div []
-                        [ text "History"
-                        , div [] (List.map studyEntryToHtml subject.history)
-                        ]
-                    , subjectButton "Remove" ((MySubjectMsg << RemoveClick) subject)
-                    ]
-            else
-                emptyNode
-
-        Nothing ->
-            emptyNode
-
-
 subjectProperty name value =
-    p [ css [ margin (px 3) ] ]
+    p [ css [ margin (px 20) ] ]
         [ text <| name ++ ": " ++ value
         ]
 
@@ -501,9 +467,9 @@ selectedColor selectedIndex ( index, subject ) =
 
 studyEntryToHtml : StudyEntry -> Html Msg
 studyEntryToHtml studyEntry =
-    li []
-        [ p [ css [ color defaultColors.textHighlight ] ] [ text studyEntry.date ]
-        , p [] [ text <| "  " ++ studyEntry.description ]
+    li [ css [ minHeight (px 30) ] ]
+        [ p [ css [ marginTop (px 15), color defaultColors.textHighlight ] ] [ text studyEntry.date ]
+        , p [ css [ marginLeft (px 20) ] ] [ text <| studyEntry.description ]
         ]
 
 
@@ -524,3 +490,55 @@ modalCss =
 
 emptyNode =
     text ""
+
+
+subscriptions : State -> Sub Msg
+subscriptions model =
+    Sub.none
+
+
+
+-- requests
+
+
+getListRequest : String -> Bool -> Cmd Msg
+getListRequest endpoint tiredMode =
+    let
+        url =
+            "https://" ++ endpoint ++ "/scheduler" ++ (tiredMode |> toUrlBool)
+
+        request =
+            Http.request
+                { method = "GET"
+                , headers = [ Http.header "Content-Type" "application/json" ]
+                , url = url
+                , body = Http.emptyBody
+                , expect = (Http.expectJson decodeSubjectList)
+                , timeout = Nothing
+                , withCredentials = True
+                }
+    in
+        Http.send NewList request
+
+
+toUrlBool : Bool -> String
+toUrlBool bool =
+    case bool of
+        True ->
+            "?tiredMode=True"
+
+        False ->
+            ""
+
+
+
+-- decoders
+
+
+decodeSubjectList : Decoder (Array Subject)
+decodeSubjectList =
+    Json.Decode.array Subject.decodeSubject
+
+
+decodeEmptyResult =
+    Json.Decode.succeed ""

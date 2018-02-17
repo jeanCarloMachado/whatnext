@@ -162,7 +162,7 @@ getSubmitText pageMode =
 
 
 view model =
-    div [ css [ displayFlex, justifyContent center, alignItems center, height (px 300) ] ]
+    div [ css [ displayFlex, justifyContent center, alignItems center, height (pct 100), width (pct 100), position fixed ] ]
         [ div [ css [ backgroundColor (Css.hex "ffffff"), padding (px 20), displayFlex, flexDirection column ] ]
             [ h2 [] [ text <| getPageTitle model.pageMode ]
             , input [ inputCss, placeholder "Email", onInput UpdateEmail ] []
