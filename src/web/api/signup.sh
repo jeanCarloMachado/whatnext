@@ -12,7 +12,7 @@ email=$1
 password=$2
 
 grep "$email" "$WHATNEXT_USERS" 1>/dev/null && {
-    echo "User already exists"
+    echo -e "User already exists\c"
     exit 1
 }
 

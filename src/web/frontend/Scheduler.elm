@@ -4,8 +4,9 @@ module Scheduler exposing (..)
 
 import Html
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (css, href, src, placeholder, type_, id)
+import Html.Styled.Attributes exposing (css, href, src, placeholder, type_, id, class, value)
 import Html.Styled.Events exposing (..)
+import Html.Events.Extra exposing (targetValueIntParse)
 import Dom.Scroll
 import Toaster exposing (..)
 import Css exposing (..)
@@ -35,7 +36,7 @@ main =
 
 init : Flags -> ( State, Cmd Msg )
 init flags =
-    ( State [] Nothing True "" False flags.apiEndpoint "" "" "" False "" "" "", getListRequest flags.apiEndpoint False )
+    ( State [] Nothing True "" False flags.apiEndpoint "" "" "" False 50 50 "", getListRequest flags.apiEndpoint False )
 
 
 
@@ -49,8 +50,8 @@ type Msg
     | MySubjectMsg SubjectMsg
     | ToggleAddSubjectModal
     | ChangeNewSubjectName String
-    | ChangeNewPriority String
-    | ChangeNewComplexity String
+    | ChangeNewPriority Int
+    | ChangeNewComplexity Int
     | SubmitNewSubject
     | NewSubjectResult (Result Http.Error String)
 
@@ -83,8 +84,8 @@ type alias State =
     , doneDescription : String
     , doneWhatToDoNext : String
     , addSubjectModal : Bool
-    , newComplexity : String
-    , newPriority : String
+    , newComplexity : Int
+    , newPriority : Int
     , newSubjectName : String
     }
 
@@ -128,7 +129,7 @@ update msg model =
             ( { model | newComplexity = complexity }, Cmd.none )
 
         ChangeNewPriority priority ->
-            ( { model | newPriority = priority }, Cmd.none )
+            ( { model | newPriority = priority * 10 }, Cmd.none )
 
         ChangeNewSubjectName subjectName ->
             ( { model | newSubjectName = subjectName }, Cmd.none )
@@ -332,15 +333,50 @@ addSubjectModal isOpen =
                     [ h1 [] [ text "Add a subject" ]
                     , div [ css [ marginTop (px 10), marginBottom (px 10) ] ]
                         [ input [ inputCss, type_ "text", placeholder "Subject name", onInput ChangeNewSubjectName ] []
-                        , input [ inputCss, type_ "number", placeholder "Priority", onInput ChangeNewPriority ] []
-                        , input [ inputCss, type_ "number", placeholder "Complexity", onInput ChangeNewComplexity ] []
+                        , select [ selectCss, on "change" (Json.Decode.map ChangeNewPriority targetValueIntParse) ]
+                            [ option [ Html.Styled.Attributes.value "0" ]
+                                [ text "0 - No Priority" ]
+                            , option [ Html.Styled.Attributes.value "1" ]
+                                [ text "1 - Low Priority" ]
+                            , option [ Html.Styled.Attributes.value "2" ]
+                                [ text "2" ]
+                            , option [ Html.Styled.Attributes.value "3" ]
+                                [ text "3" ]
+                            , option [ Html.Styled.Attributes.value "4" ]
+                                [ text "4" ]
+                            , option [ Html.Styled.Attributes.value "5" ]
+                                [ text "5 - Medium Priority" ]
+                            , option [ Html.Styled.Attributes.value "6" ]
+                                [ text "6" ]
+                            , option [ Html.Styled.Attributes.value "7" ]
+                                [ text "7" ]
+                            , option [ Html.Styled.Attributes.value "8" ]
+                                [ text "8" ]
+                            , option [ Html.Styled.Attributes.value "9" ]
+                                [ text "9" ]
+                            , option [ Html.Styled.Attributes.value "10" ]
+                                [ text "10 - Higest priority" ]
+                            ]
+                        , select [ selectCss, on "change" (Json.Decode.map ChangeNewComplexity targetValueIntParse) ]
+                            [ option [ Html.Styled.Attributes.value "10" ]
+                                [ text "Easy" ]
+                            , option
+                                [ Html.Styled.Attributes.value "50", Html.Styled.Attributes.selected True ]
+                                [ text "Medium" ]
+                            , option
+                                [ Html.Styled.Attributes.value "80" ]
+                                [ text "Hard" ]
+                            , option
+                                [ Html.Styled.Attributes.value "100" ]
+                                [ text "Hardest" ]
+                            ]
                         ]
                     , button
-                        [ onClick SubmitNewSubject ]
-                        [ text "Confirm" ]
-                    , button
-                        [ onClick ToggleAddSubjectModal ]
+                        [ buttonCss, onClick ToggleAddSubjectModal ]
                         [ text "Cancel" ]
+                    , button
+                        [ buttonCss, onClick SubmitNewSubject ]
+                        [ text "Confirm" ]
                     ]
                 ]
 
@@ -362,7 +398,7 @@ subjectToHtml openedIndice ( indice, subject ) =
     li [ onClick ((MySubjectMsg << ExpandSubjectClick) ( indice, subject )), subjectCss openedIndice ( indice, subject ), id <| "subject_" ++ toString indice ]
         [ div []
             [ div [ css [ fontSize (Css.em 1.2) ] ]
-                [ h1 [ css [ display inline, color defaultColors.textHighlight, marginRight (px 20) ] ] [ text subject.name ]
+                [ h1 [ class "noselect", css [ display inline, color defaultColors.textHighlight, marginRight (px 20) ] ] [ text subject.name ]
                 , maybePredicate openedIndice (\a -> a == indice) emptyNode <| inlineInfoOfSubject subject
                 , (doneStart subject)
                 ]
@@ -456,6 +492,14 @@ subjectButton textStr msg =
 inputCss : Attribute Msg
 inputCss =
     css [ display block, width (px 300), margin (px 1), marginBottom (px 3), padding (px 10) ]
+
+
+selectCss =
+    css [ display block, width (px 300), marginBottom (px 3), padding (px 4) ]
+
+
+buttonCss =
+    css [ width (px 100), margin (px 3) ]
 
 
 subjectCss selectedIndex ( index, subject ) =

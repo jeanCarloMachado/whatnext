@@ -160,7 +160,7 @@ def signup():
     result = subprocess.run(cmd, stdout=subprocess.PIPE)
 
     if result.returncode != 0:
-        return '{"status": "failure", "message": "' + result.stdout.decode('UTF-8') + '"}', 200, {'Content-Type': 'application/json; charset=utf-8'}
+        return '{"status": "failure", "message": "' + result.stdout.decode('UTF-8') + '"}', 500, {'Content-Type': 'application/json; charset=utf-8'}
 
 
     my_env = os.environ.copy()

@@ -36,8 +36,8 @@ type alias DoneData r =
 type alias NewSubjectData r =
     { r
         | newSubjectName : String
-        , newPriority : String
-        , newComplexity : String
+        , newPriority : Int
+        , newComplexity : Int
     }
 
 
@@ -157,8 +157,8 @@ addSubjectRequest endpoint state =
         body =
             Json.Encode.object
                 [ ( "name", Json.Encode.string state.newSubjectName )
-                , ( "complexity", Json.Encode.string state.newComplexity )
-                , ( "priority", Json.Encode.string state.newPriority )
+                , ( "complexity", Json.Encode.int state.newComplexity )
+                , ( "priority", Json.Encode.int state.newPriority )
                 ]
     in
         Http.request

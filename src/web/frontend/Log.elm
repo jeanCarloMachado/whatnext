@@ -91,7 +91,7 @@ view pageData =
             , div
                 [ css [ margin (px 10), marginTop (px 0) ] ]
                 [ a [ href "?page=scheduler" ]
-                    [ text "Back"
+                    [ text "Go Back"
                     ]
                 ]
             , div []

@@ -74,11 +74,16 @@ update msg model =
 
         RequestResult (Err msg) ->
             case msg of
-                Http.BadStatus res ->
-                    ( { model | errorMessage = res.status.message }, Cmd.none )
+                Http.BadStatus response ->
+                    case (response.body |> Json.Decode.decodeString decodeError) of
+                        Ok string ->
+                            ( { model | errorMessage = string }, Cmd.none )
+
+                        _ ->
+                            ( { model | errorMessage = "Generic error 2" }, Cmd.none )
 
                 _ ->
-                    ( { model | errorMessage = toString msg }, Cmd.none )
+                    ( { model | errorMessage = "Generic Error" }, Cmd.none )
 
         TogglePageMode ->
             ( { model | pageMode = togglePageMode model.pageMode }, Cmd.none )
@@ -126,6 +131,10 @@ request model service =
 -- view
 
 
+decodeError =
+    Json.Decode.at [ "message" ] Json.Decode.string
+
+
 decodeEmptyResult =
     Json.Decode.succeed ""
 
@@ -146,10 +155,10 @@ getPageTitle pageMode =
 getAccessOtherPageText pageMode =
     case pageMode of
         LoginPage ->
-            "Signup"
+            "Not registered?"
 
         SignupPage ->
-            "Login"
+            "Already a member?"
 
 
 getSubmitText pageMode =
@@ -172,7 +181,7 @@ view model =
                 ]
             , div [ css [ displayFlex, justifyContent flexEnd ] ]
                 [ div [ css [] ]
-                    [ button [ onClick TogglePageMode ] [ text <| getAccessOtherPageText model.pageMode ]
+                    [ a [ onClick TogglePageMode, href "javascript:void(0);" ] [ text <| getAccessOtherPageText model.pageMode ]
                     , button [ css [ margin (px 10) ], onClick SubmitForm ] [ text <| getSubmitText model.pageMode ]
                     ]
                 ]
