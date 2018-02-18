@@ -398,7 +398,8 @@ subjectToHtml openedIndice ( indice, subject ) =
     li [ onClick ((MySubjectMsg << ExpandSubjectClick) ( indice, subject )), subjectCss openedIndice ( indice, subject ), id <| "subject_" ++ toString indice ]
         [ div []
             [ div [ css [ fontSize (Css.em 1.2) ] ]
-                [ h1 [ class "noselect", css [ display inline, color defaultColors.textHighlight, marginRight (px 20) ] ] [ text subject.name ]
+                [ span [ css [ fontSize (Css.em 0.5), marginRight (px 15) ] ] [ text <| toString (indice + 1) ++ "." ]
+                , h1 [ class "noselect", css [ display inline, color defaultColors.textHighlight, marginRight (px 20) ] ] [ text subject.name ]
                 , maybePredicate openedIndice (\a -> a == indice) emptyNode <| inlineInfoOfSubject subject
                 , (doneStart subject)
                 ]
@@ -408,7 +409,7 @@ subjectToHtml openedIndice ( indice, subject ) =
 
 
 inlineInfoOfSubject subject =
-    span [ css [ fontSize (Css.em 0.7) ] ] [ text (" " ++ (subject.daysSinceLast |> toString) ++ " days ago -  " ++ (subject.timeAlreadyInvested)) ]
+    span [ css [ fontSize (Css.em 0.7) ] ] [ text <| " " ++ toString subject.daysSinceLast ++ " days ago" ]
 
 
 hiddenHtml subject =
