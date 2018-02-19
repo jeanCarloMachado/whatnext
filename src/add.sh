@@ -15,6 +15,8 @@ whatToDoNext=$4
 }
 
 
-__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+sed -r -i "/^$name\|/d"  "$WHATNEXT_CONF"
+
 
 echo "$name|$importance|$complexity|$whatToDoNext" >> "$WHATNEXT_CONF"

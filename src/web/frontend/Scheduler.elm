@@ -36,7 +36,7 @@ main =
 
 init : Flags -> ( State, Cmd Msg )
 init flags =
-    ( State [] Nothing True "" False flags.apiEndpoint "" "" "" False 50 50 "" "", getListRequest flags.apiEndpoint False )
+    ( State [] Nothing True "" False flags.apiEndpoint "" "" "" False 50 50 "" "" "", getListRequest flags.apiEndpoint False )
 
 
 
@@ -48,7 +48,8 @@ type Msg
     | ToggleTiredMode
     | NoAction
     | MySubjectMsg SubjectMsg
-    | ToggleAddSubjectModal
+    | OpenAddSubjectModal
+    | CancelAddSubjectModal
     | ChangeNewSubjectName String
     | ChangeNewWhatToDoNext String
     | ChangeNewPriority Int
@@ -90,6 +91,7 @@ type alias State =
     , newPriority : Int
     , newSubjectName : String
     , newWhatToDoNext : String
+    , currentSubjectName : String
     }
 
 
@@ -125,8 +127,11 @@ update msg model =
         ToggleTiredMode ->
             ( { model | tiredMode = not model.tiredMode } |> unselectSubject, getListRequest model.apiEndpoint <| not model.tiredMode )
 
-        ToggleAddSubjectModal ->
-            ( { model | addSubjectModal = not model.addSubjectModal }, Cmd.none )
+        OpenAddSubjectModal ->
+            ( { model | addSubjectModal = True } |> unselectSubject, Cmd.none )
+
+        CancelAddSubjectModal ->
+            ( { model | addSubjectModal = False }, Cmd.none )
 
         ChangeNewComplexity complexity ->
             ( { model | newComplexity = complexity }, Cmd.none )
@@ -156,7 +161,7 @@ updateSubject msg model =
                     Http.send (MySubjectMsg << GetDetail) <| Subject.getDetail model.apiEndpoint subject
 
                 newModel =
-                    enableLoading model
+                    { model | currentSubjectName = subject.name } |> enableLoading
 
                 differentIndexFunc =
                     clickDifferentIndex newModel <| Just indice
@@ -164,7 +169,7 @@ updateSubject msg model =
                 case model.openedIndex of
                     Just indexVal ->
                         if indexVal == indice then
-                            ( (clickedSameIndex newModel |> disableLoading), Cmd.none )
+                            ( (unselectSubject newModel |> disableLoading), Cmd.none )
                         else
                             ( differentIndexFunc, detailCmd )
 
@@ -235,15 +240,11 @@ updateDone msg model =
 
 
 unselectSubject model =
-    { model | openedIndex = Nothing }
+    { model | openedIndex = Nothing, currentSubjectName = "" }
 
 
 resetCurrentDone state =
     { state | doneSubjectName = "", doneDescription = "", doneWhatToDoNext = "" }
-
-
-clickedSameIndex model =
-    { model | openedIndex = Nothing }
 
 
 clickDifferentIndex model index =
@@ -306,7 +307,7 @@ view state =
             [ -- conditional loading, modals
               getLoadingHtml state.loading
             , doneModal state
-            , alterSubjectHtml state.addSubjectModal
+            , alterSubjectHtml state.addSubjectModal state.currentSubjectName
             , Toaster.html state.toasterMsg
 
             -- action menu container
@@ -317,7 +318,7 @@ view state =
                         [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
                         , text " Tired mode"
                         ]
-                    , button [ buttonCss, onClick ToggleAddSubjectModal ] [ text "Add Subject" ]
+                    , button [ buttonCss, onClick OpenAddSubjectModal ] [ text "Add Subject" ]
                     ]
                 ]
 
@@ -340,14 +341,14 @@ debugBorders css =
         addStyle
 
 
-alterSubjectHtml isOpen =
+alterSubjectHtml isOpen subjectName =
     case isOpen of
         True ->
             div [ modalCss ]
                 [ div []
                     [ h1 [] [ text "Subject Settings" ]
                     , div [ css [ marginTop (px 10), marginBottom (px 10) ] ]
-                        [ input [ Html.Styled.Attributes.defaultValue "", inputCss, type_ "text", placeholder "Subject name", onInput ChangeNewSubjectName, Html.Styled.Attributes.required True ] []
+                        [ input [ Html.Styled.Attributes.defaultValue subjectName, inputCss, type_ "text", placeholder "Subject name", onInput ChangeNewSubjectName, Html.Styled.Attributes.required True ] []
                         , select [ selectCss, on "change" (Json.Decode.map ChangeNewPriority targetValueIntParse) ]
                             renderPriorityOptions
                         , select [ selectCss, on "change" (Json.Decode.map ChangeNewComplexity targetValueIntParse) ]
@@ -355,7 +356,7 @@ alterSubjectHtml isOpen =
                         , input [ inputCss, type_ "text", placeholder "What to do next", onInput ChangeNewWhatToDoNext, Html.Styled.Attributes.required True ] []
                         ]
                     , button
-                        [ buttonCss, onClick ToggleAddSubjectModal ]
+                        [ buttonCss, onClick CancelAddSubjectModal ]
                         [ text "Cancel" ]
                     , button
                         [ buttonCss, onClick SubmitNewSubject ]
