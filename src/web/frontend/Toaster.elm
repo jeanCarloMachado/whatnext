@@ -13,6 +13,6 @@ html message =
             div [] []
 
         _ ->
-            div [ css [ borderStyle dashed, borderWidth (px 1), textAlign center ] ]
+            div [ css [ borderWidth (px 1), textAlign center ] ]
                 [ text message
                 ]

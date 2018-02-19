@@ -17,7 +17,7 @@ clearwww:
 copyDist: clearwww
 	cp -rf ../../../dist/* www/
 
-testAndroid:
+testAndroid: copyDist
 	phonegap run android
 
 
@@ -29,3 +29,6 @@ releaseAndroid: copyDist
 	echo "The files are in: ${releaseDir} "
 
 
+
+installRelease:
+	adb install ./platforms/android/app/build/outputs/apk/release/android.apk

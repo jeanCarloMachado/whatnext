@@ -111,7 +111,7 @@ update msg model =
             updateSubject a model
 
         NewList (Ok subjects) ->
-            ( { model | subjects = Array.toIndexedList subjects, loading = False }, Cmd.none )
+            ( { model | subjects = Array.toIndexedList subjects } |> disableLoading, Cmd.none )
 
         NewList (Err msg) ->
             errorResult model msg
@@ -135,10 +135,10 @@ update msg model =
             ( { model | newSubjectName = subjectName }, Cmd.none )
 
         SubmitNewSubject ->
-            ( model, Http.send NewSubjectResult <| Subject.addSubjectRequest model.apiEndpoint model )
+            ( enableLoading model, Http.send NewSubjectResult <| Subject.addSubjectRequest model.apiEndpoint model )
 
         NewSubjectResult _ ->
-            ( { model | addSubjectModal = False }, getListRequest model.apiEndpoint model.tiredMode )
+            ( { model | addSubjectModal = False } |> unselectSubject, getListRequest model.apiEndpoint model.tiredMode )
 
 
 updateSubject : SubjectMsg -> State -> ( State, Cmd Msg )
@@ -220,7 +220,11 @@ updateDone msg model =
             ( model |> resetCurrentDone, Cmd.none )
 
         DoneResult (Ok _) ->
-            ( { model | loading = False }, getListRequest model.apiEndpoint model.tiredMode )
+            ( disableLoading model |> unselectSubject, getListRequest model.apiEndpoint model.tiredMode )
+
+
+unselectSubject model =
+    { model | openedIndex = Nothing }
 
 
 resetCurrentDone state =
@@ -422,7 +426,7 @@ hiddenHtml subject =
                     , subjectProperty "Complexity" <| toString subject.complexity
                     ]
                 , div []
-                    [ subjectProperty "Time since last" <| toString subject.daysSinceLast ++ " days"
+                    [ subjectProperty "Days since last session" <| toString subject.daysSinceLast
                     , subjectProperty "Hours already invested" <| subject.timeAlreadyInvested
                     ]
                 ]
