@@ -25,12 +25,12 @@ logEntriesOfSubject() {
     logEntries | grep "$subject"
 }
 
-listSubjectsNames() {
-    cat "$WHATNEXT_CONF" | cut -d '|' -f1
+listSubjects() {
+    egrep -v "^$" "$WHATNEXT_CONF"
 }
 
-listSubjects() {
-    cat "$WHATNEXT_CONF" | sed -e /^$/d
+listSubjectsNames() {
+    listSubjects | cut -d '|' -f1
 }
 
 listSubject() {

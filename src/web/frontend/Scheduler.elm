@@ -241,20 +241,6 @@ setOpenedSubject model name =
     { model | openedSubjectName = name }
 
 
-getOffsetOfSubject : List ( Int, Subject ) -> Subject -> Int
-getOffsetOfSubject subjects subject =
-    let
-        filtered =
-            List.filter (\x -> subject.name == (Tuple.second x).name) subjects
-    in
-        case filtered of
-            [ a ] ->
-                Tuple.first a
-
-            _ ->
-                0
-
-
 errorResult : State -> Error -> ( State, Cmd Msg )
 errorResult model msg =
     ( { model | toasterMsg = (toString msg), loading = False }, Cmd.none )
@@ -287,7 +273,7 @@ view state =
             [ -- conditional loading, modals
               Loader.getLoadingHtml state.loading
             , doneModal state
-            , alterSubjectHtml state.addSubjectModal state.openedSubjectName
+            , alterSubjectHtml state
             , Toaster.html state.toasterMsg
 
             -- action menu container
@@ -321,18 +307,18 @@ debugBorders css =
         addStyle
 
 
-alterSubjectHtml isOpen subjectName =
-    case isOpen of
+alterSubjectHtml state =
+    case state.addSubjectModal of
         True ->
             div [ modalCss ]
                 [ div []
                     [ h1 [] [ text "Subject Settings" ]
                     , div [ css [ marginTop (px 10), marginBottom (px 10) ] ]
-                        [ input [ Html.Styled.Attributes.defaultValue subjectName, inputCss, type_ "text", placeholder "Subject name", onInput ChangeNewSubjectName, Html.Styled.Attributes.required True ] []
+                        [ input [ Html.Styled.Attributes.defaultValue state.openedSubjectName, inputCss, type_ "text", placeholder "Subject name", onInput ChangeNewSubjectName, Html.Styled.Attributes.required True ] []
                         , select [ selectCss, on "change" (Json.Decode.map ChangeNewPriority targetValueIntParse) ]
-                            renderPriorityOptions
+                            (renderPriorityOptions state.newPriority)
                         , select [ selectCss, on "change" (Json.Decode.map ChangeNewComplexity targetValueIntParse) ]
-                            renderComplexityOptions
+                            (renderComplexityOptions <| toString state.newComplexity)
                         , input [ inputCss, type_ "text", placeholder "What to do next", onInput ChangeNewWhatToDoNext, Html.Styled.Attributes.required True ] []
                         ]
                     , button
@@ -348,36 +334,47 @@ alterSubjectHtml isOpen subjectName =
             emptyNode
 
 
-renderComplexityOptions =
+renderComplexityOptions defaultValue =
     let
         complexity =
-            [ ( "10", "Easy", False ), ( "50", "Medium", True ), ( "80", "Hard", False ), ( "100", "Hardest", False ) ]
-    in
-        List.map (\option -> optionFromTuple option) complexity
-
-
-renderPriorityOptions =
-    let
-        priority =
-            [ ( "0", "0 - No Priority", False )
-            , ( "1", "1 - Low Priority", False )
-            , ( "2", "2", False )
-            , ( "3", "3", False )
-            , ( "4", "4", False )
-            , ( "5", "5 - Medium Priority", False )
-            , ( "6", "6", False )
-            , ( "7", "7", False )
-            , ( "8", "8", False )
-            , ( "9", "9", False )
-            , ( "10", "10 - Higest Priority", False )
+            [ ( "10", "Easy" )
+            , ( "50", "Medium" )
+            , ( "80", "Hard" )
+            , ( "100", "Hardest" )
             ]
     in
-        List.map (\option -> optionFromTuple option) priority
+        List.map (\option -> optionFromTuple defaultValue option) complexity
 
 
-optionFromTuple ( value, label, default ) =
-    option [ Html.Styled.Attributes.value value ]
-        [ text label ]
+renderPriorityOptions defaultValue =
+    let
+        defaultValueNew =
+            defaultValue // 10 |> toString
+
+        priority =
+            [ ( "0", "0 - No Priority" )
+            , ( "1", "1 - Low Priority" )
+            , ( "2", "2" )
+            , ( "3", "3" )
+            , ( "4", "4" )
+            , ( "5", "5 - Medium Priority" )
+            , ( "6", "6" )
+            , ( "7", "7" )
+            , ( "8", "8" )
+            , ( "9", "9" )
+            , ( "10", "10 - Higest Priority" )
+            ]
+    in
+        List.map (\option -> optionFromTuple defaultValueNew option) priority
+
+
+optionFromTuple defaultValue ( value, label ) =
+    if defaultValue == value then
+        option [ Html.Styled.Attributes.value value, Html.Styled.Attributes.selected True ]
+            [ text label ]
+    else
+        option [ Html.Styled.Attributes.value value ]
+            [ text label ]
 
 
 subjectsToHtml : String -> List ( Int, Subject ) -> Html.Styled.Html Msg
