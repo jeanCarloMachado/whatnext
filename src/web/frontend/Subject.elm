@@ -38,6 +38,7 @@ type alias NewSubjectData r =
         | newSubjectName : String
         , newPriority : Int
         , newComplexity : Int
+        , newWhatToDoNext : String
     }
 
 
@@ -159,6 +160,7 @@ addSubjectRequest endpoint state =
                 [ ( "name", Json.Encode.string state.newSubjectName )
                 , ( "complexity", Json.Encode.int state.newComplexity )
                 , ( "priority", Json.Encode.int state.newPriority )
+                , ( "whatToDoNext", Json.Encode.string state.newWhatToDoNext )
                 ]
     in
         Http.request

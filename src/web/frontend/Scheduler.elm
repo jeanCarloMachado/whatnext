@@ -36,7 +36,7 @@ main =
 
 init : Flags -> ( State, Cmd Msg )
 init flags =
-    ( State [] Nothing True "" False flags.apiEndpoint "" "" "" False 50 50 "", getListRequest flags.apiEndpoint False )
+    ( State [] Nothing True "" False flags.apiEndpoint "" "" "" False 50 50 "" "", getListRequest flags.apiEndpoint False )
 
 
 
@@ -46,10 +46,11 @@ init flags =
 type Msg
     = NewList (Result Http.Error (Array Subject))
     | ToggleTiredMode
-    | None
+    | NoAction
     | MySubjectMsg SubjectMsg
     | ToggleAddSubjectModal
     | ChangeNewSubjectName String
+    | ChangeNewWhatToDoNext String
     | ChangeNewPriority Int
     | ChangeNewComplexity Int
     | SubmitNewSubject
@@ -60,6 +61,7 @@ type SubjectMsg
     = ExpandSubjectClick ( Int, Subject )
     | Remove (Result Http.Error String)
     | RemoveClick Subject
+    | EditClick Subject
     | GetDetail (Result Http.Error Subject)
     | MyDoneMsg DoneMsg
 
@@ -87,6 +89,7 @@ type alias State =
     , newComplexity : Int
     , newPriority : Int
     , newSubjectName : String
+    , newWhatToDoNext : String
     }
 
 
@@ -116,11 +119,11 @@ update msg model =
         NewList (Err msg) ->
             errorResult model msg
 
-        None ->
+        NoAction ->
             ( model, Cmd.none )
 
         ToggleTiredMode ->
-            ( { model | tiredMode = not model.tiredMode }, getListRequest model.apiEndpoint <| not model.tiredMode )
+            ( { model | tiredMode = not model.tiredMode } |> unselectSubject, getListRequest model.apiEndpoint <| not model.tiredMode )
 
         ToggleAddSubjectModal ->
             ( { model | addSubjectModal = not model.addSubjectModal }, Cmd.none )
@@ -133,6 +136,9 @@ update msg model =
 
         ChangeNewSubjectName subjectName ->
             ( { model | newSubjectName = subjectName }, Cmd.none )
+
+        ChangeNewWhatToDoNext whatToDoNext ->
+            ( { model | newWhatToDoNext = whatToDoNext }, Cmd.none )
 
         SubmitNewSubject ->
             ( enableLoading model, Http.send NewSubjectResult <| Subject.addSubjectRequest model.apiEndpoint model )
@@ -166,18 +172,23 @@ updateSubject msg model =
                         ( differentIndexFunc, detailCmd )
 
         GetDetail (Ok subject) ->
-            let
-                newModel =
-                    { model | subjects = replaceSubjectFromList model.subjects subject }
-            in
-                ( newModel |> disableLoading, Cmd.none )
+            ( { model | subjects = replaceSubjectFromList model.subjects subject } |> disableLoading, Cmd.none )
 
         RemoveClick subject ->
+            ( model |> enableLoading, Http.send (MySubjectMsg << Remove) <| Subject.removeRequest model.apiEndpoint subject )
+
+        EditClick subject ->
             let
-                removeHttp =
-                    Http.send (MySubjectMsg << Remove) <| Subject.removeRequest model.apiEndpoint subject
+                newModel =
+                    { model
+                        | addSubjectModal = True
+                        , newSubjectName = subject.name
+                        , newWhatToDoNext = subject.whatToDoNext
+                        , newPriority = subject.priority
+                        , newComplexity = subject.complexity
+                    }
             in
-                ( model |> enableLoading, removeHttp )
+                ( newModel, Cmd.none )
 
         Remove (Ok _) ->
             ( model |> enableLoading, getListRequest model.apiEndpoint model.tiredMode )
@@ -295,7 +306,7 @@ view state =
             [ -- conditional loading, modals
               getLoadingHtml state.loading
             , doneModal state
-            , addSubjectModal state.addSubjectModal
+            , alterSubjectHtml state.addSubjectModal
             , Toaster.html state.toasterMsg
 
             -- action menu container
@@ -329,51 +340,19 @@ debugBorders css =
         addStyle
 
 
-addSubjectModal isOpen =
+alterSubjectHtml isOpen =
     case isOpen of
         True ->
             div [ modalCss ]
                 [ div []
-                    [ h1 [] [ text "Add a subject" ]
+                    [ h1 [] [ text "Subject Settings" ]
                     , div [ css [ marginTop (px 10), marginBottom (px 10) ] ]
-                        [ input [ inputCss, type_ "text", placeholder "Subject name", onInput ChangeNewSubjectName, Html.Styled.Attributes.required True ] []
+                        [ input [ Html.Styled.Attributes.defaultValue "", inputCss, type_ "text", placeholder "Subject name", onInput ChangeNewSubjectName, Html.Styled.Attributes.required True ] []
                         , select [ selectCss, on "change" (Json.Decode.map ChangeNewPriority targetValueIntParse) ]
-                            [ option [ Html.Styled.Attributes.value "0" ]
-                                [ text "0 - No Priority" ]
-                            , option [ Html.Styled.Attributes.value "1" ]
-                                [ text "1 - Low Priority" ]
-                            , option [ Html.Styled.Attributes.value "2" ]
-                                [ text "2" ]
-                            , option [ Html.Styled.Attributes.value "3" ]
-                                [ text "3" ]
-                            , option [ Html.Styled.Attributes.value "4" ]
-                                [ text "4" ]
-                            , option [ Html.Styled.Attributes.value "5" ]
-                                [ text "5 - Medium Priority" ]
-                            , option [ Html.Styled.Attributes.value "6" ]
-                                [ text "6" ]
-                            , option [ Html.Styled.Attributes.value "7" ]
-                                [ text "7" ]
-                            , option [ Html.Styled.Attributes.value "8" ]
-                                [ text "8" ]
-                            , option [ Html.Styled.Attributes.value "9" ]
-                                [ text "9" ]
-                            , option [ Html.Styled.Attributes.value "10" ]
-                                [ text "10 - Higest priority" ]
-                            ]
+                            renderPriorityOptions
                         , select [ selectCss, on "change" (Json.Decode.map ChangeNewComplexity targetValueIntParse) ]
-                            [ option [ Html.Styled.Attributes.value "10" ]
-                                [ text "Easy" ]
-                            , option
-                                [ Html.Styled.Attributes.value "50", Html.Styled.Attributes.selected True ]
-                                [ text "Medium" ]
-                            , option
-                                [ Html.Styled.Attributes.value "80" ]
-                                [ text "Hard" ]
-                            , option
-                                [ Html.Styled.Attributes.value "100" ]
-                                [ text "Hardest" ]
-                            ]
+                            renderComplexityOptions
+                        , input [ inputCss, type_ "text", placeholder "What to do next", onInput ChangeNewWhatToDoNext, Html.Styled.Attributes.required True ] []
                         ]
                     , button
                         [ buttonCss, onClick ToggleAddSubjectModal ]
@@ -386,6 +365,38 @@ addSubjectModal isOpen =
 
         False ->
             emptyNode
+
+
+renderComplexityOptions =
+    let
+        complexity =
+            [ ( "10", "Easy", False ), ( "50", "Medium", True ), ( "80", "Hard", False ), ( "100", "Hardest", False ) ]
+    in
+        List.map (\option -> optionFromTuple option) complexity
+
+
+renderPriorityOptions =
+    let
+        priority =
+            [ ( "0", "0 - No Priority", False )
+            , ( "1", "1 - Low Priority", False )
+            , ( "2", "2", False )
+            , ( "3", "3", False )
+            , ( "4", "4", False )
+            , ( "5", "5 - Medium Priority", False )
+            , ( "6", "6", False )
+            , ( "7", "7", False )
+            , ( "8", "8", False )
+            , ( "9", "9", False )
+            , ( "10", "10 - Higest Priority", False )
+            ]
+    in
+        List.map (\option -> optionFromTuple option) priority
+
+
+optionFromTuple ( value, label, default ) =
+    option [ Html.Styled.Attributes.value value ]
+        [ text label ]
 
 
 subjectsToHtml : Maybe Int -> List ( Int, Subject ) -> Html.Styled.Html Msg
@@ -405,7 +416,7 @@ subjectToHtml openedIndice ( indice, subject ) =
                 [ span [ css [ fontSize (Css.em 0.5), marginRight (px 15) ] ] [ text <| toString (indice + 1) ++ "." ]
                 , h1 [ class "noselect", css [ display inline, color defaultColors.textHighlight, marginRight (px 20) ] ] [ text subject.name ]
                 , maybePredicate openedIndice (\a -> a == indice) emptyNode <| inlineInfoOfSubject subject
-                , (doneStart subject)
+                , maybePredicate openedIndice (\a -> a == indice) (doneStart subject) emptyNode
                 ]
             , maybePredicate openedIndice (\a -> a == indice) (hiddenHtml subject) emptyNode
             ]
@@ -417,7 +428,7 @@ inlineInfoOfSubject subject =
 
 
 hiddenHtml subject =
-    div [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed None) ]
+    div [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed NoAction) ]
         [ --properity container
           div [ css [ displayFlex ] ]
             [ div [ css [ displayFlex, justifyContent spaceBetween, width (pct 70), flexWrap wrap ] ]
@@ -439,8 +450,20 @@ hiddenHtml subject =
             [ h2 [ css [ textAlign center, marginTop (px 50), fontWeight bold ] ] [ text "History" ]
             , div [ css [ margin (px 30) ] ] (List.map studyEntryToHtml subject.history)
             ]
-        , subjectButton "Remove" ((MySubjectMsg << RemoveClick) subject)
+        , button [ buttonCss, onClickStoppingPropagation <| (MySubjectMsg << EditClick) subject ] [ text "Edit" ]
+        , button [ buttonCss, onClickStoppingPropagation <| (MySubjectMsg << RemoveClick) subject ] [ text "Remove" ]
         ]
+
+
+doneStart : Subject -> Html.Styled.Html Msg
+doneStart subject =
+    div [ css [ Css.float right ] ]
+        [ button [ buttonCss, onClickStoppingPropagation <| (MySubjectMsg << MyDoneMsg << ClickDone) subject ] [ text "Done" ]
+        ]
+
+
+onClickStoppingPropagation msg =
+    onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed msg)
 
 
 maybePredicate maybeValue predicate ifTrue ifFalse =
@@ -453,13 +476,6 @@ maybePredicate maybeValue predicate ifTrue ifFalse =
 
         Nothing ->
             ifFalse
-
-
-doneStart : Subject -> Html.Styled.Html Msg
-doneStart subject =
-    div [ css [ Css.float right ] ]
-        [ subjectButton "Done" ((MySubjectMsg << MyDoneMsg << ClickDone) subject)
-        ]
 
 
 subjectProperty name value =
@@ -481,17 +497,11 @@ doneModal doneInfo =
                     , input [ inputCss, type_ "text", placeholder "What was done?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeDescription) ] []
                     , input [ inputCss, type_ "text", placeholder "What is to de done next?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeWhatToDoNext) ] []
                     , div []
-                        [ button [ onClick (MySubjectMsg << MyDoneMsg <| CancelDone) ] [ text "Cancel" ]
-                        , button [ onClick (MySubjectMsg << MyDoneMsg <| SubmitDone) ] [ text "Confirm" ]
+                        [ button [ buttonCss, onClick (MySubjectMsg << MyDoneMsg <| CancelDone) ] [ text "Cancel" ]
+                        , button [ buttonCss, onClick (MySubjectMsg << MyDoneMsg <| SubmitDone) ] [ text "Confirm" ]
                         ]
                     ]
                 ]
-
-
-subjectButton : String -> Msg -> Html.Styled.Html Msg
-subjectButton textStr msg =
-    button [ buttonCss, onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed msg) ]
-        [ text textStr ]
 
 
 inputCss : Attribute Msg
@@ -504,7 +514,7 @@ selectCss =
 
 
 buttonCss =
-    css [ minWidth (px 60), margin (px 3), minHeight (px 30) ]
+    css [ minWidth (px 60), margin (px 3), minHeight (px 30), padding (px 3) ]
 
 
 subjectCss selectedIndex ( index, subject ) =

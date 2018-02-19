@@ -101,7 +101,8 @@ def add():
         CLI_PATH + '/add.sh',
         data['name'],
         str(data['priority']),
-        str(data['complexity'])
+        str(data['complexity']),
+        data['whatToDoNext']
     ]
     response = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
     if response.stdout.decode('UTF-8') != "":
