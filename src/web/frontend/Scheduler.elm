@@ -4,7 +4,7 @@ module Scheduler exposing (..)
 
 import Html
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (css, href, src, placeholder, type_, id, class, value)
+import Html.Styled.Attributes exposing (css, href, src, placeholder, type_, id, class, value, required)
 import Html.Styled.Events exposing (..)
 import Html.Events.Extra exposing (targetValueIntParse)
 import Dom.Scroll
@@ -138,7 +138,7 @@ update msg model =
             ( enableLoading model, Http.send NewSubjectResult <| Subject.addSubjectRequest model.apiEndpoint model )
 
         NewSubjectResult _ ->
-            ( { model | addSubjectModal = False } |> unselectSubject, getListRequest model.apiEndpoint model.tiredMode )
+            ( { model | addSubjectModal = False, newSubjectName = "" } |> unselectSubject, getListRequest model.apiEndpoint model.tiredMode )
 
 
 updateSubject : SubjectMsg -> State -> ( State, Cmd Msg )
@@ -306,7 +306,7 @@ view state =
                         [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
                         , text " Tired mode"
                         ]
-                    , button [ onClick ToggleAddSubjectModal ] [ text "Add Subject" ]
+                    , button [ buttonCss, onClick ToggleAddSubjectModal ] [ text "Add Subject" ]
                     ]
                 ]
 
@@ -336,7 +336,7 @@ addSubjectModal isOpen =
                 [ div []
                     [ h1 [] [ text "Add a subject" ]
                     , div [ css [ marginTop (px 10), marginBottom (px 10) ] ]
-                        [ input [ inputCss, type_ "text", placeholder "Subject name", onInput ChangeNewSubjectName ] []
+                        [ input [ inputCss, type_ "text", placeholder "Subject name", onInput ChangeNewSubjectName, Html.Styled.Attributes.required True ] []
                         , select [ selectCss, on "change" (Json.Decode.map ChangeNewPriority targetValueIntParse) ]
                             [ option [ Html.Styled.Attributes.value "0" ]
                                 [ text "0 - No Priority" ]
@@ -490,7 +490,7 @@ doneModal doneInfo =
 
 subjectButton : String -> Msg -> Html.Styled.Html Msg
 subjectButton textStr msg =
-    button [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed msg) ]
+    button [ buttonCss, onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed msg) ]
         [ text textStr ]
 
 
@@ -504,7 +504,7 @@ selectCss =
 
 
 buttonCss =
-    css [ width (px 100), margin (px 3) ]
+    css [ minWidth (px 60), margin (px 3), minHeight (px 30) ]
 
 
 subjectCss selectedIndex ( index, subject ) =

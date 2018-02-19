@@ -105,7 +105,7 @@ def add():
     ]
     response = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
     if response.stdout.decode('UTF-8') != "":
-        return response.stdout.decode('UTF-8'), 500, {'Content-Type': 'application/json; charset=utf-8'}
+        return error_json(response.stdout.decode('UTF-8')), 500, {'Content-Type': 'application/json; charset=utf-8'}
 
     return SUCCESS_MESSAGE, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
@@ -160,7 +160,7 @@ def signup():
     result = subprocess.run(cmd, stdout=subprocess.PIPE)
 
     if result.returncode != 0:
-        return '{"status": "failure", "message": "' + result.stdout.decode('UTF-8') + '"}', 500, {'Content-Type': 'application/json; charset=utf-8'}
+        return error_json(result.stdout.decode('UTF-8')) , 500, {'Content-Type': 'application/json; charset=utf-8'}
 
 
     my_env = os.environ.copy()
@@ -173,6 +173,9 @@ def signup():
     result = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
 
     return SUCCESS_MESSAGE, 200, {'Content-Type': 'application/json; charset=utf-8'}
+
+def error_json (msg):
+    return '{"status": "failure", "message": "' +  msg + '"}'
 
 
 @app.route('/login', methods = ['POST'])
