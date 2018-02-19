@@ -17,6 +17,4 @@ whatToDoNext=$4
 
 
 sed -r -i "/^$name\|/d"  "$WHATNEXT_CONF"
-
-
-echo "$name|$importance|$complexity|$whatToDoNext" >> "$WHATNEXT_CONF"
+echo  "$name|$importance|$complexity|$whatToDoNext" >> "$WHATNEXT_CONF"

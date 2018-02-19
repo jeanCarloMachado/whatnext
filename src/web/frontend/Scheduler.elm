@@ -27,6 +27,7 @@ import Http exposing (..)
 import Platform exposing (..)
 import Array exposing (Array)
 import Task
+import Loader
 import Subject exposing (Subject, StudyEntry, DoneData)
 
 
@@ -36,7 +37,25 @@ main =
 
 init : Flags -> ( State, Cmd Msg )
 init flags =
-    ( State [] Nothing True "" False flags.apiEndpoint "" "" "" False 50 50 "" "" "", getListRequest flags.apiEndpoint False )
+    ( State [] True "" False flags.apiEndpoint "" "" "" False 50 50 "" "" "", getListRequest flags.apiEndpoint False )
+
+
+type alias State =
+    { subjects : List ( Int, Subject )
+    , loading : Bool
+    , toasterMsg : String
+    , tiredMode : Bool
+    , apiEndpoint : String
+    , doneSubjectName : String
+    , doneDescription : String
+    , doneWhatToDoNext : String
+    , addSubjectModal : Bool
+    , newComplexity : Int
+    , newPriority : Int
+    , newSubjectName : String
+    , newWhatToDoNext : String
+    , openedSubjectName : String
+    }
 
 
 
@@ -76,31 +95,6 @@ type DoneMsg
     | CancelDone
 
 
-type alias State =
-    { subjects : List ( Int, Subject )
-    , openedIndex : Maybe Int
-    , loading : Bool
-    , toasterMsg : String
-    , tiredMode : Bool
-    , apiEndpoint : String
-    , doneSubjectName : String
-    , doneDescription : String
-    , doneWhatToDoNext : String
-    , addSubjectModal : Bool
-    , newComplexity : Int
-    , newPriority : Int
-    , newSubjectName : String
-    , newWhatToDoNext : String
-    , currentSubjectName : String
-    }
-
-
-type alias Loading r =
-    { r
-        | loading : Bool
-    }
-
-
 type alias Flags =
     { apiEndpoint : String }
 
@@ -116,7 +110,7 @@ update msg model =
             updateSubject a model
 
         NewList (Ok subjects) ->
-            ( { model | subjects = Array.toIndexedList subjects } |> disableLoading, Cmd.none )
+            ( { model | subjects = Array.toIndexedList subjects } |> Loader.disableLoading, Cmd.none )
 
         NewList (Err msg) ->
             errorResult model msg
@@ -125,7 +119,11 @@ update msg model =
             ( model, Cmd.none )
 
         ToggleTiredMode ->
-            ( { model | tiredMode = not model.tiredMode } |> unselectSubject, getListRequest model.apiEndpoint <| not model.tiredMode )
+            let
+                newState =
+                    { model | tiredMode = not model.tiredMode } |> unselectSubject |> Loader.enableLoading
+            in
+                ( newState, getListRequest model.apiEndpoint newState.tiredMode )
 
         OpenAddSubjectModal ->
             ( { model | addSubjectModal = True } |> unselectSubject, Cmd.none )
@@ -146,7 +144,7 @@ update msg model =
             ( { model | newWhatToDoNext = whatToDoNext }, Cmd.none )
 
         SubmitNewSubject ->
-            ( enableLoading model, Http.send NewSubjectResult <| Subject.addSubjectRequest model.apiEndpoint model )
+            ( Loader.enableLoading model, Http.send NewSubjectResult <| Subject.addSubjectRequest model.apiEndpoint model )
 
         NewSubjectResult _ ->
             ( { model | addSubjectModal = False, newSubjectName = "" } |> unselectSubject, getListRequest model.apiEndpoint model.tiredMode )
@@ -161,26 +159,18 @@ updateSubject msg model =
                     Http.send (MySubjectMsg << GetDetail) <| Subject.getDetail model.apiEndpoint subject
 
                 newModel =
-                    { model | currentSubjectName = subject.name } |> enableLoading
-
-                differentIndexFunc =
-                    clickDifferentIndex newModel <| Just indice
+                    { model | openedSubjectName = subject.name } |> Loader.enableLoading
             in
-                case model.openedIndex of
-                    Just indexVal ->
-                        if indexVal == indice then
-                            ( (unselectSubject newModel |> disableLoading), Cmd.none )
-                        else
-                            ( differentIndexFunc, detailCmd )
-
-                    Nothing ->
-                        ( differentIndexFunc, detailCmd )
+                if model.openedSubjectName == subject.name then
+                    ( (unselectSubject newModel |> Loader.disableLoading), Cmd.none )
+                else
+                    ( setOpenedSubject newModel subject.name, detailCmd )
 
         GetDetail (Ok subject) ->
-            ( { model | subjects = replaceSubjectFromList model.subjects subject } |> disableLoading, Cmd.none )
+            ( { model | subjects = replaceSubjectFromList model.subjects subject } |> Loader.disableLoading, Cmd.none )
 
         RemoveClick subject ->
-            ( model |> enableLoading, Http.send (MySubjectMsg << Remove) <| Subject.removeRequest model.apiEndpoint subject )
+            ( model |> Loader.enableLoading, Http.send (MySubjectMsg << Remove) <| Subject.removeRequest model.apiEndpoint subject )
 
         EditClick subject ->
             let
@@ -196,7 +186,7 @@ updateSubject msg model =
                 ( newModel, Cmd.none )
 
         Remove (Ok _) ->
-            ( model |> enableLoading, getListRequest model.apiEndpoint model.tiredMode )
+            ( model |> Loader.enableLoading, getListRequest model.apiEndpoint model.tiredMode )
 
         Remove (Err msg) ->
             errorResult model msg
@@ -230,35 +220,25 @@ updateDone msg model =
                 doneHttp =
                     Http.send (MySubjectMsg << MyDoneMsg << DoneResult) <| Subject.doneRequest model.apiEndpoint model
             in
-                ( model |> enableLoading |> resetCurrentDone, doneHttp )
+                ( model |> Loader.enableLoading |> resetCurrentDone, doneHttp )
 
         CancelDone ->
             ( model |> resetCurrentDone, Cmd.none )
 
         DoneResult (Ok _) ->
-            ( disableLoading model |> unselectSubject, getListRequest model.apiEndpoint model.tiredMode )
+            ( Loader.disableLoading model |> unselectSubject, getListRequest model.apiEndpoint model.tiredMode )
 
 
 unselectSubject model =
-    { model | openedIndex = Nothing, currentSubjectName = "" }
+    { model | openedSubjectName = "" }
 
 
 resetCurrentDone state =
     { state | doneSubjectName = "", doneDescription = "", doneWhatToDoNext = "" }
 
 
-clickDifferentIndex model index =
-    { model | openedIndex = index }
-
-
-disableLoading : Loading r -> Loading r
-disableLoading model =
-    { model | loading = False }
-
-
-enableLoading : Loading r -> Loading r
-enableLoading model =
-    { model | loading = True }
+setOpenedSubject model name =
+    { model | openedSubjectName = name }
 
 
 getOffsetOfSubject : List ( Int, Subject ) -> Subject -> Int
@@ -305,9 +285,9 @@ view state =
           div
             [ css [ marginTop (px 50), marginLeft (px 10), marginRight (px 10) ] ]
             [ -- conditional loading, modals
-              getLoadingHtml state.loading
+              Loader.getLoadingHtml state.loading
             , doneModal state
-            , alterSubjectHtml state.addSubjectModal state.currentSubjectName
+            , alterSubjectHtml state.addSubjectModal state.openedSubjectName
             , Toaster.html state.toasterMsg
 
             -- action menu container
@@ -324,7 +304,7 @@ view state =
 
             --subject list
             , div []
-                [ subjectsToHtml state.openedIndex state.subjects
+                [ subjectsToHtml state.openedSubjectName state.subjects
                 ]
             ]
         ]
@@ -400,28 +380,35 @@ optionFromTuple ( value, label, default ) =
         [ text label ]
 
 
-subjectsToHtml : Maybe Int -> List ( Int, Subject ) -> Html.Styled.Html Msg
-subjectsToHtml openedIndex list =
+subjectsToHtml : String -> List ( Int, Subject ) -> Html.Styled.Html Msg
+subjectsToHtml openedSubjectName list =
     let
         innerList =
-            List.map (subjectToHtml openedIndex) list
+            List.map (subjectToHtml openedSubjectName) list
     in
         ul [ css [ listStyle none ] ] innerList
 
 
-subjectToHtml : Maybe Int -> ( Int, Subject ) -> Html.Styled.Html Msg
-subjectToHtml openedIndice ( indice, subject ) =
-    li [ onClick ((MySubjectMsg << ExpandSubjectClick) ( indice, subject )), subjectCss openedIndice ( indice, subject ), id <| "subject_" ++ toString indice ]
+subjectToHtml : String -> ( Int, Subject ) -> Html.Styled.Html Msg
+subjectToHtml openedSubjectName ( indice, subject ) =
+    li [ onClick ((MySubjectMsg << ExpandSubjectClick) ( indice, subject )), subjectCss openedSubjectName ( indice, subject ), id <| "subject_" ++ toString indice ]
         [ div []
             [ div [ css [ fontSize (Css.em 1.2) ] ]
                 [ span [ css [ fontSize (Css.em 0.5), marginRight (px 15) ] ] [ text <| toString (indice + 1) ++ "." ]
                 , h1 [ class "noselect", css [ display inline, color defaultColors.textHighlight, marginRight (px 20) ] ] [ text subject.name ]
-                , maybePredicate openedIndice (\a -> a == indice) emptyNode <| inlineInfoOfSubject subject
-                , maybePredicate openedIndice (\a -> a == indice) (doneStart subject) emptyNode
+                , inlineIf (subject.name == openedSubjectName) emptyNode <| inlineInfoOfSubject subject
+                , inlineIf (subject.name == openedSubjectName) (doneStart subject) emptyNode
                 ]
-            , maybePredicate openedIndice (\a -> a == indice) (hiddenHtml subject) emptyNode
+            , inlineIf (subject.name == openedSubjectName) (hiddenHtml subject) emptyNode
             ]
         ]
+
+
+inlineIf test ifTrue ifFalse =
+    if test then
+        ifTrue
+    else
+        ifFalse
 
 
 inlineInfoOfSubject subject =
@@ -465,18 +452,6 @@ doneStart subject =
 
 onClickStoppingPropagation msg =
     onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed msg)
-
-
-maybePredicate maybeValue predicate ifTrue ifFalse =
-    case maybeValue of
-        Just maybeValue ->
-            if (predicate maybeValue) then
-                ifTrue
-            else
-                ifFalse
-
-        Nothing ->
-            ifFalse
 
 
 subjectProperty name value =
@@ -524,15 +499,10 @@ subjectCss selectedIndex ( index, subject ) =
 
 
 selectedColor selectedIndex ( index, subject ) =
-    case selectedIndex of
-        Just x ->
-            if index == x then
-                defaultColors.selectedBackground
-            else
-                defaultColors.normalBackground
-
-        _ ->
-            defaultColors.normalBackground
+    if selectedIndex == subject.name then
+        defaultColors.selectedBackground
+    else
+        defaultColors.normalBackground
 
 
 studyEntryToHtml : StudyEntry -> Html Msg
@@ -541,17 +511,6 @@ studyEntryToHtml studyEntry =
         [ p [ css [ marginTop (px 15), color defaultColors.textHighlight ] ] [ text studyEntry.date ]
         , p [ css [ marginLeft (px 20) ] ] [ text <| studyEntry.description ]
         ]
-
-
-getLoadingHtml enabled =
-    case enabled of
-        True ->
-            div [ css [ justifyContent center, alignItems center, position fixed, displayFlex, top (px 0), left (px 0), width (pct 100), height (pct 100), backgroundColor <| rgba 255 255 255 0.9 ] ]
-                [ text "Loading"
-                ]
-
-        False ->
-            emptyNode
 
 
 modalCss =

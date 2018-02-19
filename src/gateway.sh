@@ -35,7 +35,7 @@ listSubjects() {
 
 listSubject() {
     subject=$1
-    cat "$WHATNEXT_CONF" | grep "$subject" | sed -e /^$/d
+    cat "$WHATNEXT_CONF" | grep "$subject|" | sed -e /^$/d
 }
 
 goalExists() {

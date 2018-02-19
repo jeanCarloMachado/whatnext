@@ -19,6 +19,8 @@ copyAssets:
 	mkdir dist || true
 	cp src/web/frontend/*.html dist/ || true
 	cp src/web/frontend/*.css dist/ || true
+	rm -rf dist/images || true
+	cp -rf src/web/frontend/images dist/images || true
 
 install:
 	elm-package install elm-lang/http
