@@ -189,24 +189,20 @@ decodeSubjectList =
     Json.Decode.array decodeSubject
 
 
-getListRequest : String -> Bool -> Cmd Msg
-getListRequest endpoint tiredMode =
+getListRequest state =
     let
         url =
-            "https://" ++ endpoint ++ "/scheduler" ++ (tiredMode |> toUrlBool)
-
-        request =
-            Http.request
-                { method = "GET"
-                , headers = [ Http.header "Content-Type" "application/json" ]
-                , url = url
-                , body = Http.emptyBody
-                , expect = (Http.expectJson decodeSubjectList)
-                , timeout = Nothing
-                , withCredentials = True
-                }
+            "https://" ++ state.apiEndpoint ++ "/scheduler" ++ (state.tiredMode |> toUrlBool)
     in
-        Http.send NewList request
+        Http.request
+            { method = "GET"
+            , headers = [ Http.header "Content-Type" "application/json" ]
+            , url = url
+            , body = Http.emptyBody
+            , expect = (Http.expectJson decodeSubjectList)
+            , timeout = Nothing
+            , withCredentials = True
+            }
 
 
 toUrlBool : Bool -> String

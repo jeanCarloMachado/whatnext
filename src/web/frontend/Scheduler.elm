@@ -35,9 +35,17 @@ main =
     Html.programWithFlags { init = init, view = view >> Html.Styled.toUnstyled, update = update, subscriptions = subscriptions }
 
 
+initialState =
+    State [] True "" False "" "" "" "" False 50 50 "" "" ""
+
+
 init : Flags -> ( State, Cmd Msg )
 init flags =
-    ( State [] True "" False flags.apiEndpoint "" "" "" False 50 50 "" "" "", getListRequest flags.apiEndpoint False )
+    ( initialState |> updateEndpoint flags.apiEndpoint, Http.send NewList <| Subject.getListRequest (initialState |> updateEndpoint flags.apiEndpoint) )
+
+
+updateEndpoint endpoint state =
+    { state | apiEndpoint = endpoint }
 
 
 type alias State =
@@ -123,7 +131,7 @@ update msg model =
                 newState =
                     { model | tiredMode = not model.tiredMode } |> unselectSubject |> Loader.enableLoading
             in
-                ( newState, getListRequest model.apiEndpoint newState.tiredMode )
+                ( newState, Http.send NewList <| Subject.getListRequest newState )
 
 
 updateSubject : SubjectMsg -> State -> ( State, Cmd Msg )
@@ -162,7 +170,7 @@ updateSubject msg model =
                 ( newModel, Cmd.none )
 
         Remove (Ok _) ->
-            ( model |> Loader.enableLoading, getListRequest model.apiEndpoint model.tiredMode )
+            ( model |> Loader.enableLoading, Http.send NewList <| Subject.getListRequest model )
 
         Remove (Err msg) ->
             errorResult model msg
@@ -197,7 +205,7 @@ updateSubject msg model =
             ( Loader.enableLoading model, Http.send (MySubjectMsg << NewSubjectResult) <| Subject.addSubjectRequest model.apiEndpoint model )
 
         NewSubjectResult _ ->
-            ( { model | addSubjectModal = False, newSubjectName = "" } |> unselectSubject, getListRequest model.apiEndpoint model.tiredMode )
+            ( { model | addSubjectModal = False, newSubjectName = "" } |> unselectSubject, Http.send NewList <| Subject.getListRequest model )
 
 
 updateDone : DoneMsg -> State -> ( State, Cmd Msg )
@@ -226,7 +234,7 @@ updateDone msg model =
             ( model |> resetCurrentDone, Cmd.none )
 
         DoneResult (Ok _) ->
-            ( Loader.disableLoading model |> unselectSubject, getListRequest model.apiEndpoint model.tiredMode )
+            ( Loader.disableLoading model |> unselectSubject, Http.send NewList <| Subject.getListRequest model )
 
 
 unselectSubject model =
@@ -495,14 +503,14 @@ buttonCss =
     , paddingRight (px 32)
     , border (px 0)
     , textDecoration none
-    , color defaultColors.textNormal
+    , color <| Css.rgb 255 255 255
     , backgroundColor defaultColors.normalButton
     ]
 
 
 subjectCss selectedIndex ( index, subject ) =
     css
-        [ borderRadius (px 10), display block, borderWidth (px 1), padding (px 20), marginBottom (px 1), backgroundColor (selectedColor selectedIndex ( index, subject )) ]
+        [ borderRadius (px 10), display block, borderWidth (px 1), padding (px 20), marginBottom (px 1), backgroundColor <| Css.rgb 255 255 255, borderColor (selectedColor selectedIndex ( index, subject )), borderStyle solid ]
 
 
 selectedColor selectedIndex ( index, subject ) =
@@ -535,26 +543,4 @@ subscriptions model =
 
 
 -- requests
-
-
-getListRequest endpoint tiredMode =
-    let
-        url =
-            "https://" ++ endpoint ++ "/scheduler" ++ (tiredMode |> Subject.toUrlBool)
-
-        request =
-            Http.request
-                { method = "GET"
-                , headers = [ Http.header "Content-Type" "application/json" ]
-                , url = url
-                , body = Http.emptyBody
-                , expect = (Http.expectJson Subject.decodeSubjectList)
-                , timeout = Nothing
-                , withCredentials = True
-                }
-    in
-        Http.send NewList request
-
-
-
 -- decoders

@@ -74,8 +74,7 @@ def configure_subjects(tiredMode=False):
     # -- contextual calculai in the end --
 
     now = datetime.datetime.now()
-    #tired period
-    if (now.hour > 22 or now.hour < 4) or tiredMode:
+    if tiredMode:
         for subject in subjects_configs:
             base = (1 / math.pow(subjects_configs[subject]['complexity'],9))
             subjects_configs[subject]['weight'] = subjects_configs[subject]['weight'] *  base 

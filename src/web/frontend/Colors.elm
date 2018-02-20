@@ -18,6 +18,19 @@ type alias Colors =
 
 defaultColors =
     Colors
+        (Css.rgb 255 149 0)
+        (Css.rgb 0 0 0)
+        (Css.rgb 255 204 0)
+        (Css.rgb 255 255 255)
+        (Css.rgb 76 217 100)
+        (Css.rgb 0 122 255)
+        (Css.rgb 255 204 0)
+        (Css.rgb 76 217 100)
+        (Css.rgb 255 45 85)
+
+
+solarizedColors =
+    Colors
         (Css.hex "b58900")
         (Css.hex "657b83")
         (Css.hex "fdf6e3")
