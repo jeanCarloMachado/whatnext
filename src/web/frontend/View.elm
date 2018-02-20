@@ -41,6 +41,7 @@ inputCss =
     css
         [ borderRadius (px 0)
         , borderStyle solid
+        , borderColor (Css.hex "d3d3d3")
         , display block
         , width (px 300)
         , margin (px 1)
@@ -80,7 +81,7 @@ optionFromTuple defaultValue ( value, label ) =
 selectCss =
     [ display block
     , borderStyle solid
-    , borderRightStyle none
+    , borderColor (Css.hex "d3d3d3")
     , width (px 300)
     , padding (Css.em 1.3)
     , margin (px 0)
