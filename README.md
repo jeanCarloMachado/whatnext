@@ -28,6 +28,8 @@ The projects rests on some premises:
 
 ## Installation
 
+If you don't want to install anything there's a web version of wn for [free](https://app.thewhatnext.net/).
+
 ### Archlinux
 
 ```sh
@@ -35,7 +37,6 @@ yaourt -Sa whatnext
 whatnext init # to initialize config files
 
 ```
-
 ## Starting
 
 Create your map of study ``whatnext edit-subjects``
@@ -87,34 +88,6 @@ whatnext log
 ![log](https://i.imgur.com/N2OMkvH.png)
 
 
-## Goals
-
-You can configure how much you need to spent with a given subject.
-```sh
-wn edit-goals
-```
-```sh
-{
-    "haskellMastry": {
-        "from": "2018-01-01",
-        "to": "2018-12-31",
-        "minutes": 2000,
-        "subject": "haskell"
-    },
-    "weekOfPython": {
-        "from": "2017-12-15",
-        "to": "2017-12-22",
-        "minutes": 120,
-        "subject": "python"
-    },
-    "readABitOfLisp": {
-        "from": "2017-12-14",
-        "to": "2017-12-30",
-        "minutes": 120,
-        "subject": "lisp"
-    }
-}
-```
 
 When you get something done your goal status will be updated
 
@@ -125,4 +98,4 @@ wn status
 ![status](https://i.imgur.com/imsMToT.png)
 
 
-[Installation and documentation](doc.md)
+To get Further examples at a look at the [documentation](doc.md)
