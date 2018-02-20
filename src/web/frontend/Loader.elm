@@ -9,7 +9,7 @@ import Html.Styled.Attributes exposing (css, href, src, placeholder, type_, id, 
 getLoadingHtml enabled =
     case enabled of
         True ->
-            div [ css [ justifyContent center, alignItems center, position fixed, displayFlex, top (px 0), left (px 0), width (pct 100), height (pct 100), backgroundColor <| rgba 255 255 255 0.8 ] ]
+            div [ css [ zIndex (Css.int 666), justifyContent center, alignItems center, position fixed, displayFlex, top (px 0), left (px 0), width (pct 100), height (pct 100), backgroundColor <| rgba 255 255 255 0.8 ] ]
                 [ Html.Styled.img [ src "/images/loader.gif", css [ maxWidth (px 100), maxHeight (px 100) ] ] []
                 ]
 

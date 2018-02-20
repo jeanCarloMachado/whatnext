@@ -282,10 +282,13 @@ view state =
             -- action menu container
             , div
                 [ css [ displayFlex, margin (px 20) ] ]
-                [ div [ css [ displayFlex, justifyContent spaceBetween, width (pct 100) ] ]
-                    [ div []
-                        [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
-                        , text " Tired mode"
+                [ div [ css [ displayFlex, justifyContent spaceBetween, width (pct 100), alignItems center ] ]
+                    [ div [ css [ displayFlex, alignItems center ] ]
+                        [ label [ class "switch" ]
+                            [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
+                            , span [ class "slider" ] []
+                            ]
+                        , span [ css [ marginLeft (px 10) ] ] [ text "Tired mode" ]
                         ]
                     , button [ css buttonCss, onClick (MySubjectMsg OpenAddSubjectModal) ] [ text "Add Subject" ]
                     ]
@@ -510,7 +513,7 @@ buttonCss =
 
 subjectCss selectedIndex ( index, subject ) =
     css
-        [ borderRadius (px 10), display block, borderWidth (px 1), padding (px 20), marginBottom (px 1), backgroundColor <| Css.rgb 255 255 255, borderColor (selectedColor selectedIndex ( index, subject )), borderStyle solid ]
+        [ display block, borderWidth (px 1), padding (px 20), marginBottom (px 1), backgroundColor <| Css.rgb 255 255 255, borderColor (selectedColor selectedIndex ( index, subject )), borderStyle solid ]
 
 
 selectedColor selectedIndex ( index, subject ) =
@@ -529,7 +532,7 @@ studyEntryToHtml studyEntry =
 
 
 modalCss =
-    css [ justifyContent center, alignItems center, position fixed, displayFlex, top (px 0), left (px 0), width (pct 100), height (pct 100), backgroundColor <| rgba 255 255 255 1 ]
+    css [ zIndex (Css.int 666), justifyContent center, alignItems center, position fixed, displayFlex, top (px 0), left (px 0), width (pct 100), height (pct 100), backgroundColor <| rgba 255 255 255 1 ]
 
 
 emptyNode =
