@@ -11,6 +11,8 @@ import Dom.Scroll
 import Toaster exposing (..)
 import Css exposing (..)
 import Colors exposing (defaultColors)
+import Subject exposing (Subject, StudyEntry, DoneData)
+import View
 
 
 -- json
@@ -27,6 +29,7 @@ import Http exposing (..)
 import Platform exposing (..)
 import Array exposing (Array)
 import Task
+import Navigation
 import Loader
 import Subject exposing (Subject, StudyEntry, DoneData)
 
@@ -74,6 +77,8 @@ type Msg
     = NewList (Result Http.Error (Array Subject))
     | ToggleTiredMode
     | NoAction
+    | History
+    | Logout
     | MySubjectMsg SubjectMsg
 
 
@@ -125,6 +130,12 @@ update msg model =
 
         NoAction ->
             ( model, Cmd.none )
+
+        Logout ->
+            ( model, Navigation.load "/" )
+
+        History ->
+            ( model, Navigation.load "?page=log" )
 
         ToggleTiredMode ->
             let
@@ -254,20 +265,16 @@ errorResult model msg =
     ( { model | toasterMsg = (toString msg), loading = False }, Cmd.none )
 
 
-
--- view
-
-
 view : State -> Html.Styled.Html Msg
 view state =
     div [ css [ color defaultColors.textNormal ] ]
         [ --header container
           div [ css [ displayFlex, justifyContent flexEnd ] ]
             [ div [ css [] ]
-                [ a [ css [ padding (px 10) ], href "?page=log" ]
+                [ button [ css View.buttonCss, onClick History ]
                     [ text "Complete History"
                     ]
-                , a [ css [ margin (px 30) ], href "/" ] [ text "Logout" ]
+                , button [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.fail), onClick Logout ] [ text "Quit" ]
                 ]
             ]
         , --main content
@@ -288,9 +295,9 @@ view state =
                             [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
                             , span [ class "slider" ] []
                             ]
-                        , span [ css [ marginLeft (px 10) ] ] [ text "Tired mode" ]
+                        , span [ css [ marginLeft (px 10), color defaultColors.textUninportant ] ] [ text "Tired mode" ]
                         ]
-                    , button [ css buttonCss, onClick (MySubjectMsg OpenAddSubjectModal) ] [ text "Add Subject" ]
+                    , button [ css View.buttonCss, onClick (MySubjectMsg OpenAddSubjectModal) ] [ text "Add Subject" ]
                     ]
                 ]
 
@@ -302,42 +309,31 @@ view state =
         ]
 
 
-debugBorders css =
-    let
-        addWidth =
-            borderWidth (px 1) :: css
-
-        addStyle =
-            borderStyle solid :: addWidth
-    in
-        addStyle
-
-
 alterSubjectHtml state =
     case state.addSubjectModal of
         True ->
-            div [ modalCss ]
+            div [ View.modalCss ]
                 [ div []
                     [ h1 [] [ text "Subject Settings" ]
                     , div [ css [ marginTop (px 10), marginBottom (px 10) ] ]
-                        [ input [ Html.Styled.Attributes.defaultValue state.openedSubjectName, inputCss, type_ "text", placeholder "Subject name", onInput (MySubjectMsg << ChangeNewSubjectName), Html.Styled.Attributes.required True ] []
-                        , select [ selectCss, on "change" (Json.Decode.map (MySubjectMsg << ChangeNewPriority) targetValueIntParse) ]
+                        [ input [ Html.Styled.Attributes.defaultValue state.openedSubjectName, View.inputCss, type_ "text", placeholder "Subject name", onInput (MySubjectMsg << ChangeNewSubjectName), Html.Styled.Attributes.required True ] []
+                        , select [ css View.selectCss, on "change" (Json.Decode.map (MySubjectMsg << ChangeNewPriority) targetValueIntParse) ]
                             (renderPriorityOptions state.newPriority)
-                        , select [ selectCss, on "change" (Json.Decode.map (MySubjectMsg << ChangeNewComplexity) targetValueIntParse) ]
+                        , select [ css View.selectCss, on "change" (Json.Decode.map (MySubjectMsg << ChangeNewComplexity) targetValueIntParse) ]
                             (renderComplexityOptions <| toString state.newComplexity)
-                        , input [ inputCss, type_ "text", placeholder "What to do next", onInput (MySubjectMsg << ChangeNewWhatToDoNext), Html.Styled.Attributes.required True ] []
+                        , input [ View.inputCss, type_ "text", placeholder "What to do next", onInput (MySubjectMsg << ChangeNewWhatToDoNext), Html.Styled.Attributes.required True ] []
                         ]
                     , button
-                        [ css buttonCss, onClick (MySubjectMsg CancelAddSubjectModal) ]
+                        [ css View.buttonCss, onClick (MySubjectMsg CancelAddSubjectModal) ]
                         [ text "Cancel" ]
                     , button
-                        [ css (buttonCss |> overrideBackgroundColor defaultColors.success), onClick (MySubjectMsg SubmitNewSubject) ]
+                        [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.success), onClick (MySubjectMsg SubmitNewSubject) ]
                         [ text "Confirm" ]
                     ]
                 ]
 
         False ->
-            emptyNode
+            View.emptyNode
 
 
 renderComplexityOptions defaultValue =
@@ -349,7 +345,7 @@ renderComplexityOptions defaultValue =
             , ( "100", "Hardest" )
             ]
     in
-        List.map (\option -> optionFromTuple defaultValue option) complexity
+        List.map (\option -> View.optionFromTuple defaultValue option) complexity
 
 
 renderPriorityOptions defaultValue =
@@ -371,16 +367,7 @@ renderPriorityOptions defaultValue =
             , ( "10", "10 - Higest Priority" )
             ]
     in
-        List.map (\option -> optionFromTuple defaultValueNew option) priority
-
-
-optionFromTuple defaultValue ( value, label ) =
-    if defaultValue == value then
-        option [ Html.Styled.Attributes.value value, Html.Styled.Attributes.selected True ]
-            [ text label ]
-    else
-        option [ Html.Styled.Attributes.value value ]
-            [ text label ]
+        List.map (\option -> View.optionFromTuple defaultValueNew option) priority
 
 
 subjectsToHtml : String -> List ( Int, Subject ) -> Html.Styled.Html Msg
@@ -399,10 +386,10 @@ subjectToHtml openedSubjectName ( indice, subject ) =
             [ div [ css [ fontSize (Css.em 1.2) ] ]
                 [ span [ css [ fontSize (Css.em 0.5), marginRight (px 15) ] ] [ text <| toString (indice + 1) ++ "." ]
                 , h1 [ class "noselect", css [ display inline, color defaultColors.textHighlight, marginRight (px 20) ] ] [ text subject.name ]
-                , inlineIf (subject.name == openedSubjectName) emptyNode <| inlineInfoOfSubject subject
-                , inlineIf (subject.name == openedSubjectName) (doneStart subject) emptyNode
+                , inlineIf (subject.name == openedSubjectName) View.emptyNode <| inlineInfoOfSubject subject
+                , inlineIf (subject.name == openedSubjectName) (doneStart subject) View.emptyNode
                 ]
-            , inlineIf (subject.name == openedSubjectName) (hiddenHtml subject) emptyNode
+            , inlineIf (subject.name == openedSubjectName) (hiddenHtml subject) View.emptyNode
             ]
         ]
 
@@ -415,7 +402,7 @@ inlineIf test ifTrue ifFalse =
 
 
 inlineInfoOfSubject subject =
-    span [ css [ fontSize (Css.em 0.7) ] ] [ text <| " " ++ toString subject.daysSinceLast ++ " days ago" ]
+    span [ css [ fontSize (Css.em 0.7), color defaultColors.textUninportant ] ] [ text <| " " ++ toString subject.daysSinceLast ++ " days ago" ]
 
 
 hiddenHtml subject =
@@ -435,35 +422,29 @@ hiddenHtml subject =
             ]
         , div
             []
-            [ subjectProperty "Next Action" subject.whatToDoNext
+            [ span [ css [ margin (px 20), color defaultColors.textUninportant ] ] [ text "Next Action: " ]
+            , p [ css [ display block, margin (px 30), fontSize (Css.em 0.9) ] ] [ text subject.whatToDoNext ]
             ]
         , div []
             [ h2 [ css [ textAlign center, marginTop (px 50), fontWeight bold ] ] [ text "History" ]
             , div [ css [ margin (px 30) ] ] (List.map studyEntryToHtml subject.history)
             ]
-        , button [ css buttonCss, onClickStoppingPropagation <| (MySubjectMsg << EditClick) subject ] [ text "Edit" ]
-        , button [ css (buttonCss |> overrideBackgroundColor defaultColors.fail), onClickStoppingPropagation <| (MySubjectMsg << RemoveClick) subject ] [ text "Remove" ]
+        , button [ css View.buttonCss, View.onClickStoppingPropagation <| (MySubjectMsg << EditClick) subject ] [ text "Edit" ]
+        , button [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.fail), View.onClickStoppingPropagation <| (MySubjectMsg << RemoveClick) subject ] [ text "Remove" ]
         ]
-
-
-overrideBackgroundColor color css =
-    List.append css [ backgroundColor color ]
 
 
 doneStart : Subject -> Html.Styled.Html Msg
 doneStart subject =
     div [ css [ Css.float right ] ]
-        [ button [ css buttonCss, onClickStoppingPropagation <| (MySubjectMsg << MyDoneMsg << ClickDone) subject ] [ text "Done" ]
+        [ button [ css View.buttonCss, View.onClickStoppingPropagation <| (MySubjectMsg << MyDoneMsg << ClickDone) subject ] [ text "Done" ]
         ]
 
 
-onClickStoppingPropagation msg =
-    onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed msg)
-
-
 subjectProperty name value =
-    p [ css [ margin (px 20) ] ]
-        [ text <| name ++ ": " ++ value
+    div [ css [ margin (px 20) ] ]
+        [ span [ css [ color defaultColors.textUninportant ] ] [ text <| name ++ ": " ]
+        , span [ css [ color defaultColors.textNormal ] ] [ text value ]
         ]
 
 
@@ -471,44 +452,20 @@ doneModal : Subject.DoneData r -> Html Msg
 doneModal doneInfo =
     case String.length doneInfo.doneSubjectName of
         0 ->
-            emptyNode
+            View.emptyNode
 
         _ ->
-            div [ modalCss ]
+            div [ View.modalCss ]
                 [ div []
                     [ h1 [] [ text "Record session" ]
-                    , input [ inputCss, type_ "text", placeholder "What was done?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeDescription) ] []
-                    , input [ inputCss, type_ "text", placeholder "What is to de done next?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeWhatToDoNext) ] []
+                    , input [ View.inputCss, type_ "text", placeholder "What was done?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeDescription) ] []
+                    , input [ View.inputCss, type_ "text", placeholder "What is to de done next?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeWhatToDoNext) ] []
                     , div []
-                        [ button [ css buttonCss, onClick (MySubjectMsg << MyDoneMsg <| CancelDone) ] [ text "Cancel" ]
-                        , button [ css (buttonCss |> overrideBackgroundColor defaultColors.success), onClick (MySubjectMsg << MyDoneMsg <| SubmitDone) ] [ text "Confirm" ]
+                        [ button [ css View.buttonCss, onClick (MySubjectMsg << MyDoneMsg <| CancelDone) ] [ text "Cancel" ]
+                        , button [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.success), onClick (MySubjectMsg << MyDoneMsg <| SubmitDone) ] [ text "Confirm" ]
                         ]
                     ]
                 ]
-
-
-inputCss : Attribute Msg
-inputCss =
-    css [ display block, width (px 300), margin (px 1), marginBottom (px 3), padding (px 10) ]
-
-
-selectCss =
-    css [ display block, width (px 300), marginBottom (px 3), padding (px 4) ]
-
-
-buttonCss =
-    [ minWidth (px 60)
-    , margin (px 3)
-    , minHeight (px 30)
-    , paddingTop (px 15)
-    , paddingBottom (px 15)
-    , paddingLeft (px 32)
-    , paddingRight (px 32)
-    , border (px 0)
-    , textDecoration none
-    , color <| Css.rgb 255 255 255
-    , backgroundColor defaultColors.normalButton
-    ]
 
 
 subjectCss selectedIndex ( index, subject ) =
@@ -531,19 +488,6 @@ studyEntryToHtml studyEntry =
         ]
 
 
-modalCss =
-    css [ zIndex (Css.int 666), justifyContent center, alignItems center, position fixed, displayFlex, top (px 0), left (px 0), width (pct 100), height (pct 100), backgroundColor <| rgba 255 255 255 1 ]
-
-
-emptyNode =
-    text ""
-
-
 subscriptions : State -> Sub Msg
 subscriptions model =
     Sub.none
-
-
-
--- requests
--- decoders

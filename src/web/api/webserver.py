@@ -68,7 +68,6 @@ def log():
 
     cmd = [ CLI_PATH + '/log.sh', '--json']
     content =  subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE).stdout.decode('UTF-8')
-    print(content)
 
     return content, 200, {'Content-Type': 'application/json; charset=utf-8'}
 

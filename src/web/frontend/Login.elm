@@ -10,6 +10,9 @@ import Json.Decode
 import Json.Encode
 import Toaster
 import Navigation
+import Colors exposing (defaultColors)
+import Loader
+import View
 
 
 type alias Flags =
@@ -31,12 +34,13 @@ type alias Model =
     , apiEndpoint : String
     , errorMessage : String
     , pageMode : PageMode
+    , loading : Bool
     }
 
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( Model "" "" flags.apiEndpoint "" LoginPage, Cmd.none )
+    ( Model "" "" flags.apiEndpoint "" LoginPage False, Cmd.none )
 
 
 type Msg
@@ -59,31 +63,35 @@ update msg model =
         SubmitForm ->
             case model.pageMode of
                 SignupPage ->
-                    ( { model | errorMessage = "" }, Http.send RequestResult <| request model "signup" )
+                    ( { model | errorMessage = "" } |> Loader.enableLoading, Http.send RequestResult <| request model "signup" )
 
                 LoginPage ->
-                    ( { model | errorMessage = "" }, Http.send RequestResult <| request model "login" )
+                    ( { model | errorMessage = "" } |> Loader.enableLoading, Http.send RequestResult <| request model "login" )
 
         RequestResult (Ok message) ->
             case model.pageMode of
                 LoginPage ->
-                    ( model, Navigation.load "https://app.thewhatnext.net?page=scheduler" )
+                    ( model |> Loader.disableLoading, Navigation.load "https://app.thewhatnext.net?page=scheduler" )
 
                 SignupPage ->
-                    ( { model | pageMode = togglePageMode model.pageMode }, Cmd.none )
+                    ( { model | pageMode = togglePageMode model.pageMode } |> Loader.disableLoading, Cmd.none )
 
         RequestResult (Err msg) ->
-            case msg of
-                Http.BadStatus response ->
-                    case (response.body |> Json.Decode.decodeString decodeError) of
-                        Ok string ->
-                            ( { model | errorMessage = string }, Cmd.none )
+            let
+                newModel =
+                    Loader.disableLoading model
+            in
+                case msg of
+                    Http.BadStatus response ->
+                        case (response.body |> Json.Decode.decodeString decodeError) of
+                            Ok string ->
+                                ( { newModel | errorMessage = string }, Cmd.none )
 
-                        _ ->
-                            ( { model | errorMessage = "Generic error 2" }, Cmd.none )
+                            _ ->
+                                ( { newModel | errorMessage = "Generic error 2" }, Cmd.none )
 
-                _ ->
-                    ( { model | errorMessage = "Generic Error" }, Cmd.none )
+                    _ ->
+                        ( { newModel | errorMessage = "Generic Error" }, Cmd.none )
 
         TogglePageMode ->
             ( { model | pageMode = togglePageMode model.pageMode }, Cmd.none )
@@ -139,10 +147,6 @@ decodeEmptyResult =
     Json.Decode.succeed ""
 
 
-inputCss =
-    css [ minWidth (px 300), padding (px 5), margin (px 10) ]
-
-
 getPageTitle pageMode =
     case pageMode of
         LoginPage ->
@@ -173,16 +177,18 @@ getSubmitText pageMode =
 view model =
     div [ css [ displayFlex, justifyContent center, alignItems center, height (pct 100), width (pct 100), position fixed ] ]
         [ div [ css [ backgroundColor (Css.hex "ffffff"), padding (px 20), displayFlex, flexDirection column ] ]
-            [ h2 [] [ text <| getPageTitle model.pageMode ]
-            , input [ inputCss, placeholder "Email", onInput UpdateEmail, type_ "email" ] []
-            , input [ inputCss, placeholder "Password", type_ "password", onInput UpdatePassword ] []
+            [ h2 [ css [ color defaultColors.textHighlight ] ] [ text <| getPageTitle model.pageMode ]
+            , div [ css [ marginTop (px 20), marginBottom (px 20) ] ]
+                [ input [ View.inputCss, placeholder "Email", onInput UpdateEmail, type_ "email" ] []
+                , input [ View.inputCss, placeholder "Password", type_ "password", onInput UpdatePassword ] []
+                ]
             , div []
                 [ Toaster.html model.errorMessage
                 ]
             , div [ css [ displayFlex, justifyContent flexEnd ] ]
                 [ div [ css [] ]
-                    [ a [ onClick TogglePageMode, href "javascript:void(0);" ] [ text <| getAccessOtherPageText model.pageMode ]
-                    , button [ css [ margin (px 10) ], onClick SubmitForm ] [ text <| getSubmitText model.pageMode ]
+                    [ button [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.warning), onClick TogglePageMode ] [ text <| getAccessOtherPageText model.pageMode ]
+                    , button [ css View.buttonCss, onClick SubmitForm ] [ text <| getSubmitText model.pageMode ]
                     ]
                 ]
             ]
