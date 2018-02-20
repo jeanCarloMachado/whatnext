@@ -2,7 +2,7 @@
 current_dir = $(shell pwd)
 dist_dir = ${current_dir}/dist
 
-all: serveApi build browserPage
+all: watch serveApi browserPage
 
 test:
 	./testsBootstrap.sh

@@ -67,14 +67,6 @@ type Msg
     | ToggleTiredMode
     | NoAction
     | MySubjectMsg SubjectMsg
-    | OpenAddSubjectModal
-    | CancelAddSubjectModal
-    | ChangeNewSubjectName String
-    | ChangeNewWhatToDoNext String
-    | ChangeNewPriority Int
-    | ChangeNewComplexity Int
-    | SubmitNewSubject
-    | NewSubjectResult (Result Http.Error String)
 
 
 type SubjectMsg
@@ -84,6 +76,14 @@ type SubjectMsg
     | EditClick Subject
     | GetDetail (Result Http.Error Subject)
     | MyDoneMsg DoneMsg
+    | OpenAddSubjectModal
+    | CancelAddSubjectModal
+    | ChangeNewSubjectName String
+    | ChangeNewWhatToDoNext String
+    | ChangeNewPriority Int
+    | ChangeNewComplexity Int
+    | SubmitNewSubject
+    | NewSubjectResult (Result Http.Error String)
 
 
 type DoneMsg
@@ -125,30 +125,6 @@ update msg model =
             in
                 ( newState, getListRequest model.apiEndpoint newState.tiredMode )
 
-        OpenAddSubjectModal ->
-            ( { model | addSubjectModal = True } |> unselectSubject, Cmd.none )
-
-        CancelAddSubjectModal ->
-            ( { model | addSubjectModal = False }, Cmd.none )
-
-        ChangeNewComplexity complexity ->
-            ( { model | newComplexity = complexity }, Cmd.none )
-
-        ChangeNewPriority priority ->
-            ( { model | newPriority = priority * 10 }, Cmd.none )
-
-        ChangeNewSubjectName subjectName ->
-            ( { model | newSubjectName = subjectName }, Cmd.none )
-
-        ChangeNewWhatToDoNext whatToDoNext ->
-            ( { model | newWhatToDoNext = whatToDoNext }, Cmd.none )
-
-        SubmitNewSubject ->
-            ( Loader.enableLoading model, Http.send NewSubjectResult <| Subject.addSubjectRequest model.apiEndpoint model )
-
-        NewSubjectResult _ ->
-            ( { model | addSubjectModal = False, newSubjectName = "" } |> unselectSubject, getListRequest model.apiEndpoint model.tiredMode )
-
 
 updateSubject : SubjectMsg -> State -> ( State, Cmd Msg )
 updateSubject msg model =
@@ -167,7 +143,7 @@ updateSubject msg model =
                     ( setOpenedSubject newModel subject.name, detailCmd )
 
         GetDetail (Ok subject) ->
-            ( { model | subjects = replaceSubjectFromList model.subjects subject } |> Loader.disableLoading, Cmd.none )
+            ( { model | subjects = Subject.replaceSubjectFromList model.subjects subject } |> Loader.disableLoading, Cmd.none )
 
         RemoveClick subject ->
             ( model |> Loader.enableLoading, Http.send (MySubjectMsg << Remove) <| Subject.removeRequest model.apiEndpoint subject )
@@ -198,6 +174,30 @@ updateSubject msg model =
 
         MyDoneMsg a ->
             updateDone a model
+
+        OpenAddSubjectModal ->
+            ( { model | addSubjectModal = True } |> unselectSubject, Cmd.none )
+
+        CancelAddSubjectModal ->
+            ( { model | addSubjectModal = False }, Cmd.none )
+
+        ChangeNewComplexity complexity ->
+            ( { model | newComplexity = complexity }, Cmd.none )
+
+        ChangeNewPriority priority ->
+            ( { model | newPriority = priority * 10 }, Cmd.none )
+
+        ChangeNewSubjectName subjectName ->
+            ( { model | newSubjectName = subjectName }, Cmd.none )
+
+        ChangeNewWhatToDoNext whatToDoNext ->
+            ( { model | newWhatToDoNext = whatToDoNext }, Cmd.none )
+
+        SubmitNewSubject ->
+            ( Loader.enableLoading model, Http.send (MySubjectMsg << NewSubjectResult) <| Subject.addSubjectRequest model.apiEndpoint model )
+
+        NewSubjectResult _ ->
+            ( { model | addSubjectModal = False, newSubjectName = "" } |> unselectSubject, getListRequest model.apiEndpoint model.tiredMode )
 
 
 updateDone : DoneMsg -> State -> ( State, Cmd Msg )
@@ -246,11 +246,6 @@ errorResult model msg =
     ( { model | toasterMsg = (toString msg), loading = False }, Cmd.none )
 
 
-replaceSubjectFromList : List ( Int, Subject ) -> Subject -> List ( Int, Subject )
-replaceSubjectFromList list subject =
-    (List.map (\x -> Subject.replaceSame subject x) list)
-
-
 
 -- view
 
@@ -284,7 +279,7 @@ view state =
                         [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
                         , text " Tired mode"
                         ]
-                    , button [ buttonCss, onClick OpenAddSubjectModal ] [ text "Add Subject" ]
+                    , button [ buttonCss, onClick (MySubjectMsg OpenAddSubjectModal) ] [ text "Add Subject" ]
                     ]
                 ]
 
@@ -314,18 +309,18 @@ alterSubjectHtml state =
                 [ div []
                     [ h1 [] [ text "Subject Settings" ]
                     , div [ css [ marginTop (px 10), marginBottom (px 10) ] ]
-                        [ input [ Html.Styled.Attributes.defaultValue state.openedSubjectName, inputCss, type_ "text", placeholder "Subject name", onInput ChangeNewSubjectName, Html.Styled.Attributes.required True ] []
-                        , select [ selectCss, on "change" (Json.Decode.map ChangeNewPriority targetValueIntParse) ]
+                        [ input [ Html.Styled.Attributes.defaultValue state.openedSubjectName, inputCss, type_ "text", placeholder "Subject name", onInput (MySubjectMsg << ChangeNewSubjectName), Html.Styled.Attributes.required True ] []
+                        , select [ selectCss, on "change" (Json.Decode.map (MySubjectMsg << ChangeNewPriority) targetValueIntParse) ]
                             (renderPriorityOptions state.newPriority)
-                        , select [ selectCss, on "change" (Json.Decode.map ChangeNewComplexity targetValueIntParse) ]
+                        , select [ selectCss, on "change" (Json.Decode.map (MySubjectMsg << ChangeNewComplexity) targetValueIntParse) ]
                             (renderComplexityOptions <| toString state.newComplexity)
-                        , input [ inputCss, type_ "text", placeholder "What to do next", onInput ChangeNewWhatToDoNext, Html.Styled.Attributes.required True ] []
+                        , input [ inputCss, type_ "text", placeholder "What to do next", onInput (MySubjectMsg << ChangeNewWhatToDoNext), Html.Styled.Attributes.required True ] []
                         ]
                     , button
-                        [ buttonCss, onClick CancelAddSubjectModal ]
+                        [ buttonCss, onClick (MySubjectMsg CancelAddSubjectModal) ]
                         [ text "Cancel" ]
                     , button
-                        [ buttonCss, onClick SubmitNewSubject ]
+                        [ buttonCss, onClick (MySubjectMsg SubmitNewSubject) ]
                         [ text "Confirm" ]
                     ]
                 ]
@@ -527,11 +522,10 @@ subscriptions model =
 -- requests
 
 
-getListRequest : String -> Bool -> Cmd Msg
 getListRequest endpoint tiredMode =
     let
         url =
-            "https://" ++ endpoint ++ "/scheduler" ++ (tiredMode |> toUrlBool)
+            "https://" ++ endpoint ++ "/scheduler" ++ (tiredMode |> Subject.toUrlBool)
 
         request =
             Http.request
@@ -539,7 +533,7 @@ getListRequest endpoint tiredMode =
                 , headers = [ Http.header "Content-Type" "application/json" ]
                 , url = url
                 , body = Http.emptyBody
-                , expect = (Http.expectJson decodeSubjectList)
+                , expect = (Http.expectJson Subject.decodeSubjectList)
                 , timeout = Nothing
                 , withCredentials = True
                 }
@@ -547,24 +541,5 @@ getListRequest endpoint tiredMode =
         Http.send NewList request
 
 
-toUrlBool : Bool -> String
-toUrlBool bool =
-    case bool of
-        True ->
-            "?tiredMode=True"
-
-        False ->
-            ""
-
-
 
 -- decoders
-
-
-decodeSubjectList : Decoder (Array Subject)
-decodeSubjectList =
-    Json.Decode.array Subject.decodeSubject
-
-
-decodeEmptyResult =
-    Json.Decode.succeed ""

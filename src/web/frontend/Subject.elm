@@ -5,6 +5,7 @@ import Json.Decode
 import Json.Encode
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline
+import Array exposing (Array)
 
 
 type alias Subject =
@@ -176,3 +177,43 @@ addSubjectRequest endpoint state =
 
 decodeEmptyResult =
     Json.Decode.succeed ""
+
+
+replaceSubjectFromList : List ( Int, Subject ) -> Subject -> List ( Int, Subject )
+replaceSubjectFromList list subject =
+    (List.map (\x -> replaceSame subject x) list)
+
+
+decodeSubjectList : Decoder (Array Subject)
+decodeSubjectList =
+    Json.Decode.array decodeSubject
+
+
+getListRequest : String -> Bool -> Cmd Msg
+getListRequest endpoint tiredMode =
+    let
+        url =
+            "https://" ++ endpoint ++ "/scheduler" ++ (tiredMode |> toUrlBool)
+
+        request =
+            Http.request
+                { method = "GET"
+                , headers = [ Http.header "Content-Type" "application/json" ]
+                , url = url
+                , body = Http.emptyBody
+                , expect = (Http.expectJson decodeSubjectList)
+                , timeout = Nothing
+                , withCredentials = True
+                }
+    in
+        Http.send NewList request
+
+
+toUrlBool : Bool -> String
+toUrlBool bool =
+    case bool of
+        True ->
+            "?tiredMode=True"
+
+        False ->
+            ""
