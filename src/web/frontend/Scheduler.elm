@@ -279,7 +279,7 @@ view state =
                         [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
                         , text " Tired mode"
                         ]
-                    , button [ buttonCss, onClick (MySubjectMsg OpenAddSubjectModal) ] [ text "Add Subject" ]
+                    , button [ css buttonCss, onClick (MySubjectMsg OpenAddSubjectModal) ] [ text "Add Subject" ]
                     ]
                 ]
 
@@ -317,10 +317,10 @@ alterSubjectHtml state =
                         , input [ inputCss, type_ "text", placeholder "What to do next", onInput (MySubjectMsg << ChangeNewWhatToDoNext), Html.Styled.Attributes.required True ] []
                         ]
                     , button
-                        [ buttonCss, onClick (MySubjectMsg CancelAddSubjectModal) ]
+                        [ css buttonCss, onClick (MySubjectMsg CancelAddSubjectModal) ]
                         [ text "Cancel" ]
                     , button
-                        [ buttonCss, onClick (MySubjectMsg SubmitNewSubject) ]
+                        [ css (buttonCss |> overrideBackgroundColor defaultColors.success), onClick (MySubjectMsg SubmitNewSubject) ]
                         [ text "Confirm" ]
                     ]
                 ]
@@ -430,15 +430,19 @@ hiddenHtml subject =
             [ h2 [ css [ textAlign center, marginTop (px 50), fontWeight bold ] ] [ text "History" ]
             , div [ css [ margin (px 30) ] ] (List.map studyEntryToHtml subject.history)
             ]
-        , button [ buttonCss, onClickStoppingPropagation <| (MySubjectMsg << EditClick) subject ] [ text "Edit" ]
-        , button [ buttonCss, onClickStoppingPropagation <| (MySubjectMsg << RemoveClick) subject ] [ text "Remove" ]
+        , button [ css buttonCss, onClickStoppingPropagation <| (MySubjectMsg << EditClick) subject ] [ text "Edit" ]
+        , button [ css (buttonCss |> overrideBackgroundColor defaultColors.fail), onClickStoppingPropagation <| (MySubjectMsg << RemoveClick) subject ] [ text "Remove" ]
         ]
+
+
+overrideBackgroundColor color css =
+    List.append css [ backgroundColor color ]
 
 
 doneStart : Subject -> Html.Styled.Html Msg
 doneStart subject =
     div [ css [ Css.float right ] ]
-        [ button [ buttonCss, onClickStoppingPropagation <| (MySubjectMsg << MyDoneMsg << ClickDone) subject ] [ text "Done" ]
+        [ button [ css buttonCss, onClickStoppingPropagation <| (MySubjectMsg << MyDoneMsg << ClickDone) subject ] [ text "Done" ]
         ]
 
 
@@ -465,8 +469,8 @@ doneModal doneInfo =
                     , input [ inputCss, type_ "text", placeholder "What was done?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeDescription) ] []
                     , input [ inputCss, type_ "text", placeholder "What is to de done next?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeWhatToDoNext) ] []
                     , div []
-                        [ button [ buttonCss, onClick (MySubjectMsg << MyDoneMsg <| CancelDone) ] [ text "Cancel" ]
-                        , button [ buttonCss, onClick (MySubjectMsg << MyDoneMsg <| SubmitDone) ] [ text "Confirm" ]
+                        [ button [ css buttonCss, onClick (MySubjectMsg << MyDoneMsg <| CancelDone) ] [ text "Cancel" ]
+                        , button [ css (buttonCss |> overrideBackgroundColor defaultColors.success), onClick (MySubjectMsg << MyDoneMsg <| SubmitDone) ] [ text "Confirm" ]
                         ]
                     ]
                 ]
@@ -482,7 +486,18 @@ selectCss =
 
 
 buttonCss =
-    css [ minWidth (px 60), margin (px 3), minHeight (px 30), padding (px 3) ]
+    [ minWidth (px 60)
+    , margin (px 3)
+    , minHeight (px 30)
+    , paddingTop (px 15)
+    , paddingBottom (px 15)
+    , paddingLeft (px 32)
+    , paddingRight (px 32)
+    , border (px 0)
+    , textDecoration none
+    , color defaultColors.textNormal
+    , backgroundColor defaultColors.normalButton
+    ]
 
 
 subjectCss selectedIndex ( index, subject ) =

@@ -8,6 +8,11 @@ type alias Colors =
     , textNormal : Css.Color
     , selectedBackground : Css.Color
     , normalBackground : Css.Color
+    , confirmButton : Css.Color
+    , normalButton : Css.Color
+    , warning : Css.Color
+    , success : Css.Color
+    , fail : Css.Color
     }
 
 
@@ -17,6 +22,11 @@ defaultColors =
         (Css.hex "657b83")
         (Css.hex "fdf6e3")
         (Css.hex "ffffff")
+        (Css.hex "859900")
+        (Css.hex "eee8d5")
+        (Css.hex "b58900")
+        (Css.hex "859900")
+        (Css.hex "dc322f")
 
 
 
