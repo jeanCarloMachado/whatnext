@@ -154,7 +154,7 @@ addSubjectRequest : String -> NewSubjectData r -> Http.Request String
 addSubjectRequest endpoint state =
     let
         url =
-            "https://" ++ endpoint ++ "/add"
+            "https://" ++ endpoint ++ "/addOrUpdate"
 
         body =
             Json.Encode.object

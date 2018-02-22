@@ -124,7 +124,7 @@ studyEntryToHtml studyEntry =
         [ div [ css [] ]
             [ div [ css [ backgroundColor <| Css.hex "fff", margin (px 30), padding (px 10) ] ]
                 [ h2 [ css [ color defaultColors.textHighlight, fontSize <| Css.em 1.6 ] ] [ text <| studyEntry.subjectName ]
-                , p [ css [ color defaultColors.textUninportant ] ] [ text studyEntry.date ]
+                , p [ css [ color defaultColors.textNormal ] ] [ text studyEntry.date ]
                 , div [ css [ margin (px 20) ] ] [ text studyEntry.description ]
                 ]
             ]

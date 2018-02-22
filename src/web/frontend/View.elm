@@ -24,7 +24,7 @@ emptyNode =
 buttonCss =
     [ minWidth (px 60)
     , margin (px 3)
-    , minHeight (px 30)
+    , minHeight (px 25)
     , textDecoration none
     , paddingTop (px 15)
     , paddingBottom (px 15)
@@ -79,11 +79,9 @@ optionFromTuple defaultValue ( value, label ) =
 
 
 selectCss =
-    [ display block
-    , borderStyle solid
-    , borderColor (Css.hex "d3d3d3")
+    [ borderColor (Css.hex "d3d3d3")
+    , color defaultColors.textNormal
     , width (px 300)
-    , padding (Css.em 1.3)
-    , margin (px 0)
+    , display block
     , backgroundColor (Css.hex "fff")
     ]

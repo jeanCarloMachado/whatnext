@@ -90,14 +90,14 @@ def done(subjectName):
     return SUCCESS_MESSAGE, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 
-@app.route('/add', methods = ['POST'])
+@app.route('/addOrUpdate', methods = ['POST'])
 def add():
     email = check_authorization(request)
     my_env = update_environemnt(os.environ.copy(), email)
 
     data=request.json
     cmd = [
-        CLI_PATH + '/add.sh',
+        CLI_PATH + '/alterSubject.sh',
         data['name'],
         str(data['priority']),
         str(data['complexity']),

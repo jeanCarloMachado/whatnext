@@ -6,7 +6,6 @@ import Css exposing (..)
 type alias Colors =
     { textHighlight : Css.Color
     , textNormal : Css.Color
-    , textUninportant : Css.Color
     , selectedBackground : Css.Color
     , normalBackground : Css.Color
     , confirmButton : Css.Color
@@ -19,23 +18,21 @@ type alias Colors =
 
 defaultColors =
     Colors
-        (Css.rgb 255 149 0)
-        (Css.rgb 0 0 0)
-        (Css.hex "808080")
+        (Css.hex "ff9500")
+        (Css.hex "8e8e93")
         (Css.rgb 255 204 0)
         (Css.rgb 255 255 255)
         (Css.rgb 76 217 100)
         (Css.rgb 0 122 255)
         (Css.rgb 255 204 0)
         (Css.rgb 76 217 100)
-        (Css.rgb 255 45 85)
+        (Css.hex "ff2d55")
 
 
 solarizedColors =
     Colors
         (Css.hex "b58900")
         (Css.hex "657b83")
-        (Css.hex "808080")
         (Css.hex "fdf6e3")
         (Css.hex "ffffff")
         (Css.hex "859900")

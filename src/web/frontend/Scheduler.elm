@@ -13,6 +13,7 @@ import Css exposing (..)
 import Colors exposing (defaultColors)
 import Subject exposing (Subject, StudyEntry, DoneData)
 import View
+import DOM
 
 
 -- json
@@ -83,7 +84,7 @@ type Msg
 
 
 type SubjectMsg
-    = ExpandSubjectClick ( Int, Subject )
+    = ExpandSubject ( Int, Subject )
     | Remove (Result Http.Error String)
     | RemoveClick Subject
     | EditClick Subject
@@ -148,7 +149,7 @@ update msg model =
 updateSubject : SubjectMsg -> State -> ( State, Cmd Msg )
 updateSubject msg model =
     case msg of
-        ExpandSubjectClick ( indice, subject ) ->
+        ExpandSubject ( indice, subject ) ->
             let
                 detailCmd =
                     Http.send (MySubjectMsg << GetDetail) <| Subject.getDetail model.apiEndpoint subject
@@ -162,7 +163,14 @@ updateSubject msg model =
                     ( setOpenedSubject newModel subject.name, detailCmd )
 
         GetDetail (Ok subject) ->
-            ( { model | subjects = Subject.replaceSubjectFromList model.subjects subject } |> Loader.disableLoading, Cmd.none )
+            let
+                selector =
+                    DOM.idSelector <| "subject_" ++ subject.name
+
+                task =
+                    (DOM.scrollIntoView selector)
+            in
+                ( { model | subjects = Subject.replaceSubjectFromList model.subjects subject } |> Loader.disableLoading, Task.attempt (\a -> (NoAction)) task )
 
         RemoveClick subject ->
             ( model |> Loader.enableLoading, Http.send (MySubjectMsg << Remove) <| Subject.removeRequest model.apiEndpoint subject )
@@ -295,7 +303,7 @@ view state =
                             [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
                             , span [ class "slider" ] []
                             ]
-                        , span [ css [ marginLeft (px 10), color defaultColors.textUninportant ] ] [ text "Tired mode" ]
+                        , span [ css [ marginLeft (px 10), color defaultColors.textNormal ] ] [ text "Tired mode" ]
                         ]
                     , button [ css View.buttonCss, onClick (MySubjectMsg OpenAddSubjectModal) ] [ text "Add Subject" ]
                     ]
@@ -381,7 +389,7 @@ subjectsToHtml openedSubjectName list =
 
 subjectToHtml : String -> ( Int, Subject ) -> Html.Styled.Html Msg
 subjectToHtml openedSubjectName ( indice, subject ) =
-    li [ onClick ((MySubjectMsg << ExpandSubjectClick) ( indice, subject )), subjectCss openedSubjectName ( indice, subject ), id <| "subject_" ++ toString indice ]
+    li [ onClick ((MySubjectMsg << ExpandSubject) ( indice, subject )), subjectCss openedSubjectName ( indice, subject ), id <| "subject_" ++ subject.name ]
         [ div []
             [ div [ css [ fontSize (Css.em 1.2) ] ]
                 [ span [ css [ fontSize (Css.em 0.5), marginRight (px 15) ] ] [ text <| toString (indice + 1) ++ "." ]
@@ -402,7 +410,7 @@ inlineIf test ifTrue ifFalse =
 
 
 inlineInfoOfSubject subject =
-    span [ css [ fontSize (Css.em 0.7), color defaultColors.textUninportant ] ] [ text <| " " ++ toString subject.daysSinceLast ++ " days ago" ]
+    span [ css [ fontSize (Css.em 0.7), color defaultColors.textNormal ] ] [ text <| " " ++ toString subject.daysSinceLast ++ " days ago" ]
 
 
 hiddenHtml subject =
@@ -422,7 +430,7 @@ hiddenHtml subject =
             ]
         , div
             []
-            [ span [ css [ margin (px 20), color defaultColors.textUninportant ] ] [ text "Next Action: " ]
+            [ span [ css [ margin (px 20), color defaultColors.textNormal ] ] [ text "Next Action: " ]
             , p [ css [ display block, margin (px 30), fontSize (Css.em 0.9) ] ] [ text subject.whatToDoNext ]
             ]
         , div []
@@ -443,8 +451,7 @@ doneStart subject =
 
 subjectProperty name value =
     div [ css [ margin (px 20) ] ]
-        [ span [ css [ color defaultColors.textUninportant ] ] [ text <| name ++ ": " ]
-        , span [ css [ color defaultColors.textNormal ] ] [ text value ]
+        [ span [ css [ color defaultColors.textNormal ] ] [ text <| name ++ ": " ++ value ]
         ]
 
 
@@ -470,7 +477,7 @@ doneModal doneInfo =
 
 subjectCss selectedIndex ( index, subject ) =
     css
-        [ display block, borderWidth (px 1), padding (px 20), marginBottom (px 1), backgroundColor <| Css.rgb 255 255 255, borderColor (selectedColor selectedIndex ( index, subject )), borderStyle solid ]
+        [ display block, borderWidth (px 1), padding (px 20), marginBottom (px 1), backgroundColor <| Css.rgb 255 255 255, borderStyle none ]
 
 
 selectedColor selectedIndex ( index, subject ) =
