@@ -327,7 +327,7 @@ leftMenuHtml =
             div [css [ width (px 250), position absolute ] ]
             [
                 div [ css [displayFlex, flexDirection column], onClick ToggleSideMenu] [
-                    button [ css View.buttonCss ]
+                    button [ css <| List.append View.buttonCss [textAlign left]  ]
                 [ text "Fechar menu" ]
 
 
