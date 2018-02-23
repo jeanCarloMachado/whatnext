@@ -289,7 +289,7 @@ view state =
         [
             --- left meu
 
-            inlineIf (state.sideMenu) (leftMenuHtml) View.emptyNode
+            View.inlineIf (state.sideMenu) (leftMenuHtml) View.emptyNode
 
 
         --header container
@@ -417,22 +417,26 @@ subjectToHtml : String -> ( Int, Subject ) -> Html.Styled.Html Msg
 subjectToHtml openedSubjectName ( indice, subject ) =
     li [ onClick ((MySubjectMsg << ExpandSubject) ( indice, subject )), subjectCss openedSubjectName ( indice, subject ), id <| "subject_" ++ subject.name ]
         [ div []
-            [ div [ css [ fontSize (Css.em 1.2) ] ]
-                [ span [ css [ fontSize (Css.em 0.5), marginRight (px 15) ] ] [ text <| toString (indice + 1) ++ "." ]
+            [ div [ css [ fontSize (Css.em 1.2), displayFlex, justifyContent spaceBetween, flexDirection row, alignItems center ] ]
+                [ 
+                  div [] [     
+                 span [ css [ fontSize (Css.em 0.5), marginRight (px 15) ] ] [ text <| toString (indice + 1) ++ "." ]
                 , h1 [ class "noselect", css [ display inline, color defaultColors.textHighlight, marginRight (px 20) ] ] [ text subject.name ]
-                , inlineIf (subject.name == openedSubjectName) View.emptyNode <| inlineInfoOfSubject subject
-                , inlineIf (subject.name == openedSubjectName) (doneStart subject) View.emptyNode
+                , View.inlineIf (subject.name == openedSubjectName) View.emptyNode <| inlineInfoOfSubject subject
                 ]
-            , inlineIf (subject.name == openedSubjectName) (hiddenHtml subject) View.emptyNode
+
+                , View.inlineIf (subject.name == openedSubjectName) (doneStart subject)  View.emptyNode
+               
+                ]
+            , View.inlineIf (subject.name == openedSubjectName) (hiddenHtml subject) View.emptyNode
             ]
         ]
 
+doneStart : Subject -> Html.Styled.Html Msg
+doneStart subject =
+        button [ css View.buttonCss, View.onClickStoppingPropagation <| (MySubjectMsg << MyDoneMsg << ClickDone) subject ] [ text "Done" ]
 
-inlineIf test ifTrue ifFalse =
-    if test then
-        ifTrue
-    else
-        ifFalse
+
 
 
 inlineInfoOfSubject subject =
@@ -443,14 +447,14 @@ hiddenHtml subject =
     div [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed NoAction) ]
         [ --properity container
           div [ css [ displayFlex ] ]
-            [ div [ css [ displayFlex, justifyContent spaceBetween, width (pct 70), flexWrap wrap ] ]
+            [ div [ css [ displayFlex, justifyContent spaceBetween, width (pct 70), minWidth (px 300), flexWrap wrap ] ]
                 [ div []
                     [ subjectProperty "Priority" <| toString subject.priority
                     , subjectProperty "Complexity" <| toString subject.complexity
                     ]
                 , div []
-                    [ subjectProperty "Days since last session" <| toString subject.daysSinceLast
-                    , subjectProperty "Hours already invested" <| subject.timeAlreadyInvested
+                    [ subjectProperty "Last session" <| toString subject.daysSinceLast  ++ " days ago"
+                    , subjectProperty "Already invested" <| subject.timeAlreadyInvested
                     ]
                 ]
             ]
@@ -472,12 +476,6 @@ hiddenHtml subject =
         , button [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.fail), View.onClickStoppingPropagation <| (MySubjectMsg << RemoveClick) subject ] [ text "Remove" ]
         ]
 
-
-doneStart : Subject -> Html.Styled.Html Msg
-doneStart subject =
-    div [ css [ Css.float right ] ]
-        [ button [ css View.buttonCss, View.onClickStoppingPropagation <| (MySubjectMsg << MyDoneMsg << ClickDone) subject ] [ text "Done" ]
-        ]
 
 
 subjectProperty name value =

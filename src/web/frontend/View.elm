@@ -112,3 +112,10 @@ selectCss =
     , display block
     , backgroundColor (Css.hex "fff")
     ]
+
+
+inlineIf test ifTrue ifFalse =
+    if test then
+        ifTrue
+    else
+        ifFalse
