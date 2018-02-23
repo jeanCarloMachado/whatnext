@@ -10,9 +10,8 @@ import Json.Decode
 import Json.Encode
 import Toaster
 import Navigation
-import Colors exposing (defaultColors)
 import Loader
-import View
+import View exposing (defaultColors)
 
 
 type alias Flags =
@@ -187,7 +186,7 @@ view model =
                 ]
             , div [ css [ displayFlex, justifyContent flexEnd ] ]
                 [ div [ css [] ]
-                    [ button [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.warning), onClick TogglePageMode ] [ text <| getAccessOtherPageText model.pageMode ]
+                    [ a [ css [ textDecoration underline, fontSize (Css.em 0.9), padding (px 10), color defaultColors.normalButton ], onClick TogglePageMode ] [ text <| getAccessOtherPageText model.pageMode ]
                     , button [ css View.buttonCss, onClick SubmitForm ] [ text <| getSubmitText model.pageMode ]
                     ]
                 ]

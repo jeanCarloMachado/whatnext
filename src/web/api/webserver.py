@@ -85,7 +85,9 @@ def done(subjectName):
     ]
 
     my_env["NO_ITERACTIVE"] = "1"
-    subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
+    response = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
+    if response.stdout.decode('UTF-8') != "":
+        return error_json(response.stdout.decode('UTF-8')), 500, {'Content-Type': 'application/json; charset=utf-8'}
 
     return SUCCESS_MESSAGE, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
@@ -101,7 +103,8 @@ def add():
         data['name'],
         str(data['priority']),
         str(data['complexity']),
-        data['whatToDoNext']
+        data['whatToDoNext'],
+        data['objective']
     ]
     response = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
     if response.stdout.decode('UTF-8') != "":

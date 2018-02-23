@@ -162,8 +162,10 @@ addWhatToDoNextToSubjet() {
     subject="$1"
     what_to_do_next="$2"
     subject_config=$(cat $WHATNEXT_CONF | egrep "^$subject")
-    subject_config_without_description=$(echo "$subject_config" | rev | cut -d '|' -f1 --complement | rev)
-    newSubjectConfigEntry="$subject_config_without_description|$what_to_do_next"
+    subject_config_without_objective=$(echo "$subject_config" | rev | cut -d '|' -f1 --complement | rev)
+    subject_config_without_next=$(echo "$subject_config_without_objective" | rev | cut -d '|' -f1 --complement | rev)
+    subject_config_objective=$(echo "$subject_config" | rev | cut -d '|' -f1 | rev )
+    newSubjectConfigEntry="$subject_config_without_next|$what_to_do_next|$subject_config_objective"
 
     sed -i "/^$subject/d" $WHATNEXT_CONF
     echo "$newSubjectConfigEntry" >> $WHATNEXT_CONF

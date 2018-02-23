@@ -23,6 +23,7 @@ def get_subject(name):
     subject['priority'] = int(columns[1])
     subject['complexity'] = int(columns[2])
     subject['what_to_do_next'] = columns[3]
+    subject['objective'] = columns[4] if len(columns) > 3 else ""
     subject['days_since_last_study'] = int(days_since_last_study)
     time_already_invested_of_subjects = time_of_subjects()
 

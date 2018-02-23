@@ -34,6 +34,7 @@ def factory_subjects():
                 'priority': int(columns[1]),
                 'complexity': int(columns[2]),
                 'what_to_do_next': columns[3],
+                'objective': columns[4] if len(columns) > 3 else "",
                 'days_since_last_study': int(days_str),
                 'time_already_invested': time_already_invested,
                 'time_already_invested_str': minutes_to_str(time_already_invested)

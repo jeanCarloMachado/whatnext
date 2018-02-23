@@ -9,9 +9,8 @@ import Json.Decode.Pipeline
 import Json.Decode
 import Html.Styled.Attributes exposing (css, href, src, placeholder, type_)
 import Html.Styled.Events exposing (..)
-import Colors exposing (defaultColors)
 import Loader
-import View
+import View exposing (defaultColors)
 
 
 type alias Flags =

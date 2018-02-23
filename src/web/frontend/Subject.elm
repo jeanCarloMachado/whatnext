@@ -16,6 +16,7 @@ type alias Subject =
     , whatToDoNext : String
     , complexity : Int
     , priority : Int
+    , objective : String
     }
 
 
@@ -39,6 +40,7 @@ type alias NewSubjectData r =
         | newSubjectName : String
         , newPriority : Int
         , newComplexity : Int
+        , newObjective : String
         , newWhatToDoNext : String
     }
 
@@ -76,6 +78,7 @@ decodeSubject =
         |> Json.Decode.Pipeline.required "what_to_do_next" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "complexity" (Json.Decode.int)
         |> Json.Decode.Pipeline.required "priority" (Json.Decode.int)
+        |> Json.Decode.Pipeline.required "objective" (Json.Decode.string)
 
 
 decodeSubjectHistory =
@@ -162,6 +165,7 @@ addSubjectRequest endpoint state =
                 , ( "complexity", Json.Encode.int state.newComplexity )
                 , ( "priority", Json.Encode.int state.newPriority )
                 , ( "whatToDoNext", Json.Encode.string state.newWhatToDoNext )
+                , ( "objective", Json.Encode.string state.newObjective )
                 ]
     in
         Http.request

@@ -8,9 +8,36 @@ import Html.Events.Extra exposing (targetValueIntParse)
 import Dom.Scroll
 import Toaster exposing (..)
 import Css exposing (..)
-import Colors exposing (defaultColors)
 import Subject exposing (Subject, StudyEntry, DoneData)
 import Json.Decode
+
+
+type alias Colors =
+    { textHighlight : Css.Color
+    , textNormal : Css.Color
+    , selectedBackground : Css.Color
+    , normalBackground : Css.Color
+    , confirmButton : Css.Color
+    , normalButton : Css.Color
+    , warning : Css.Color
+    , success : Css.Color
+    , fail : Css.Color
+    , barColor : Css.Color
+    }
+
+
+defaultColors =
+    Colors
+        (Css.hex "ff9500")
+        (Css.hex "8e8e93")
+        (Css.rgb 255 204 0)
+        (Css.hex "e5e5e5")
+        (Css.rgb 76 217 100)
+        (Css.rgb 0 122 255)
+        (Css.rgb 255 204 0)
+        (Css.rgb 76 217 100)
+        (Css.hex "ff2d55")
+        (Css.rgb 0 122 255)
 
 
 modalCss =
