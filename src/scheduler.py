@@ -30,7 +30,7 @@ def factory_subjects():
 
         subjects_configs[columns[0]] = {
                 'name': columns[0],
-                'weight': 1,
+                'weight': 0.5,
                 'priority': int(columns[1]),
                 'complexity': int(columns[2]),
                 'what_to_do_next': columns[3],
@@ -43,34 +43,52 @@ def factory_subjects():
     return subjects_configs
 
 
-# change values based on the importance of the subject configured
 def alter_by_priority(subjects_configs):
-    for subject in subjects_configs:
-        subjects_configs[subject]['weight'] += subjects_configs[subject]['weight'] * (math.pow(subjects_configs[subject]['priority'], 2) * 0.9)
-
     return subjects_configs
+
+
+def convert_base(obj, attr):
+    value = obj[attr]
+    obj[attr] = value / 100
+    return obj
 
 def configure_subjects(tiredMode=False):
     subjects_configs = factory_subjects()
-    subjects_configs = alter_by_priority(subjects_configs)
+
+
+    # importance factors
+    # - longest without made
+    # - high complexity
+    # - high priority
+    # - new
+    # after doing a high complexity one it's better to get a lighter one
+
+    # cost factors
+    # - low priority
+    # - recently made
+
+    # decrease the bases to work between 1 and 0
+    subjects_configs = {k: convert_base(v, "priority") for k, v in subjects_configs.items()}
+
+
+    # change values based on the importance of the subject configured
+    for subject in subjects_configs:
+        subjects_configs[subject]['weight'] += subjects_configs[subject]['weight'] * (math.pow(subjects_configs[subject]['priority'], 2) * 0.9)
+
 
     # give less probability to the latest and more to the earlier
     for subject in subjects_configs:
         if subjects_configs[subject]['days_since_last_study'] == "":
-            subjects_configs[subject]['weight'] = (subjects_configs[subject]['weight']  * subjects_configs[subject]['weight'] * 0.2)
+            subjects_configs[subject]['weight'] = pow(2, subjects_configs[subject]['weight'])
             continue
         days_since_last_study =  int(subjects_configs[subject]['days_since_last_study'])
-        subjects_configs[subject]['weight'] += subjects_configs[subject]['weight'] * days_since_last_study
+        subjects_configs[subject]['weight'] = pow(days_since_last_study, 2)
 
-    # turns the last one less probable to repeat
-    last_entry =  gateway(['lastEntryName'])
-    if last_entry in subjects_configs:
-        subjects_configs[last_entry]['weight'] = subjects_configs[last_entry]['weight'] / 4
 
     # give more probability to new subjects (which were never used)
     new_subjects =  gateway(['new_subjects'])
     for subject in new_subjects.splitlines() :
-        subjects_configs[subject]['weight'] =  subjects_configs[subject]['weight'] * 2.1
+        subjects_configs[subject]['weight'] =  subjects_configs[subject]['weight']
 
     # -- contextual calculai in the end --
 
