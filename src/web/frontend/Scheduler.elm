@@ -15,6 +15,7 @@ import View exposing (defaultColors)
 import DOM
 import Menu
 
+
 -- json
 
 import Json.Decode
@@ -35,16 +36,39 @@ import Subject exposing (Subject, StudyEntry, DoneData)
 
 
 main =
-    Html.programWithFlags { init = init, view = view >> Html.Styled.toUnstyled, update = update, subscriptions = subscriptions }
+    Html.programWithFlags
+        { init = init
+        , view = view >> Html.Styled.toUnstyled
+        , update = update
+        , subscriptions = subscriptions
+        }
 
 
 initialState =
-    State [] True "" False "" "" "" "" False 50 50 "" "" "" "" False
+    State
+        []
+        True
+        ""
+        False
+        ""
+        ""
+        ""
+        ""
+        False
+        50
+        50
+        ""
+        ""
+        ""
+        ""
+        False
 
 
 init : Flags -> ( State, Cmd Msg )
 init flags =
-    ( initialState |> updateEndpoint flags.apiEndpoint, Http.send NewList <| Subject.getListRequest (initialState |> updateEndpoint flags.apiEndpoint) )
+    ( initialState |> updateEndpoint flags.apiEndpoint
+    , Http.send NewList <| Subject.getListRequest (initialState |> updateEndpoint flags.apiEndpoint)
+    )
 
 
 updateEndpoint endpoint state =
@@ -168,10 +192,14 @@ updateSubject msg model =
                 task =
                     (DOM.scrollIntoView selector)
             in
-                ( { model | subjects = Subject.replaceSubjectFromList model.subjects subject } |> Loader.disableLoading, Task.attempt (\a -> (NoAction)) task )
+                ( { model | subjects = Subject.replaceSubjectFromList model.subjects subject } |> Loader.disableLoading
+                , Task.attempt (\a -> (NoAction)) task
+                )
 
         RemoveClick subject ->
-            ( model |> Loader.enableLoading, Http.send (MySubjectMsg << Remove) <| Subject.removeRequest model.apiEndpoint subject )
+            ( model |> Loader.enableLoading
+            , Http.send (MySubjectMsg << Remove) <| Subject.removeRequest model.apiEndpoint subject
+            )
 
         OpedEditModal subject ->
             let
@@ -223,10 +251,14 @@ updateSubject msg model =
             ( { model | newObjective = objective }, Cmd.none )
 
         AlterSubjectSubmit ->
-            ( Loader.enableLoading model, Http.send (MySubjectMsg << NewSubjectResult) <| Subject.addSubjectRequest model.apiEndpoint model )
+            ( Loader.enableLoading model
+            , Http.send (MySubjectMsg << NewSubjectResult) <| Subject.addSubjectRequest model.apiEndpoint model
+            )
 
         NewSubjectResult _ ->
-            ( { model | addSubjectModal = False, newSubjectName = "" } |> unselectSubject, Http.send NewList <| Subject.getListRequest model )
+            ( { model | addSubjectModal = False, newSubjectName = "" } |> unselectSubject
+            , Http.send NewList <| Subject.getListRequest model
+            )
 
 
 updateDone : DoneMsg -> State -> ( State, Cmd Msg )
@@ -279,10 +311,11 @@ view : State -> Html.Styled.Html Msg
 view state =
     div [ css [ color defaultColors.textNormal ] ]
         [ --- left meu
-          Menu.sideBarHtmlOptional state <| 
-              Menu.sideBarHtml ToggleSideMenu <| a [ css <| List.append View.buttonCss [ marginTop (px 20) ], href "?page=log" ]
-                [ text "History"
-                ]
+          Menu.sideBarHtmlOptional state <|
+            Menu.sideBarHtml ToggleSideMenu <|
+                a [ css <| List.append View.buttonCss [ marginTop (px 20) ], href "?page=log" ]
+                    [ text "History"
+                    ]
 
         --top menu
         , Menu.topBarHtml ToggleSideMenu
@@ -291,7 +324,16 @@ view state =
                 [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
                 , span [ class "slider" ] []
                 ]
-            , img [ css [ marginLeft (px 30), marginRight (px 10), maxHeight (px 55) ], src "images/add.png", onClick (MySubjectMsg OpenAddModal) ] []
+            , img
+                [ css
+                    [ marginLeft (px 30)
+                    , marginRight (px 10)
+                    , maxHeight (px 55)
+                    ]
+                , src "images/add.png"
+                , onClick (MySubjectMsg OpenAddModal)
+                ]
+                []
             ]
         , --main content
           div
@@ -317,19 +359,51 @@ alterSubjectHtml state =
                 [ div []
                     [ h1 [] [ text "Subject Settings" ]
                     , div [ css [ marginTop (px 10), marginBottom (px 10) ] ]
-                        [ input [ defaultValue state.openedSubjectName, View.inputCss, type_ "text", placeholder "Subject name", onInput (MySubjectMsg << ChangeSubjectName), Html.Styled.Attributes.required True ] []
-                        , select [ css View.selectCss, on "change" (Json.Decode.map (MySubjectMsg << ChangePriority) targetValueIntParse) ]
+                        [ input
+                            [ defaultValue state.openedSubjectName
+                            , View.inputCss
+                            , type_ "text"
+                            , placeholder "Subject name"
+                            , onInput (MySubjectMsg << ChangeSubjectName)
+                            , Html.Styled.Attributes.required True
+                            ]
+                            []
+                        , select
+                            [ css View.selectCss
+                            , on "change" (Json.Decode.map (MySubjectMsg << ChangePriority) targetValueIntParse)
+                            ]
                             (renderPriorityOptions state.newPriority)
-                        , select [ css View.selectCss, on "change" (Json.Decode.map (MySubjectMsg << ChangeComplexity) targetValueIntParse) ]
+                        , select
+                            [ css View.selectCss
+                            , on "change" (Json.Decode.map (MySubjectMsg << ChangeComplexity) targetValueIntParse)
+                            ]
                             (renderComplexityOptions <| toString state.newComplexity)
-                        , input [ defaultValue state.newObjective, View.inputCss, type_ "text", placeholder "Objective", onInput (MySubjectMsg << ChangeObjective), Html.Styled.Attributes.required False ] []
-                        , input [ defaultValue state.newWhatToDoNext, View.inputCss, type_ "text", placeholder "What to do next", onInput (MySubjectMsg << ChangeWhatToDoNext), Html.Styled.Attributes.required False ] []
+                        , input
+                            [ defaultValue state.newObjective
+                            , View.inputCss
+                            , type_ "text"
+                            , placeholder "Objective"
+                            , onInput (MySubjectMsg << ChangeObjective)
+                            , Html.Styled.Attributes.required False
+                            ]
+                            []
+                        , input
+                            [ defaultValue state.newWhatToDoNext
+                            , View.inputCss
+                            , type_ "text"
+                            , placeholder "What to do next"
+                            , onInput (MySubjectMsg << ChangeWhatToDoNext)
+                            , Html.Styled.Attributes.required False
+                            ]
+                            []
                         ]
                     , button
                         [ css View.buttonCss, onClick (MySubjectMsg CancelAddSubjectModal) ]
                         [ text "Cancel" ]
                     , button
-                        [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.success), onClick (MySubjectMsg AlterSubjectSubmit) ]
+                        [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.success)
+                        , onClick (MySubjectMsg AlterSubjectSubmit)
+                        ]
                         [ text "Confirm" ]
                     ]
                 ]
@@ -383,12 +457,38 @@ subjectsToHtml openedSubjectName list =
 
 subjectToHtml : String -> ( Int, Subject ) -> Html.Styled.Html Msg
 subjectToHtml openedSubjectName ( indice, subject ) =
-    li [ onClick ((MySubjectMsg << ExpandSubject) ( indice, subject )), subjectCss openedSubjectName ( indice, subject ), id <| "subject_" ++ subject.name ]
+    li
+        [ onClick ((MySubjectMsg << ExpandSubject) ( indice, subject ))
+        , subjectCss openedSubjectName ( indice, subject )
+        , id <| "subject_" ++ subject.name
+        ]
         [ div []
-            [ div [ css [ fontSize (Css.em 1.2), displayFlex, justifyContent spaceBetween, flexDirection row, alignItems center ] ]
+            [ div
+                [ css
+                    [ fontSize (Css.em 1.2)
+                    , displayFlex
+                    , justifyContent spaceBetween
+                    , flexDirection row
+                    , alignItems center
+                    ]
+                ]
                 [ div []
-                    [ span [ css [ fontSize (Css.em 0.5), marginRight (px 15) ] ] [ text <| toString (indice + 1) ++ "." ]
-                    , h1 [ class "noselect", css [ display inline, color defaultColors.textHighlight, marginRight (px 20) ] ] [ text subject.name ]
+                    [ span
+                        [ css
+                            [ fontSize (Css.em 0.5)
+                            , marginRight (px 15)
+                            ]
+                        ]
+                        [ text <| toString (indice + 1) ++ "." ]
+                    , h1
+                        [ class "noselect"
+                        , css
+                            [ display inline
+                            , color defaultColors.textHighlight
+                            , marginRight (px 20)
+                            ]
+                        ]
+                        [ text subject.name ]
                     , View.inlineIf (subject.name == openedSubjectName) View.emptyNode <| inlineInfoOfSubject subject
                     ]
                 , View.inlineIf (subject.name == openedSubjectName) (doneStart subject) View.emptyNode
@@ -400,18 +500,34 @@ subjectToHtml openedSubjectName ( indice, subject ) =
 
 doneStart : Subject -> Html.Styled.Html Msg
 doneStart subject =
-    button [ css View.buttonCss, View.onClickStoppingPropagation <| (MySubjectMsg << MyDoneMsg << ClickDone) subject ] [ text "Done" ]
+    button
+        [ css
+            View.buttonCss
+        , View.onClickStoppingPropagation <| (MySubjectMsg << MyDoneMsg << ClickDone) subject
+        ]
+        [ text "Done" ]
 
 
 inlineInfoOfSubject subject =
-    span [ css [ fontSize (Css.em 0.7), color defaultColors.textNormal ] ] [ text <| " " ++ toString subject.daysSinceLast ++ " days ago" ]
+    span
+        [ css [ fontSize (Css.em 0.7), color defaultColors.textNormal ]
+        ]
+        [ text <| " " ++ toString subject.daysSinceLast ++ " days ago" ]
 
 
 hiddenHtml subject =
     div [ onWithOptions "click" { stopPropagation = True, preventDefault = False } (Json.Decode.succeed NoAction) ]
         [ --properity container
           div [ css [ displayFlex ] ]
-            [ div [ css [ displayFlex, justifyContent spaceBetween, width (pct 70), minWidth (px 300), flexWrap wrap ] ]
+            [ div
+                [ css
+                    [ displayFlex
+                    , justifyContent spaceBetween
+                    , width (pct 70)
+                    , minWidth (px 300)
+                    , flexWrap wrap
+                    ]
+                ]
                 [ div []
                     [ subjectProperty "Priority" <| toString subject.priority
                     , subjectProperty "Complexity" <| toString subject.complexity
@@ -436,8 +552,16 @@ hiddenHtml subject =
             [ h2 [ css [ textAlign center, marginTop (px 50), fontWeight bold ] ] [ text "History" ]
             , div [ css [ margin (px 30) ] ] (List.map studyEntryToHtml subject.history)
             ]
-        , button [ css View.buttonCss, View.onClickStoppingPropagation <| (MySubjectMsg << OpedEditModal) subject ] [ text "Edit" ]
-        , button [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.fail), View.onClickStoppingPropagation <| (MySubjectMsg << RemoveClick) subject ] [ text "Remove" ]
+        , button
+            [ css View.buttonCss
+            , View.onClickStoppingPropagation <| (MySubjectMsg << OpedEditModal) subject
+            ]
+            [ text "Edit" ]
+        , button
+            [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.fail)
+            , View.onClickStoppingPropagation <| (MySubjectMsg << RemoveClick) subject
+            ]
+            [ text "Remove" ]
         ]
 
 
@@ -457,11 +581,31 @@ doneModal doneInfo =
             div [ View.modalCss ]
                 [ div []
                     [ h1 [] [ text "Record session" ]
-                    , input [ View.inputCss, type_ "text", placeholder "What was done?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeDescription) ] []
-                    , input [ View.inputCss, type_ "text", placeholder "What is to de done next?", onInput (MySubjectMsg << MyDoneMsg << DoneChangeWhatToDoNext) ] []
+                    , input
+                        [ View.inputCss
+                        , type_ "text"
+                        , placeholder "What was done?"
+                        , onInput (MySubjectMsg << MyDoneMsg << DoneChangeDescription)
+                        ]
+                        []
+                    , input
+                        [ View.inputCss
+                        , type_ "text"
+                        , placeholder "What is to de done next?"
+                        , onInput (MySubjectMsg << MyDoneMsg << DoneChangeWhatToDoNext)
+                        ]
+                        []
                     , div []
-                        [ button [ css View.buttonCss, onClick (MySubjectMsg << MyDoneMsg <| CancelDone) ] [ text "Cancel" ]
-                        , button [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.success), onClick (MySubjectMsg << MyDoneMsg <| SubmitDone) ] [ text "Confirm" ]
+                        [ button
+                            [ css View.buttonCss
+                            , onClick (MySubjectMsg << MyDoneMsg <| CancelDone)
+                            ]
+                            [ text "Cancel" ]
+                        , button
+                            [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.success)
+                            , onClick (MySubjectMsg << MyDoneMsg <| SubmitDone)
+                            ]
+                            [ text "Confirm" ]
                         ]
                     ]
                 ]
@@ -469,7 +613,13 @@ doneModal doneInfo =
 
 subjectCss selectedIndex ( index, subject ) =
     css
-        [ display block, borderWidth (px 1), padding (px 20), marginBottom (px 1), backgroundColor <| Css.rgb 255 255 255, borderStyle none ]
+        [ display block
+        , borderWidth (px 1)
+        , padding (px 20)
+        , marginBottom (px 1)
+        , backgroundColor <| Css.rgb 255 255 255
+        , borderStyle none
+        ]
 
 
 selectedColor selectedIndex ( index, subject ) =
