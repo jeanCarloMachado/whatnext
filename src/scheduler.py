@@ -44,7 +44,7 @@ def factory_subjects():
 
 
 # change values based on the importance of the subject configured
-def configure_importance(subjects_configs):
+def alter_by_priority(subjects_configs):
     for subject in subjects_configs:
         subjects_configs[subject]['weight'] += subjects_configs[subject]['weight'] * (math.pow(subjects_configs[subject]['priority'], 2) * 0.9)
 
@@ -52,7 +52,7 @@ def configure_importance(subjects_configs):
 
 def configure_subjects(tiredMode=False):
     subjects_configs = factory_subjects()
-    subjects_configs = configure_importance(subjects_configs)
+    subjects_configs = alter_by_priority(subjects_configs)
 
     # give less probability to the latest and more to the earlier
     for subject in subjects_configs:
@@ -70,11 +70,10 @@ def configure_subjects(tiredMode=False):
     # give more probability to new subjects (which were never used)
     new_subjects =  gateway(['new_subjects'])
     for subject in new_subjects.splitlines() :
-        subjects_configs[subject]['weight'] =  subjects_configs[subject]['weight'] * 1.1
+        subjects_configs[subject]['weight'] =  subjects_configs[subject]['weight'] * 2.1
 
     # -- contextual calculai in the end --
 
-    now = datetime.datetime.now()
     if tiredMode:
         for subject in subjects_configs:
             base = (1 / math.pow(subjects_configs[subject]['complexity'],9))

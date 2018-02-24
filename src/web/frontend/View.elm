@@ -73,7 +73,7 @@ textAreaCss =
         , margin (px 1)
         , marginBottom (px 3)
         , padding (px 10)
-        , minHeight (px 150)
+        , height (px 150)
         ]
 
 inputCss =
@@ -87,6 +87,16 @@ inputCss =
         , marginBottom (px 3)
         , padding (px 10)
         ]
+
+selectCss =
+    [ borderColor (Css.hex "d3d3d3")
+     , borderRadius (px 0)
+     , borderWidth (px 2)
+    , color defaultColors.textNormal
+    , width (px 300)
+    , display block
+    , backgroundColor (Css.hex "fff")
+    ]
 
 
 onClickStoppingPropagation msg =
@@ -116,14 +126,6 @@ optionFromTuple defaultValue ( value, label ) =
         option [ Html.Styled.Attributes.value value ]
             [ text label ]
 
-
-selectCss =
-    [ borderColor (Css.hex "d3d3d3")
-    , color defaultColors.textNormal
-    , width (px 300)
-    , display block
-    , backgroundColor (Css.hex "fff")
-    ]
 
 
 inlineIf test ifTrue ifFalse =

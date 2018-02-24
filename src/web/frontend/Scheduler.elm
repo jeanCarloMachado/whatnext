@@ -292,7 +292,10 @@ updateDone msg model =
         SubmitDone ->
             let
                 doneHttp =
-                    Http.send (MySubjectMsg << MyDoneMsg << DoneResult) <| Subject.doneRequest model.apiEndpoint model
+                    Http.send
+                        (MySubjectMsg << MyDoneMsg << DoneResult)
+                    <|
+                        Subject.doneRequest model.apiEndpoint model
             in
                 ( model |> Loader.enableLoading |> resetCurrentDone, doneHttp )
 
@@ -300,7 +303,9 @@ updateDone msg model =
             ( model |> resetCurrentDone, Cmd.none )
 
         DoneResult (Ok _) ->
-            ( Loader.disableLoading model |> unselectSubject, Http.send NewList <| Subject.getListRequest model )
+            ( Loader.disableLoading model |> unselectSubject
+            , Http.send NewList <| Subject.getListRequest model
+            )
 
 
 unselectSubject model =
@@ -379,7 +384,7 @@ alterSubjectHtml state =
                         , maxHeight (px 700)
                         ]
                     ]
-                    [ h1 [ css [fontSize (Css.em 1.7)] ] [ text "Subject Settings" ]
+                    [ h1 [ css [ fontSize (Css.em 1.6) ] ] [ text "Subject Settings" ]
                     , input
                         [ defaultValue state.openedSubjectName
                         , View.inputCss
@@ -389,32 +394,29 @@ alterSubjectHtml state =
                         , Html.Styled.Attributes.required True
                         ]
                         []
-                    , label [] [text "Priority"]
                     , select
                         [ css View.selectCss
                         , on "change" (Json.Decode.map (MySubjectMsg << ChangePriority) targetValueIntParse)
                         ]
                         (renderPriorityOptions state.newPriority)
-                    , label [] [text "Complexity"]
                     , select
                         [ css View.selectCss
                         , on "change" (Json.Decode.map (MySubjectMsg << ChangeComplexity) targetValueIntParse)
                         ]
                         (renderComplexityOptions <| toString state.newComplexity)
-
-                    , label [] [text "Objective"]
+                    , label [] [ text "Objective" ]
                     , textarea
                         [ defaultValue state.newObjective
-                        , css View.textAreaCss
+                        , css <| List.append View.textAreaCss [ minHeight (px 75) ]
                         , placeholder "After finishing studying this subject will be able to ..."
                         , onInput (MySubjectMsg << ChangeObjective)
                         , Html.Styled.Attributes.required False
                         ]
                         []
-                    , label [] [text "Next step"]
+                    , label [] [ text "Next step" ]
                     , textarea
                         [ defaultValue state.newWhatToDoNext
-                        , css View.textAreaCss
+                        , css <| List.append View.textAreaCss [ minHeight (px 100) ]
                         , placeholder "do x y z"
                         , onInput (MySubjectMsg << ChangeWhatToDoNext)
                         , Html.Styled.Attributes.required False
@@ -614,17 +616,16 @@ doneModal doneInfo =
                         , maxHeight (px 500)
                         ]
                     ]
-                    [ h1 [ css [fontSize (Css.em 1.7)] ] [ text "Record session" ]
-
-                    , label [] [text "What was done?"]
+                    [ h1 [ css [ fontSize (Css.em 1.7) ] ] [ text "Record session" ]
+                    , label [] [ text "What was done?" ]
                     , textarea
                         [ css View.textAreaCss
                         , placeholder "studied x y z"
-                        , defaultValue  doneInfo.doneDescription
+                        , defaultValue doneInfo.doneDescription
                         , onInput (MySubjectMsg << MyDoneMsg << DoneChangeDescription)
                         ]
                         []
-                    , label [] [text "What to do next"]
+                    , label [] [ text "What to do next" ]
                     , textarea
                         [ css View.textAreaCss
                         , placeholder "study x y z"
