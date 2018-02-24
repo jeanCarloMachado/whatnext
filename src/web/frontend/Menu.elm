@@ -33,7 +33,15 @@ topBarHtml toggleMenuEvent elements =
             , minHeight (px 50)
             ]
         ]
-        [ img [ css [ paddingLeft (px 15), maxHeight (px 55) ], src "images/expandMenu.png", onClick toggleMenuEvent ] []
+        [ img
+            [ css
+                [ paddingLeft (px 3)
+                , maxHeight (px 55)
+                ]
+            , src "images/expandMenu.png"
+            , onClick toggleMenuEvent
+            ]
+            []
         , div [ css [ displayFlex, justifyContent flexEnd, alignItems center ] ]
             elements
         ]
@@ -43,7 +51,7 @@ sideBarHtmlOptional state configuredSidebar =
     View.inlineIf (state.sideMenu) (configuredSidebar) View.emptyNode
 
 
-sideBarHtml toggleMenuEvent optionalItems  =
+sideBarHtml toggleMenuEvent optionalItems =
     div [ css [ width (px 250), position absolute ] ]
         [ div [ css [ displayFlex, flexDirection column ], onClick toggleMenuEvent ]
             [ button [ css <| List.append View.buttonCss [ textAlign left ] ]

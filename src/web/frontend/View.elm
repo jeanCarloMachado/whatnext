@@ -64,6 +64,17 @@ buttonCss =
     , textAlign center
     ]
 
+textAreaCss =
+        [ borderRadius (px 0)
+        , borderStyle solid
+        , borderColor (Css.hex "d3d3d3")
+        , display block
+        , width (px 300)
+        , margin (px 1)
+        , marginBottom (px 3)
+        , padding (px 10)
+        , minHeight (px 150)
+        ]
 
 inputCss =
     css

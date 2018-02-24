@@ -113,8 +113,8 @@ type SubjectMsg
     | RemoveClick Subject
     | GetDetail (Result Http.Error Subject)
     | MyDoneMsg DoneMsg
-    | OpedEditModal Subject
     | OpenAddModal
+    | OpedEditModal Subject
     | CancelAddSubjectModal
     | ChangeSubjectName String
     | ChangeWhatToDoNext String
@@ -201,20 +201,6 @@ updateSubject msg model =
             , Http.send (MySubjectMsg << Remove) <| Subject.removeRequest model.apiEndpoint subject
             )
 
-        OpedEditModal subject ->
-            let
-                newModel =
-                    { model
-                        | addSubjectModal = True
-                        , newSubjectName = subject.name
-                        , newWhatToDoNext = subject.whatToDoNext
-                        , newPriority = subject.priority
-                        , newComplexity = subject.complexity
-                        , newObjective = subject.objective
-                    }
-            in
-                ( newModel, Cmd.none )
-
         Remove (Ok _) ->
             ( model |> Loader.enableLoading, Http.send NewList <| Subject.getListRequest model )
 
@@ -230,7 +216,29 @@ updateSubject msg model =
             updateDone a model
 
         OpenAddModal ->
-            ( { model | addSubjectModal = True } |> unselectSubject, Cmd.none )
+            let
+                newModel =
+                    { model
+                        | addSubjectModal = True
+                        , newObjective = ""
+                        , newWhatToDoNext = ""
+                    }
+            in
+                ( newModel |> unselectSubject, Cmd.none )
+
+        OpedEditModal subject ->
+            let
+                newModel =
+                    { model
+                        | addSubjectModal = True
+                        , newSubjectName = subject.name
+                        , newWhatToDoNext = subject.whatToDoNext
+                        , newPriority = subject.priority
+                        , newComplexity = subject.complexity
+                        , newObjective = subject.objective
+                    }
+            in
+                ( newModel, Cmd.none )
 
         CancelAddSubjectModal ->
             ( { model | addSubjectModal = False }, Cmd.none )
@@ -268,7 +276,12 @@ updateDone msg model =
             errorResult model msg
 
         ClickDone subject ->
-            ( { model | doneSubjectName = subject.name }, Cmd.none )
+            ( { model
+                | doneSubjectName = subject.name
+                , doneDescription = subject.whatToDoNext
+              }
+            , Cmd.none
+            )
 
         DoneChangeDescription description ->
             ( { model | doneDescription = description }, Cmd.none )
@@ -356,55 +369,67 @@ alterSubjectHtml state =
     case state.addSubjectModal of
         True ->
             div [ View.modalCss ]
-                [ div []
-                    [ h1 [] [ text "Subject Settings" ]
-                    , div [ css [ marginTop (px 10), marginBottom (px 10) ] ]
-                        [ input
-                            [ defaultValue state.openedSubjectName
-                            , View.inputCss
-                            , type_ "text"
-                            , placeholder "Subject name"
-                            , onInput (MySubjectMsg << ChangeSubjectName)
-                            , Html.Styled.Attributes.required True
-                            ]
-                            []
-                        , select
-                            [ css View.selectCss
-                            , on "change" (Json.Decode.map (MySubjectMsg << ChangePriority) targetValueIntParse)
-                            ]
-                            (renderPriorityOptions state.newPriority)
-                        , select
-                            [ css View.selectCss
-                            , on "change" (Json.Decode.map (MySubjectMsg << ChangeComplexity) targetValueIntParse)
-                            ]
-                            (renderComplexityOptions <| toString state.newComplexity)
-                        , input
-                            [ defaultValue state.newObjective
-                            , View.inputCss
-                            , type_ "text"
-                            , placeholder "Objective"
-                            , onInput (MySubjectMsg << ChangeObjective)
-                            , Html.Styled.Attributes.required False
-                            ]
-                            []
-                        , input
-                            [ defaultValue state.newWhatToDoNext
-                            , View.inputCss
-                            , type_ "text"
-                            , placeholder "What to do next"
-                            , onInput (MySubjectMsg << ChangeWhatToDoNext)
-                            , Html.Styled.Attributes.required False
-                            ]
-                            []
+                [ div
+                    [ css
+                        [ displayFlex
+                        , justifyContent spaceBetween
+                        , flexDirection column
+                        , alignItems flexStart
+                        , height (pct 100)
+                        , maxHeight (px 700)
                         ]
-                    , button
-                        [ css View.buttonCss, onClick (MySubjectMsg CancelAddSubjectModal) ]
-                        [ text "Cancel" ]
-                    , button
-                        [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.success)
-                        , onClick (MySubjectMsg AlterSubjectSubmit)
+                    ]
+                    [ h1 [ css [fontSize (Css.em 1.7)] ] [ text "Subject Settings" ]
+                    , input
+                        [ defaultValue state.openedSubjectName
+                        , View.inputCss
+                        , type_ "text"
+                        , placeholder "Subject name"
+                        , onInput (MySubjectMsg << ChangeSubjectName)
+                        , Html.Styled.Attributes.required True
                         ]
-                        [ text "Confirm" ]
+                        []
+                    , label [] [text "Priority"]
+                    , select
+                        [ css View.selectCss
+                        , on "change" (Json.Decode.map (MySubjectMsg << ChangePriority) targetValueIntParse)
+                        ]
+                        (renderPriorityOptions state.newPriority)
+                    , label [] [text "Complexity"]
+                    , select
+                        [ css View.selectCss
+                        , on "change" (Json.Decode.map (MySubjectMsg << ChangeComplexity) targetValueIntParse)
+                        ]
+                        (renderComplexityOptions <| toString state.newComplexity)
+
+                    , label [] [text "Objective"]
+                    , textarea
+                        [ defaultValue state.newObjective
+                        , css View.textAreaCss
+                        , placeholder "After finishing studying this subject will be able to ..."
+                        , onInput (MySubjectMsg << ChangeObjective)
+                        , Html.Styled.Attributes.required False
+                        ]
+                        []
+                    , label [] [text "Next step"]
+                    , textarea
+                        [ defaultValue state.newWhatToDoNext
+                        , css View.textAreaCss
+                        , placeholder "do x y z"
+                        , onInput (MySubjectMsg << ChangeWhatToDoNext)
+                        , Html.Styled.Attributes.required False
+                        ]
+                        []
+                    , div [ css [ displayFlex, justifyContent spaceBetween, width (pct 100) ] ]
+                        [ button
+                            [ css View.buttonCss, onClick (MySubjectMsg CancelAddSubjectModal) ]
+                            [ text "Cancel" ]
+                        , button
+                            [ css <| List.append View.buttonCss [ backgroundColor defaultColors.success ]
+                            , onClick (MySubjectMsg AlterSubjectSubmit)
+                            ]
+                            [ text "Confirm" ]
+                        ]
                     ]
                 ]
 
@@ -579,23 +604,34 @@ doneModal doneInfo =
 
         _ ->
             div [ View.modalCss ]
-                [ div []
-                    [ h1 [] [ text "Record session" ]
-                    , input
-                        [ View.inputCss
-                        , type_ "text"
-                        , placeholder "What was done?"
+                [ div
+                    [ css
+                        [ displayFlex
+                        , justifyContent spaceBetween
+                        , flexDirection column
+                        , alignItems flexStart
+                        , height (pct 100)
+                        , maxHeight (px 500)
+                        ]
+                    ]
+                    [ h1 [ css [fontSize (Css.em 1.7)] ] [ text "Record session" ]
+
+                    , label [] [text "What was done?"]
+                    , textarea
+                        [ css View.textAreaCss
+                        , placeholder "studied x y z"
+                        , defaultValue  doneInfo.doneDescription
                         , onInput (MySubjectMsg << MyDoneMsg << DoneChangeDescription)
                         ]
                         []
-                    , input
-                        [ View.inputCss
-                        , type_ "text"
-                        , placeholder "What is to de done next?"
+                    , label [] [text "What to do next"]
+                    , textarea
+                        [ css View.textAreaCss
+                        , placeholder "study x y z"
                         , onInput (MySubjectMsg << MyDoneMsg << DoneChangeWhatToDoNext)
                         ]
                         []
-                    , div []
+                    , div [ css [ displayFlex, justifyContent spaceBetween, width (pct 100) ] ]
                         [ button
                             [ css View.buttonCss
                             , onClick (MySubjectMsg << MyDoneMsg <| CancelDone)
