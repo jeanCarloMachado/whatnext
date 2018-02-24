@@ -61,6 +61,7 @@ buttonCss =
     , textDecoration none
     , color <| Css.rgb 255 255 255
     , backgroundColor defaultColors.normalButton
+    , textAlign center
     ]
 
 

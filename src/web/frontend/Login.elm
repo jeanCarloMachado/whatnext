@@ -51,34 +51,34 @@ type Msg
     | TogglePageMode
 
 
-update msg model =
+update msg state =
     case msg of
         UpdateEmail email ->
-            ( { model | email = email }, Cmd.none )
+            ( { state | email = email }, Cmd.none )
 
         UpdatePassword password ->
-            ( { model | password = password }, Cmd.none )
+            ( { state | password = password }, Cmd.none )
 
         SubmitForm ->
-            case model.pageMode of
+            case state.pageMode of
                 SignupPage ->
-                    ( { model | errorMessage = "" } |> Loader.enableLoading, Http.send RequestResult <| request model "signup" )
+                    ( { state | errorMessage = "" } |> Loader.enableLoading, Http.send RequestResult <| request state "signup" )
 
                 LoginPage ->
-                    ( { model | errorMessage = "" } |> Loader.enableLoading, Http.send RequestResult <| request model "login" )
+                    ( { state | errorMessage = "" } |> Loader.enableLoading, Http.send RequestResult <| request state "login" )
 
         RequestResult (Ok message) ->
-            case model.pageMode of
+            case state.pageMode of
                 LoginPage ->
-                    ( model |> Loader.disableLoading, Navigation.load "https://app.thewhatnext.net?page=scheduler" )
+                    ( state |> Loader.disableLoading, Navigation.load "https://app.thewhatnext.net?page=scheduler" )
 
                 SignupPage ->
-                    ( { model | pageMode = togglePageMode model.pageMode } |> Loader.disableLoading, Cmd.none )
+                    ( { state | pageMode = togglePageMode state.pageMode } |> Loader.disableLoading, Cmd.none )
 
         RequestResult (Err msg) ->
             let
                 newModel =
-                    Loader.disableLoading model
+                    Loader.disableLoading state
             in
                 case msg of
                     Http.BadStatus response ->
@@ -93,10 +93,10 @@ update msg model =
                         ( { newModel | errorMessage = "Generic Error" }, Cmd.none )
 
         TogglePageMode ->
-            ( { model | pageMode = togglePageMode model.pageMode }, Cmd.none )
+            ( { state | pageMode = togglePageMode state.pageMode }, Cmd.none )
 
         None ->
-            ( model, Cmd.none )
+            ( state, Cmd.none )
 
 
 togglePageMode pageMode =
@@ -112,15 +112,15 @@ togglePageMode pageMode =
 -- requests
 
 
-request model service =
+request state service =
     let
         url =
-            "https://" ++ model.apiEndpoint ++ "/" ++ service
+            "https://" ++ state.apiEndpoint ++ "/" ++ service
 
         body =
             Json.Encode.object
-                [ ( "email", Json.Encode.string model.email )
-                , ( "password", Json.Encode.string model.password )
+                [ ( "email", Json.Encode.string state.email )
+                , ( "password", Json.Encode.string state.password )
                 ]
     in
         Http.request
@@ -173,21 +173,22 @@ getSubmitText pageMode =
             "Join"
 
 
-view model =
+view state =
     div [ css [ displayFlex, justifyContent center, alignItems center, height (pct 100), width (pct 100), position fixed ] ]
-        [ div [ css [ backgroundColor (Css.hex "ffffff"), padding (px 20), displayFlex, flexDirection column ] ]
-            [ h2 [ css [ color defaultColors.textHighlight ] ] [ text <| getPageTitle model.pageMode ]
+        [ Loader.getLoadingHtml state.loading
+        , div [ css [ backgroundColor (Css.hex "ffffff"), padding (px 20), displayFlex, flexDirection column ] ]
+            [ h2 [ css [ color defaultColors.textHighlight ] ] [ text <| getPageTitle state.pageMode ]
             , div [ css [ marginTop (px 20), marginBottom (px 20) ] ]
                 [ input [ View.inputCss, placeholder "Email", onInput UpdateEmail, type_ "email" ] []
                 , input [ View.inputCss, placeholder "Password", type_ "password", onInput UpdatePassword ] []
                 ]
             , div []
-                [ Toaster.html model.errorMessage
+                [ Toaster.html state.errorMessage
                 ]
             , div [ css [ displayFlex, justifyContent flexEnd ] ]
                 [ div [ css [] ]
-                    [ a [ css [ textDecoration underline, fontSize (Css.em 0.9), padding (px 10), color defaultColors.normalButton ], onClick TogglePageMode ] [ text <| getAccessOtherPageText model.pageMode ]
-                    , button [ css View.buttonCss, onClick SubmitForm ] [ text <| getSubmitText model.pageMode ]
+                    [ a [ css [ textDecoration underline, fontSize (Css.em 0.9), padding (px 10), color defaultColors.normalButton ], onClick TogglePageMode ] [ text <| getAccessOtherPageText state.pageMode ]
+                    , button [ css View.buttonCss, onClick SubmitForm ] [ text <| getSubmitText state.pageMode ]
                     ]
                 ]
             ]
@@ -195,5 +196,5 @@ view model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions state =
     Sub.none

@@ -13,7 +13,7 @@ import Css exposing (..)
 import Subject exposing (Subject, StudyEntry, DoneData)
 import View exposing (defaultColors)
 import DOM
-
+import Menu
 
 -- json
 
@@ -79,8 +79,6 @@ type Msg
     = NewList (Result Http.Error (Array Subject))
     | ToggleTiredMode
     | NoAction
-    | History
-    | Logout
     | ToggleSideMenu
     | MySubjectMsg SubjectMsg
 
@@ -135,14 +133,8 @@ update msg model =
         NoAction ->
             ( model, Cmd.none )
 
-        Logout ->
-            ( model, Navigation.load "/" )
-
-        History ->
-            ( model, Navigation.load "?page=log" )
-
         ToggleSideMenu ->
-            ({model | sideMenu =  not model.sideMenu }, Cmd.none)
+            ( Menu.toggle model, Cmd.none )
 
         ToggleTiredMode ->
             let
@@ -286,26 +278,20 @@ errorResult model msg =
 view : State -> Html.Styled.Html Msg
 view state =
     div [ css [ color defaultColors.textNormal ] ]
-        [
-            --- left meu
-
-            View.inlineIf (state.sideMenu) (leftMenuHtml) View.emptyNode
-
-
-        --header container
-        , div
-            [ css [ backgroundColor defaultColors.barColor, displayFlex, justifyContent spaceBetween, flexDirection row ] ]
-            [
-                img [ css [ paddingLeft (px 15), maxHeight (px 55)], src "images/expandMenu.png",  onClick ToggleSideMenu ] []
-
-            , div [ css [ displayFlex, justifyContent flexEnd, alignItems center ] ]
-                [ span [ css [ marginRight (px 10), color (Css.hex "ffffff") ] ] [ text "Tired" ]
-                , label [ class "switch" ]
-                    [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
-                    , span [ class "slider" ] []
-                    ]
-                , img [ css [marginLeft (px 30), marginRight (px 10), maxHeight (px 55)],  src "images/add.png", onClick (MySubjectMsg OpenAddModal) ] []
+        [ --- left meu
+          Menu.sideBarHtmlOptional state <| 
+              Menu.sideBarHtml ToggleSideMenu <| a [ css <| List.append View.buttonCss [ marginTop (px 20) ], href "?page=log" ]
+                [ text "History"
                 ]
+
+        --top menu
+        , Menu.topBarHtml ToggleSideMenu
+            [ span [ css [ marginRight (px 10), color (Css.hex "ffffff") ] ] [ text "Tired" ]
+            , label [ class "switch" ]
+                [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
+                , span [ class "slider" ] []
+                ]
+            , img [ css [ marginLeft (px 30), marginRight (px 10), maxHeight (px 55) ], src "images/add.png", onClick (MySubjectMsg OpenAddModal) ] []
             ]
         , --main content
           div
@@ -322,24 +308,6 @@ view state =
                 ]
             ]
         ]
-
-leftMenuHtml =
-            div [css [ width (px 250), position absolute ] ]
-            [
-                div [ css [displayFlex, flexDirection column], onClick ToggleSideMenu] [
-                    button [ css <| List.append View.buttonCss [textAlign left]  ]
-                [ text "Close menu" ]
-
-
-             , button [ css <| List.append View.buttonCss [ marginTop (px 20) ] , onClick History ]
-                    [ text "History"
-                    ]
-                , button [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.fail), onClick Logout ]
-                    [ text "Quit" ]
-                    ]
-
-            ]
-
 
 
 alterSubjectHtml state =
@@ -418,25 +386,21 @@ subjectToHtml openedSubjectName ( indice, subject ) =
     li [ onClick ((MySubjectMsg << ExpandSubject) ( indice, subject )), subjectCss openedSubjectName ( indice, subject ), id <| "subject_" ++ subject.name ]
         [ div []
             [ div [ css [ fontSize (Css.em 1.2), displayFlex, justifyContent spaceBetween, flexDirection row, alignItems center ] ]
-                [ 
-                  div [] [     
-                 span [ css [ fontSize (Css.em 0.5), marginRight (px 15) ] ] [ text <| toString (indice + 1) ++ "." ]
-                , h1 [ class "noselect", css [ display inline, color defaultColors.textHighlight, marginRight (px 20) ] ] [ text subject.name ]
-                , View.inlineIf (subject.name == openedSubjectName) View.emptyNode <| inlineInfoOfSubject subject
-                ]
-
-                , View.inlineIf (subject.name == openedSubjectName) (doneStart subject)  View.emptyNode
-               
+                [ div []
+                    [ span [ css [ fontSize (Css.em 0.5), marginRight (px 15) ] ] [ text <| toString (indice + 1) ++ "." ]
+                    , h1 [ class "noselect", css [ display inline, color defaultColors.textHighlight, marginRight (px 20) ] ] [ text subject.name ]
+                    , View.inlineIf (subject.name == openedSubjectName) View.emptyNode <| inlineInfoOfSubject subject
+                    ]
+                , View.inlineIf (subject.name == openedSubjectName) (doneStart subject) View.emptyNode
                 ]
             , View.inlineIf (subject.name == openedSubjectName) (hiddenHtml subject) View.emptyNode
             ]
         ]
 
+
 doneStart : Subject -> Html.Styled.Html Msg
 doneStart subject =
-        button [ css View.buttonCss, View.onClickStoppingPropagation <| (MySubjectMsg << MyDoneMsg << ClickDone) subject ] [ text "Done" ]
-
-
+    button [ css View.buttonCss, View.onClickStoppingPropagation <| (MySubjectMsg << MyDoneMsg << ClickDone) subject ] [ text "Done" ]
 
 
 inlineInfoOfSubject subject =
@@ -453,7 +417,7 @@ hiddenHtml subject =
                     , subjectProperty "Complexity" <| toString subject.complexity
                     ]
                 , div []
-                    [ subjectProperty "Last session" <| toString subject.daysSinceLast  ++ " days ago"
+                    [ subjectProperty "Last session" <| toString subject.daysSinceLast ++ " days ago"
                     , subjectProperty "Already invested" <| subject.timeAlreadyInvested
                     ]
                 ]
@@ -475,7 +439,6 @@ hiddenHtml subject =
         , button [ css View.buttonCss, View.onClickStoppingPropagation <| (MySubjectMsg << OpedEditModal) subject ] [ text "Edit" ]
         , button [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.fail), View.onClickStoppingPropagation <| (MySubjectMsg << RemoveClick) subject ] [ text "Remove" ]
         ]
-
 
 
 subjectProperty name value =

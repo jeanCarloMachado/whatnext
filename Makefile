@@ -12,7 +12,7 @@ clear:
 
 build: copyAssets
 	cd src/web/frontend && elm-make Scheduler.elm --output ${dist_dir}/scheduler.js
-	cd src/web/frontend && elm-make Log.elm --output ${dist_dir}/log.js
+	cd src/web/frontend && elm-make History.elm --output ${dist_dir}/history.js
 	cd src/web/frontend && elm-make Login.elm --output ${dist_dir}/login.js
 
 copyAssets:

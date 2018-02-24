@@ -1,4 +1,4 @@
-module Log exposing (..)
+module History exposing (..)
 
 import Css exposing (..)
 import Navigation
@@ -10,6 +10,7 @@ import Json.Decode
 import Html.Styled.Attributes exposing (css, href, src, placeholder, type_)
 import Html.Styled.Events exposing (..)
 import Loader
+import Menu
 import View exposing (defaultColors)
 
 
@@ -22,7 +23,11 @@ main =
 
 
 type alias PageData =
-    { history : List StudyEntry, toasterMsg : String, loading : Bool }
+    { history : List StudyEntry
+    , toasterMsg : String
+    , loading : Bool
+    , sideMenu : Bool
+    }
 
 
 type alias StudyEntry =
@@ -34,28 +39,32 @@ type alias StudyEntry =
 
 init : Flags -> ( PageData, Cmd Msg )
 init flags =
-    ( PageData [] "" True, getHistory flags.apiEndpoint )
+    ( PageData [] "" True False, getHistory flags.apiEndpoint )
 
 
 type Msg
     = None
     | HistoryResult (Result Http.Error (List StudyEntry))
+    | ToggleSideMenu
     | GoToScheduler
 
 
-update msg pageData =
+update msg state =
     case msg of
         HistoryResult (Ok historyList) ->
-            ( { pageData | history = historyList, loading = False }, Cmd.none )
+            ( { state | history = historyList, loading = False }, Cmd.none )
 
         HistoryResult (Err msg) ->
-            ( { pageData | toasterMsg = toString msg }, Cmd.none )
+            ( { state | toasterMsg = toString msg }, Cmd.none )
 
         GoToScheduler ->
-            ( pageData, Navigation.load "?page=scheduler" )
+            ( state, Navigation.load "?page=scheduler" )
+
+        ToggleSideMenu ->
+            ( Menu.toggle state, Cmd.none )
 
         None ->
-            ( pageData, Cmd.none )
+            ( state, Cmd.none )
 
 
 getHistory endpoint =
@@ -85,22 +94,29 @@ decodeHistory =
 -- view
 
 
-view pageData =
+view state =
     let
         historyHtml =
-            getHistoryHtml pageData
+            getHistoryHtml state
     in
         div [ css [ color defaultColors.textNormal ] ]
             [ -- conditional loading modals
-              Loader.getLoadingHtml pageData.loading
-            , div
-                [ css [ margin (px 10), marginTop (px 0) ] ]
-                [ button [ css View.buttonCss, onClick GoToScheduler ]
-                    [ text "Go Back"
-                    ]
-                ]
+              Loader.getLoadingHtml state.loading
+            , Menu.sideBarHtmlOptional state <|
+                Menu.sideBarHtml ToggleSideMenu <|
+                    a [ css <| List.append View.buttonCss [ marginTop (px 20) ], href "?page=scheduler" ]
+                        [ text "Scheduler"
+                        ]
+            , Menu.topBarHtml ToggleSideMenu []
             , div []
-                [ h1 [ css [ margin (px 20), fontSize <| Css.em 1.9, textAlign center ] ] [ text "History" ]
+                [ h1
+                    [ css
+                        [ margin (px 20)
+                        , fontSize <| Css.em 1.9
+                        , textAlign center
+                        ]
+                    ]
+                    [ text "History" ]
                 ]
             , div []
                 [ historyHtml
@@ -108,21 +124,33 @@ view pageData =
             ]
 
 
-getHistoryHtml pageData =
+getHistoryHtml state =
     ul [ css [ listStyleType none, width (pct 100) ] ]
-        (List.map studyEntryToHtml pageData.history)
+        (List.map studyEntryToHtml state.history)
 
 
 subscriptions : PageData -> Sub Msg
-subscriptions pageData =
+subscriptions state =
     Sub.none
 
 
 studyEntryToHtml studyEntry =
     li []
         [ div [ css [] ]
-            [ div [ css [ backgroundColor <| Css.hex "fff", margin (px 30), padding (px 10) ] ]
-                [ h2 [ css [ color defaultColors.textHighlight, fontSize <| Css.em 1.6 ] ] [ text <| studyEntry.subjectName ]
+            [ div
+                [ css
+                    [ backgroundColor <| Css.hex "fff"
+                    , margin (px 30)
+                    , padding (px 10)
+                    ]
+                ]
+                [ h2
+                    [ css
+                        [ color defaultColors.textHighlight
+                        , fontSize <| Css.em 1.6
+                        ]
+                    ]
+                    [ text <| studyEntry.subjectName ]
                 , p [ css [ color defaultColors.textNormal ] ] [ text studyEntry.date ]
                 , div [ css [ margin (px 20) ] ] [ text studyEntry.description ]
                 ]

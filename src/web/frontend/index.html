@@ -15,7 +15,7 @@
     <script type="text/javascript" src="cordova.js"></script>
     <script type="text/javascript" src="scheduler.js"></script>
     <script type="text/javascript" src="login.js"></script>
-    <script type="text/javascript" src="log.js"></script>
+    <script type="text/javascript" src="history.js"></script>
 </head>
 <body>
   <script type="text/javascript">
@@ -34,7 +34,7 @@
     page = getParameterByName("page") || "index"
     switch (page) {
       case "log":
-        Elm.Log.fullscreen({apiEndpoint: endpoint})
+        Elm.History.fullscreen({apiEndpoint: endpoint})
         break
       case "scheduler":
         Elm.Scheduler.fullscreen({apiEndpoint: endpoint})
