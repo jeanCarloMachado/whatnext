@@ -15,15 +15,12 @@ def get_subject(name):
         print ("you must pass a valid subject")
         sys.exit()
 
-    subjectRow = gateway(['listSubject', subject['name']])
-    columns  = subjectRow.split('|')
+    subjectRow = gateway(['subjectJson', subject['name']])
+
+    subject = json.loads(subjectRow)
+
     days_since_last_study=gateway(['daysSinceLastStudy', subject['name']])
     days_since_last_study = days_since_last_study or 0
-
-    subject['priority'] = int(columns[1])
-    subject['complexity'] = int(columns[2])
-    subject['what_to_do_next'] = columns[3]
-    subject['objective'] = columns[4] if len(columns) > 3 else ""
     subject['days_since_last_study'] = int(days_since_last_study)
     time_already_invested_of_subjects = time_of_subjects()
 
@@ -64,11 +61,11 @@ if __name__ == '__main__':
     print(title + "Subject: " + section_color + subject['name'] + reset)
     print (title + "Last time: " + reset + days_since_last_study + reset )
     print (title + "Time invested: " + reset + green + subject['time_already_invested_str']  + reset )
-    print (title + "Importance: "  + reset + subject['priority']  + reset )
-    print (title + "Complexity: " + reset  + subject['complexity']  + reset )
+    print (title + "Importance: "  + reset + str(subject['priority'])  + reset )
+    print (title + "Complexity: " + reset  + str(subject['complexity'])  + reset )
     print ("")
     print (orange + "To do next:" + reset)
-    print (subject['what_to_do_next'])
+    print (subject['whatToDoNext'])
     print ("")
     cmd = os.path.dirname(os.path.realpath(__file__)) + '/log.sh'
     print( subprocess.run([cmd, '--filter', subject['name']], stdout=subprocess.PIPE).stdout.decode('UTF-8'))

@@ -33,8 +33,8 @@ def factory_subjects():
                 'weight': 0.5,
                 'priority': int(columns[1]),
                 'complexity': int(columns[2]),
-                'what_to_do_next': columns[3],
-                'objective': columns[4] if len(columns) > 3 else "",
+                'whatToDoNext': columns[3],
+                'objective': columns[4] if len(columns) > 4 else '',
                 'days_since_last_study': int(days_str),
                 'time_already_invested': time_already_invested,
                 'time_already_invested_str': minutes_to_str(time_already_invested)
@@ -47,10 +47,16 @@ def alter_by_priority(subjects_configs):
     return subjects_configs
 
 
-def convert_base(obj, attr):
+def reduce_base(obj, attr):
     value = obj[attr]
     obj[attr] = value / 100
     return obj
+
+def increse_base(obj, attr):
+    value = obj[attr]
+    obj[attr] = int(value * 100)
+    return obj
+
 
 def configure_subjects(tiredMode=False):
     subjects_configs = factory_subjects()
@@ -68,7 +74,7 @@ def configure_subjects(tiredMode=False):
     # - recently made
 
     # decrease the bases to work between 1 and 0
-    subjects_configs = {k: convert_base(v, "priority") for k, v in subjects_configs.items()}
+    subjects_configs = {k: reduce_base(v, "priority") for k, v in subjects_configs.items()}
 
 
     # change values based on the importance of the subject configured
@@ -96,6 +102,8 @@ def configure_subjects(tiredMode=False):
         for subject in subjects_configs:
             base = (1 / math.pow(subjects_configs[subject]['complexity'],9))
             subjects_configs[subject]['weight'] = subjects_configs[subject]['weight'] *  base 
+
+    subjects_configs = {k: increse_base(v, "priority") for k, v in subjects_configs.items()}
 
     return sort_subjects(subjects_configs)
 
@@ -146,7 +154,7 @@ def print_cli(subjects):
 
         time_invested = " - " + time_invested  if len(time_invested) > 4 else "" 
 
-        print ( title + str(counter) + '. ' + subject['name'] + reset + ': ' + days_since_last_study_str + reset + time_invested + reset + ' ' + subject['what_to_do_next'] + reset)
+        print ( title + str(counter) + '. ' + subject['name'] + reset + ': ' + days_since_last_study_str + reset + time_invested + reset + ' ' + subject['whatToDoNext'] + reset)
         counter += 1
 
 # -- printing ---

@@ -75,7 +75,7 @@ decodeSubject =
         |> Json.Decode.Pipeline.required "days_since_last_study" (Json.Decode.int)
         |> Json.Decode.Pipeline.required "time_already_invested_str" (Json.Decode.string)
         |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodeStudyEntry) []
-        |> Json.Decode.Pipeline.required "what_to_do_next" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "whatToDoNext" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "complexity" (Json.Decode.int)
         |> Json.Decode.Pipeline.required "priority" (Json.Decode.int)
         |> Json.Decode.Pipeline.required "objective" (Json.Decode.string)

@@ -192,7 +192,10 @@ updateSubject msg model =
                 task =
                     (DOM.scrollIntoView selector)
             in
-                ( { model | subjects = Subject.replaceSubjectFromList model.subjects subject } |> Loader.disableLoading
+                ( { model
+                    | subjects = Subject.replaceSubjectFromList model.subjects subject
+                  }
+                    |> Loader.disableLoading
                 , Task.attempt (\a -> (NoAction)) task
                 )
 

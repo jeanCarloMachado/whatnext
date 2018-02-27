@@ -38,6 +38,11 @@ listSubject() {
     cat "$WHATNEXT_CONF" | grep "$subject|" | sed -e /^$/d
 }
 
+subjectJson() {
+    subject=$1
+    $__dir/conf2json.sh "$subject"
+}
+
 goalExists() {
     goalName="$1"
     goals=$(cat $WHATNEXT_GOALS)
