@@ -17,7 +17,7 @@ def factory_subjects():
     if len(subjects) < 10:
         print ("[]")
         sys.exit()
-    intested_time_of_subjects = time_of_subjects()
+    invested_time_in_subjects = time_of_subjects()
     #build the initial dic
     subjects_configs = {}
     for line in subjects.splitlines() :
@@ -26,7 +26,7 @@ def factory_subjects():
         if days_str == "":
             days_str="0"
 
-        time_already_invested = intested_time_of_subjects[columns[0]] if columns[0] in intested_time_of_subjects  else 0
+        time_already_invested = invested_time_in_subjects[columns[0]] if columns[0] in invested_time_in_subjects  else 0
 
         subjects_configs[columns[0]] = {
                 'name': columns[0],

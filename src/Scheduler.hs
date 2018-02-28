@@ -23,7 +23,7 @@ main = do
           Just subjects ->
               do
               completeSubjects <- mapM  (getDaysSinceLastStudy currentDirectory) subjects
-              let finalSubjects = sortSubjects $ computeWeights $ regularizeValues completeSubjects
+              let finalSubjects = rollbackValues $ sortSubjects $ computeWeights $ regularizeValues completeSubjects
               putStrLn  $ mountJson finalSubjects
           _ ->
               putStrLn "error"
@@ -49,6 +49,8 @@ computeWeight subject =
 regularizeValues subjects =
     map (\subject -> subject { priority = (priority subject) / 100, complexity = (complexity subject) / 100} ) subjects
 
+rollbackValues subjects =
+    map (\subject -> subject { priority = 100, complexity = 100}) subjects
 
 mountJson :: [Subject] -> String
 mountJson subjects =
@@ -73,6 +75,7 @@ data Subject =
        , daysSinceLastStudy :: Int
        , objective :: String
        , whatToDoNext :: String
+       , timeAlreadyInvested :: Int
     } deriving (Show,Generic)
 
 
@@ -83,7 +86,7 @@ instance FromJSON Subject where
     complexity <- o .: "complexity"
     objective <- o .: "objective"
     whatToDoNext <- o .: "whatToDoNext"
-    return (Subject name priority complexity 0 0 objective whatToDoNext)
+    return (Subject name priority complexity 0 0 objective whatToDoNext 0 )
 
 instance ToJSON Subject where
   toJSON Subject{..} = object [
@@ -91,7 +94,8 @@ instance ToJSON Subject where
     , "priority" .= priority
     , "complexity" .= complexity
     , "weight" .= weight
-    , "daysSinceLastStudy" .= daysSinceLastStudy
+    , "days_since_last_study" .= daysSinceLastStudy
     , "objective" .= objective
     , "whatToDoNext" .= whatToDoNext
+    , "time_already_invested" .= timeAlreadyInvested
     ]
