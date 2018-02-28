@@ -12,7 +12,12 @@ import Prelude
 import Data.Ord (comparing)
 import System.Environment
 
-maxDaysWithoutDoing = 365.0
+reasonableMaxDaysWithoutDoing val = 
+    if val > (365 / 4) then
+        val
+    else 
+        365.0 / 4
+
 
 main = do
         currentDirectory <- getEnv("WHATNEXT_SRC")
@@ -50,15 +55,19 @@ computeWeights tiredMode subjects =
 computeWeight tiredMode subject =
     case tiredMode of
     True ->
-        (iPriority + (iDaysSinceLast / maxDaysWithoutDoing) + iComplexity / 3) / iComplexity
-
+         baseCalculus / iComplexity
     False ->
-        (iPriority + (iDaysSinceLast / maxDaysWithoutDoing) + iComplexity / 3)
+        baseCalculus
 
-    where iDaysSinceLast = fromIntegral $ daysSinceLastStudy subject
-          iWeight = (weight subject)
-          iPriority = (priority subject)
+    where iPriority = (priority subject)
           iComplexity = (complexity subject)
+          iDaysSinceLastStudy = fromIntegral $ daysSinceLastStudy subject
+          iDaysSinceLastStudyQuadratic = (iDaysSinceLastStudy ** 2) / reasonableMaxDaysWithoutDoing (iDaysSinceLastStudy ** 2)
+
+          weightedComplexity = (iComplexity * 0.2)
+          weightedPriority = (iPriority * 0.5)
+
+          baseCalculus = (weightedComplexity + weightedPriority + iDaysSinceLastStudyQuadratic)  / 3
 
 
 regularizeValues subjects =
