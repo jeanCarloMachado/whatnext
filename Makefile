@@ -47,3 +47,8 @@ watch: copyAssets
 
 serveApi: clear
 	source ${current_dir}/src/config.sh && cd ${current_dir}/src/web/api && python webserver.py &
+
+buildScheduler:
+	ghc --make Scheduler.hs -dynamic && ./Scheduler 
+	
+
