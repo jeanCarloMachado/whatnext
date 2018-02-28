@@ -4,9 +4,10 @@ module Main where
 
 import System.Process
 import Data.Aeson
-import Data.ByteString.Lazy.Char8
+import Data.ByteString.Lazy.Char8 (unpack, pack)
 import GHC.Generics
 import Data.List
+import Prelude
 
 
 
@@ -15,8 +16,14 @@ main = do
         let byteVersion = pack content
         d <- (decode <$>  (return byteVersion)) :: IO (Maybe [Subject])
         case d of
-          Just ps -> Prelude.putStrLn $ "The result is: " ++ "aa"
+          Just ps -> putStrLn (mountJson ps)
           _ -> Prelude.putStrLn "error"
+
+
+mountJson subjects =
+    ("[" ++ (intercalate "," (Data.List.map unpack (encode <$> subjects)) ) ++ "]")
+
+
 
 data Subject =
     Subject {
