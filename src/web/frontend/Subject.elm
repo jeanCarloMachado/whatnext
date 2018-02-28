@@ -11,7 +11,7 @@ import Array exposing (Array)
 type alias Subject =
     { name : String
     , daysSinceLast : Int
-    , timeAlreadyInvested : String
+    , timeAlreadyInvested : Int
     , history : List StudyEntry
     , whatToDoNext : String
     , complexity : Int
@@ -72,8 +72,8 @@ decodeSubject : Decoder Subject
 decodeSubject =
     Json.Decode.Pipeline.decode Subject
         |> Json.Decode.Pipeline.required "name" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "days_since_last_study" (Json.Decode.int)
-        |> Json.Decode.Pipeline.required "time_already_invested_str" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "days_since_last_study" Json.Decode.int
+        |> Json.Decode.Pipeline.required "time_already_invested" Json.Decode.int
         |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodeStudyEntry) []
         |> Json.Decode.Pipeline.required "whatToDoNext" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "complexity" (Json.Decode.int)

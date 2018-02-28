@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+export WHATNEXT_SRC=$DIR
 export WHATNEXT_CONF=${WHATNEXT_CONF:-~/.whatnext.conf}
 export WHATNEXT_GOALS=${WHATNEXT_GOALS:-~/.whatnext_goals.conf}
 export WHATNEXT_HISTORY=${WHATNEXT_HISTORY:-~/.whatnext_history}

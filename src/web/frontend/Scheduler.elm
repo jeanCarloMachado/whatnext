@@ -564,7 +564,7 @@ hiddenHtml subject =
                     ]
                 , div []
                     [ subjectProperty "Last session" <| toString subject.daysSinceLast ++ " days ago"
-                    , subjectProperty "Already invested" <| subject.timeAlreadyInvested
+                    , subjectProperty "Already invested" <| toString subject.timeAlreadyInvested
                     ]
                 ]
             ]

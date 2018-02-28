@@ -52,7 +52,7 @@ def index():
 
 
     cmd = [
-        CLI_PATH + '/scheduler.py',
+        CLI_PATH + '/Scheduler',
     ]
 
     my_env["TO_JSON"] = "1"

@@ -9,28 +9,70 @@ import Data.ByteString.Lazy.Char8 (unpack, pack)
 import GHC.Generics
 import Data.List
 import Prelude
+import Data.Ord (comparing)
+import System.Environment
 
-
+maxDaysWithoutDoing = 365.0
 
 main = do
-        content <- readProcess "./conf2json.sh" [] ""
+        currentDirectory <- getEnv("WHATNEXT_SRC")
+        content <- readProcess (currentDirectory ++ "/conf2json.sh") [] ""
         let byteVersion = pack content
-        d <- (decode <$>  (return byteVersion)) :: IO (Maybe [Subject])
+        d <- (decode <$> return byteVersion) :: IO (Maybe [Subject])
         case d of
-          Just ps -> putStrLn (mountJson ps)
-          _ -> Prelude.putStrLn "error"
+          Just subjects ->
+              do
+              completeSubjects <- mapM  (getDaysSinceLastStudy currentDirectory) subjects
+              let finalSubjects = sortSubjects $ computeWeights $ regularizeValues completeSubjects
+              putStrLn  $ mountJson finalSubjects
+          _ ->
+              putStrLn "error"
 
 
+sortSubjects subjects =
+    reverse $ sortBy (comparing weight) subjects
+
+
+computeWeights :: [Subject] -> [Subject]
+computeWeights subjects =
+    map (\subject -> subject { weight =  computeWeight subject}) subjects
+
+computeWeight subject =
+    (iPriority + (iDaysSinceLast / maxDaysWithoutDoing) + iComplexity / 3)
+
+    where iDaysSinceLast = fromIntegral $ daysSinceLastStudy subject
+          iWeight = (weight subject)
+          iPriority = (priority subject)
+          iComplexity = (complexity subject)
+
+
+regularizeValues subjects =
+    map (\subject -> subject { priority = (priority subject) / 100, complexity = (complexity subject) / 100} ) subjects
+
+
+mountJson :: [Subject] -> String
 mountJson subjects =
-    ("[" ++ (intercalate "," (Data.List.map unpack (encode <$> subjects)) ) ++ "]")
+    "[" ++ (intercalate "," (Data.List.map unpack (encode <$> subjects)) ) ++ "]"
+
+getDaysSinceLastStudy currentDirectory subject  = do
+    daysSinceLastStudy <- readProcess (currentDirectory ++ "/gateway.sh") ["daysSinceLastStudy", name subject] "" 
+    let daysInt = daysToInt daysSinceLastStudy
+    return (subject { daysSinceLastStudy = daysInt})
+
+
+daysToInt "" = 0
+daysToInt x = read x :: Int
 
 
 data Subject =
     Subject {
        name :: String
-       , priority :: Int
-       , complexity :: Int
+       , priority :: Float
+       , complexity :: Float
        , weight :: Float
+       , daysSinceLastStudy :: Int
+       , objective :: String
+       , whatToDoNext :: String
     } deriving (Show,Generic)
 
 
@@ -39,12 +81,17 @@ instance FromJSON Subject where
     name <- o .: "name"
     priority <- o .: "priority"
     complexity <- o .: "complexity"
-    return (Subject name priority complexity 0)
+    objective <- o .: "objective"
+    whatToDoNext <- o .: "whatToDoNext"
+    return (Subject name priority complexity 0 0 objective whatToDoNext)
 
 instance ToJSON Subject where
   toJSON Subject{..} = object [
-    "name"    .= name,
-    "priority" .= priority,
-    "complexity" .= complexity,
-    "weight" .= weight
+    "name"    .= name
+    , "priority" .= priority
+    , "complexity" .= complexity
+    , "weight" .= weight
+    , "daysSinceLastStudy" .= daysSinceLastStudy
+    , "objective" .= objective
+    , "whatToDoNext" .= whatToDoNext
     ]
