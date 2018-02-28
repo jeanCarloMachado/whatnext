@@ -48,7 +48,7 @@ def index():
 
     tiredMode = request.args.get('tiredMode', default = False, type = bool)
     if tiredMode:
-        my_env["TIRED"] = "1"
+        my_env["TIRED_MODE"] = "1"
 
 
     cmd = [

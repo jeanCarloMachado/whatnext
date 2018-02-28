@@ -17,28 +17,43 @@ maxDaysWithoutDoing = 365.0
 main = do
         currentDirectory <- getEnv("WHATNEXT_SRC")
         content <- readProcess (currentDirectory ++ "/conf2json.sh") [] ""
+        tiredModeVal <- lookupEnv "TIRED_MODE"
+
         let byteVersion = pack content
+            tiredMode = tiredModeValToBool tiredModeVal
         d <- (decode <$> return byteVersion) :: IO (Maybe [Subject])
         case d of
           Just subjects ->
               do
               completeSubjects <- mapM  (getDaysSinceLastStudy currentDirectory) subjects
-              let finalSubjects = rollbackValues $ sortSubjects $ computeWeights $ regularizeValues completeSubjects
+              let finalSubjects = rollbackValues $ sortSubjects $ computeWeights tiredMode $ regularizeValues completeSubjects
               putStrLn  $ mountJson finalSubjects
           _ ->
               putStrLn "error"
+
+
+tiredModeValToBool Nothing  =
+    False
+tiredModeValToBool _  =
+    True
+
 
 
 sortSubjects subjects =
     reverse $ sortBy (comparing weight) subjects
 
 
-computeWeights :: [Subject] -> [Subject]
-computeWeights subjects =
-    map (\subject -> subject { weight =  computeWeight subject}) subjects
+computeWeights tiredMode subjects =
+    map (\subject -> subject { weight =  computeWeight tiredMode subject}) subjects
 
-computeWeight subject =
-    (iPriority + (iDaysSinceLast / maxDaysWithoutDoing) + iComplexity / 3)
+
+computeWeight tiredMode subject =
+    case tiredMode of
+    True ->
+        (iPriority + (iDaysSinceLast / maxDaysWithoutDoing) + iComplexity / 3) / iComplexity
+
+    False ->
+        (iPriority + (iDaysSinceLast / maxDaysWithoutDoing) + iComplexity / 3)
 
     where iDaysSinceLast = fromIntegral $ daysSinceLastStudy subject
           iWeight = (weight subject)
