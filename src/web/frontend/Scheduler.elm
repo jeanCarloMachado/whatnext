@@ -408,9 +408,9 @@ alterSubjectHtml state =
                         ]
                         (renderComplexityOptions <| toString state.newComplexity)
                     , label [] [ text "Objective" ]
-                    , textarea 
+                    , textarea
                         [ defaultValue state.newObjective
-                        , css <| List.append View.textAreaCss [ minHeight (px 60) ]
+                        , css <| List.append View.textAreaCss [ minHeight (px 35) ]
                         , placeholder "After finishing studying this subject will be able to ..."
                         , onInput (MySubjectMsg << ChangeObjective)
                         , Html.Styled.Attributes.required False

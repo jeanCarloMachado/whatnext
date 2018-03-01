@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 module Main where
 
 import System.Process
@@ -12,84 +13,121 @@ import Prelude
 import Data.Ord (comparing)
 import System.Environment
 
-reasonableMaxDaysWithoutDoing val = 
-    if val > (365 / 4) then
-        val
-    else 
-        365.0 / 4
-
 
 main = do
         currentDirectory <- getEnv("WHATNEXT_SRC")
-        content <- readProcess (currentDirectory ++ "/conf2json.sh") [] ""
-        tiredModeVal <- lookupEnv "TIRED_MODE"
 
-        let byteVersion = pack content
+        whatnextConf <- readProcess (currentDirectory ++ "/conf2json.sh") [] ""
+        tiredModeVal <- lookupEnv "TIRED_MODE"
+        timePerSubject <- readProcess (currentDirectory ++ "/timePerSubject.py") [] ""
+
+        let whatnextConfAsByte = pack whatnextConf
             tiredMode = tiredModeValToBool tiredModeVal
-        d <- (decode <$> return byteVersion) :: IO (Maybe [Subject])
-        case d of
+            timePerSubjectAsByte = pack timePerSubject
+
+        decodedWhatnextConf <- (decode <$> return whatnextConfAsByte) :: IO (Maybe [Subject])
+
+        let decodedTimePerSubject = (decode timePerSubjectAsByte) :: (Maybe [(TimePerSubject)])
+            timePerSubjectList = extractTimePerSubject decodedTimePerSubject
+
+        case decodedWhatnextConf of
           Just subjects ->
               do
-              completeSubjects <- mapM  (getDaysSinceLastStudy currentDirectory) subjects
-              let finalSubjects = rollbackValues $ sortSubjects $ computeWeights tiredMode $ regularizeValues completeSubjects
+              subjectsWithDays <- mapM (getDaysSinceLastStudy currentDirectory) subjects
+
+              let finalSubjects = sortSubjects $ computeWeights tiredMode $  applyTimeAlreadyInvested timePerSubjectList subjectsWithDays
               putStrLn  $ mountJson finalSubjects
           _ ->
-              putStrLn "error"
+              putStrLn "error while decoding subjects"
 
+
+-- subjects transformations
+
+applyTimeAlreadyInvested timePerSubject subjects =
+    map (\subject -> applyTimeAlreadInvestedForSubject timePerSubject subject ) subjects
+
+applyTimeAlreadInvestedForSubject timePerSubject subject =
+    case resultMatch of
+    (x:_) ->
+        subject { timeAlreadyInvested = (snd x) }
+    _ ->
+        subject
+
+    where
+        resultMatch = filter (\timeSubject -> (fst timeSubject) == (name subject)) timePerSubject
+
+
+extractTimePerSubject maybeList =
+    case maybeList of
+    Just x ->
+        x
+    _ ->
+        []
+
+
+getDaysSinceLastStudy currentDirectory subject  = do
+    daysSinceLastStudy <- readProcess (currentDirectory ++ "/gateway.sh") ["daysSinceLastStudy", name subject] ""
+    let daysInt = daysToInt daysSinceLastStudy
+    return (subject { daysSinceLastStudy = daysInt})
 
 tiredModeValToBool Nothing  =
     False
-tiredModeValToBool _  =
+tiredModeValToBool _ =
     True
 
-
+daysToInt "" = 0
+daysToInt x = read x :: Int
 
 sortSubjects subjects =
     reverse $ sortBy (comparing weight) subjects
 
 
+
+
+-- subjects calculus
+
 computeWeights tiredMode subjects =
     map (\subject -> subject { weight =  computeWeight tiredMode subject}) subjects
-
 
 computeWeight tiredMode subject =
     case tiredMode of
     True ->
-         baseCalculus / iComplexity
+         baseCalculus / regularizedComplexity
     False ->
         baseCalculus
 
-    where iPriority = (priority subject)
-          iComplexity = (complexity subject)
-          iDaysSinceLastStudy = fromIntegral $ daysSinceLastStudy subject
-          iDaysSinceLastStudyQuadratic = (iDaysSinceLastStudy ** 2) / reasonableMaxDaysWithoutDoing (iDaysSinceLastStudy ** 2)
+    where  --regularize values between 0 and 1
+          regularizedPriority = (priority subject) / 100
+          regularizedComplexity = (complexity subject) / 100
+          floatDaysSinceLastStudy = fromIntegral $ daysSinceLastStudy subject
+          daysSinceLastStudyQuadratic = (floatDaysSinceLastStudy ** 2) / reasonableMaxDaysWithoutDoing (floatDaysSinceLastStudy ** 2)
+          iTimeAlreadyInvested = fromIntegral $ (timeAlreadyInvested subject)
+          regualarizedTimeAlreadyInvested = iTimeAlreadyInvested / reasonableMaxTimeStudied (iTimeAlreadyInvested)
 
-          weightedComplexity = (iComplexity * 0.2)
-          weightedPriority = (iPriority * 0.5)
+         -- apply weights to each value
+          weightedComplexity = (regularizedComplexity * 0.2)
+          weightedPriority = (regularizedPriority * 0.5)
+          weightenedDaysSinceLastStudies  = (daysSinceLastStudyQuadratic * 1)
+          weightenedTimeAlreadyInvested = (regualarizedTimeAlreadyInvested * 0.3)
 
-          baseCalculus = (weightedComplexity + weightedPriority + iDaysSinceLastStudyQuadratic)  / 3
+          --calculus
+          baseCalculus = (weightedComplexity + weightedPriority + weightenedDaysSinceLastStudies)  / (3 + weightenedTimeAlreadyInvested)
 
+reasonableMaxTimeStudied val =
+    -- a reasonable well study has at least 20 hours
+    if val > (20 * 60) then
+        val
+    else
+        20 * 60
 
-regularizeValues subjects =
-    map (\subject -> subject { priority = (priority subject) / 100, complexity = (complexity subject) / 100} ) subjects
-
-rollbackValues subjects =
-    map (\subject -> subject { priority = 100, complexity = 100}) subjects
-
-mountJson :: [Subject] -> String
-mountJson subjects =
-    "[" ++ (intercalate "," (Data.List.map unpack (encode <$> subjects)) ) ++ "]"
-
-getDaysSinceLastStudy currentDirectory subject  = do
-    daysSinceLastStudy <- readProcess (currentDirectory ++ "/gateway.sh") ["daysSinceLastStudy", name subject] "" 
-    let daysInt = daysToInt daysSinceLastStudy
-    return (subject { daysSinceLastStudy = daysInt})
-
-
-daysToInt "" = 0
-daysToInt x = read x :: Int
+reasonableMaxDaysWithoutDoing val =
+    if val > (365 / 4) then
+        val
+    else
+        365.0 / 4
 
 
+-- entities
 data Subject =
     Subject {
        name :: String
@@ -101,6 +139,15 @@ data Subject =
        , whatToDoNext :: String
        , timeAlreadyInvested :: Int
     } deriving (Show,Generic)
+
+
+type TimePerSubject =  (String, Int)
+
+-- json decode
+mountJson :: [Subject] -> String
+mountJson subjects =
+    "[" ++ (intercalate "," (Data.List.map unpack (encode <$> subjects)) ) ++ "]"
+
 
 
 instance FromJSON Subject where

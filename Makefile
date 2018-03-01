@@ -32,18 +32,27 @@ servePage:
 deployFrontend:
 	scp -r dist/* blog:"/home/ubuntu/whatnext/frontend/"
 
-deployApi:
+deployApi: buildApi
 	./deployApi.sh
 
 deploy: build deployFrontend deployApi
 
-watch: copyAssets
-	my_watch "make build" .
+watchFrontend: copyAssets
+	my_watch "make build" src/web/frontend
 
 serveApi: clear
 	source ${current_dir}/src/config.sh && cd ${current_dir}/src/web/api && python webserver.py &
 
 buildScheduler:
 	ghc --make Scheduler.hs -dynamic && ./Scheduler 
-	
 
+
+buildApi:
+	docker run -v /home/jean/projects/whatnext:/whatnext -it 77f66f6665b3 bash -c "/opt/ghc/bin/ghc --make /whatnext/src/Scheduler"
+
+
+buildApiDev:
+	ghc --make src/Scheduler -dynamic
+
+watchApi:
+	my_watch "make buildApiDev" src/

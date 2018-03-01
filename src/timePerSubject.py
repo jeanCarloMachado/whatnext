@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import os
 from timeToStr import minutes_to_str
 from gateway import gateway
+import json
 
 humanMode=False
 
@@ -35,6 +36,10 @@ def time_of_subjects(dateStart=None, date_end=None):
     return subjectData
 
 if __name__ == '__main__':
+
+
+
+
     if len(sys.argv) > 1 and any(map(lambda x: x == "help", sys.argv)):
         print("""The total of time one spent on each subject
     Usage:
@@ -53,7 +58,7 @@ if __name__ == '__main__':
     date_end = None
     if len(sys.argv) > 1 and any(map(lambda x: x == "month", sys.argv)):
         dateStart = datetime.now().replace(day=1)
-        date_end = dateStart + timedelta(days=30) 
+        date_end = dateStart + timedelta(days=30)
     if len(sys.argv) > 1 and any(map(lambda x: x == "week", sys.argv)):
         today = datetime.now()
         dateStart = today - timedelta(days=today.weekday())
@@ -66,6 +71,11 @@ if __name__ == '__main__':
     subjectData=time_of_subjects(dateStart, date_end)
 
     sortedSubjects = sorted(subjectData.items(), key=lambda value: value[1], reverse=True)
+
+
+    if os.environ.get('TO_JSON') is not None:
+        print(json.dumps(sortedSubjects))
+        sys.exit(0)
 
     resetColor = os.getenv('WN_COLOR_RESET').encode('utf-8').decode('unicode_escape')
     titleColor = os.getenv('WN_COLOR_TITLE').encode('utf-8').decode('unicode_escape')
