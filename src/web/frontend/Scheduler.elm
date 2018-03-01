@@ -387,8 +387,8 @@ alterSubjectHtml state =
                         , height (pct 100)
                         ]
                     ]
-                    [
-                     input
+                    [ h1 [ css [ fontSize (Css.em 1.6) ] ] [ text "Subject Settings" ]
+                     , input
                         [ defaultValue state.openedSubjectName
                         , View.inputCss
                         , type_ "text"
@@ -408,9 +408,9 @@ alterSubjectHtml state =
                         ]
                         (renderComplexityOptions <| toString state.newComplexity)
                     , label [] [ text "Objective" ]
-                    , textarea
+                    , textarea 
                         [ defaultValue state.newObjective
-                        , css <| List.append View.textAreaCss [ minHeight (px 75) ]
+                        , css <| List.append View.textAreaCss [ minHeight (px 60) ]
                         , placeholder "After finishing studying this subject will be able to ..."
                         , onInput (MySubjectMsg << ChangeObjective)
                         , Html.Styled.Attributes.required False
@@ -419,7 +419,7 @@ alterSubjectHtml state =
                     , label [] [ text "Next step" ]
                     , textarea
                         [ defaultValue state.newWhatToDoNext
-                        , css <| List.append View.textAreaCss [ height (px 75) ]
+                        , css <| List.append View.textAreaCss [ height (px 75), minHeight (px 35) ]
                         , placeholder "do x y z"
                         , onInput (MySubjectMsg << ChangeWhatToDoNext)
                         , Html.Styled.Attributes.required False

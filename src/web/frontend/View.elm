@@ -110,6 +110,7 @@ selectCss =
     , width (px 300)
     , display block
     , backgroundColor (Css.hex "fff")
+    , minHeight (px 35)
     ]
 
 

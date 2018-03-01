@@ -25,17 +25,18 @@ The projects rests on some premises:
 - It's better to study in many little sessions than in few big one's
 - We want to study a lot of things and there are subjects more important than others (and their importance change quite often)
 
-## Installation
+For a detailed explanation see [this post](http://jeancarlomachado.net/blog/metodologia-whatnext.html)
 
-If you don't want to install anything there's a web version of wn for [free](https://app.thewhatnext.net/).
+----
 
-### Archlinux
+## Web Version
 
-```sh
-yaourt -Sa whatnext
-whatnext init # to initialize config files
+The web version can be found [here](https://app.thewhatnext.net/) for free.
 
-```
+----
+
+## Cli Version
+
 ## Starting
 
 Create your map of study ``whatnext edit-subjects``
