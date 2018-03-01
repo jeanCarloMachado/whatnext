@@ -4,7 +4,7 @@ module Scheduler exposing (..)
 
 import Html
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (css, href, src, placeholder, type_, id, class, value, required, defaultValue)
+import Html.Styled.Attributes exposing (property, css, href, src, placeholder, type_, id, class, value, required, defaultValue)
 import Html.Styled.Events exposing (..)
 import Html.Events.Extra exposing (targetValueIntParse)
 import Dom.Scroll
@@ -15,14 +15,12 @@ import View exposing (defaultColors)
 import DOM
 import Menu
 
-
 -- json
 
 import Json.Decode
 import Json.Encode
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline
-
 
 --rest
 
@@ -571,12 +569,12 @@ hiddenHtml subject =
         , div
             []
             [ span [ css [ margin (px 20), color defaultColors.textNormal ] ] [ text "Objective: " ]
-            , p [ css [ display block, margin (px 30), fontSize (Css.em 0.9) ] ] [ text subject.objective ]
+            , p [ css [ display block, margin (px 30), fontSize (Css.em 0.9) ] ] [ showMultilineText subject.objective ]
             ]
         , div
             []
             [ span [ css [ margin (px 20), color defaultColors.textNormal ] ] [ text "Next Action: " ]
-            , p [ css [ display block, margin (px 30), fontSize (Css.em 0.9) ] ] [ text subject.whatToDoNext ]
+            , p [ css [ display block, margin (px 30), fontSize (Css.em 0.9) ] ] [ showMultilineText subject.whatToDoNext ]
             ]
         , div []
             [ h2 [ css [ textAlign center, marginTop (px 50), fontWeight bold ] ] [ text "History" ]
@@ -594,6 +592,12 @@ hiddenHtml subject =
             [ text "Remove" ]
         ]
 
+showMultilineText str =
+    let 
+     newStr = String.split "\n" str
+        |> String.join "</br>"
+    in
+    span [ Html.Styled.Attributes.property "innerHTML" (Json.Encode.string newStr) ] []
 
 subjectProperty name value =
     div [ css [ margin (px 20) ] ]
@@ -673,7 +677,7 @@ studyEntryToHtml : StudyEntry -> Html Msg
 studyEntryToHtml studyEntry =
     li [ css [ minHeight (px 30) ] ]
         [ p [ css [ marginTop (px 15), color defaultColors.textHighlight ] ] [ text studyEntry.date ]
-        , p [ css [ marginLeft (px 20) ] ] [ text <| studyEntry.description ]
+        , p [ css [ marginLeft (px 20) ] ] [ showMultilineText <| studyEntry.description ]
         ]
 
 
