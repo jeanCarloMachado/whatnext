@@ -2,7 +2,7 @@
 current_dir = $(shell pwd)
 dist_dir = ${current_dir}/dist
 
-all: serveApi browserPage 
+all: serveApi servePage 
 
 test:
 	./testsBootstrap.sh
@@ -25,12 +25,9 @@ copyAssets:
 install:
 	elm-package install elm-lang/http
 
-browserPage:
+servePage:
 	cd dist/ && python -m http.server 5001 &
-	${BROWSER} https://app.thewhatnext.net
 
-browserProduction:
-	${BROWSER} https://app.thewhatnext.net
 
 deployFrontend:
 	scp -r dist/* blog:"/home/ubuntu/whatnext/frontend/"
@@ -38,11 +35,10 @@ deployFrontend:
 deployApi:
 	./deployApi.sh
 
-deploy: build browserProduction deployFrontend deployApi
-
+deploy: build deployFrontend deployApi
 
 watch: copyAssets
-	make browserPage
+	make servePage
 	my_watch "make build" .
 
 serveApi: clear

@@ -41,7 +41,18 @@ defaultColors =
 
 
 modalCss =
-    css [ zIndex (Css.int 666), justifyContent center, alignItems center, position fixed, displayFlex, top (px 0), left (px 0), width (pct 100), height (pct 100), backgroundColor <| rgba 255 255 255 1 ]
+    css
+        [ zIndex (Css.int 666)
+        , justifyContent center
+        , alignItems center
+        , position fixed
+        , displayFlex
+        , top (px 0)
+        , left (px 0)
+        , width (pct 100)
+        , height (pct 100)
+        , backgroundColor <| rgba 255 255 255 1
+        ]
 
 
 emptyNode =
@@ -64,17 +75,19 @@ buttonCss =
     , textAlign center
     ]
 
+
 textAreaCss =
-        [ borderRadius (px 0)
-        , borderStyle solid
-        , borderColor (Css.hex "d3d3d3")
-        , display block
-        , width (px 300)
-        , margin (px 1)
-        , marginBottom (px 3)
-        , padding (px 10)
-        , height (px 150)
-        ]
+    [ borderRadius (px 0)
+    , borderStyle solid
+    , borderColor (Css.hex "d3d3d3")
+    , display block
+    , width (px 300)
+    , margin (px 1)
+    , marginBottom (px 3)
+    , padding (px 10)
+    , height (px 150)
+    ]
+
 
 inputCss =
     css
@@ -88,10 +101,11 @@ inputCss =
         , padding (px 10)
         ]
 
+
 selectCss =
     [ borderColor (Css.hex "d3d3d3")
-     , borderRadius (px 0)
-     , borderWidth (px 2)
+    , borderRadius (px 0)
+    , borderWidth (px 2)
     , color defaultColors.textNormal
     , width (px 300)
     , display block
@@ -125,7 +139,6 @@ optionFromTuple defaultValue ( value, label ) =
     else
         option [ Html.Styled.Attributes.value value ]
             [ text label ]
-
 
 
 inlineIf test ifTrue ifFalse =

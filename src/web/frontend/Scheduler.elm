@@ -15,12 +15,14 @@ import View exposing (defaultColors)
 import DOM
 import Menu
 
+
 -- json
 
 import Json.Decode
 import Json.Encode
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline
+
 
 --rest
 
@@ -381,12 +383,12 @@ alterSubjectHtml state =
                         , justifyContent spaceBetween
                         , flexDirection column
                         , alignItems flexStart
+                        , maxHeight (px 650)
                         , height (pct 100)
-                        , maxHeight (px 700)
                         ]
                     ]
-                    [ h1 [ css [ fontSize (Css.em 1.6) ] ] [ text "Subject Settings" ]
-                    , input
+                    [
+                     input
                         [ defaultValue state.openedSubjectName
                         , View.inputCss
                         , type_ "text"
@@ -417,7 +419,7 @@ alterSubjectHtml state =
                     , label [] [ text "Next step" ]
                     , textarea
                         [ defaultValue state.newWhatToDoNext
-                        , css <| List.append View.textAreaCss [ minHeight (px 100) ]
+                        , css <| List.append View.textAreaCss [ height (px 75) ]
                         , placeholder "do x y z"
                         , onInput (MySubjectMsg << ChangeWhatToDoNext)
                         , Html.Styled.Attributes.required False
@@ -568,12 +570,12 @@ hiddenHtml subject =
             ]
         , div
             []
-            [ span [ css [ margin (px 20), color defaultColors.textNormal ] ] [ text "Objective: " ]
+            [ span [ css [ margin (px 20), color defaultColors.textNormal, fontWeight bold ] ] [ text "Objective: " ]
             , p [ css [ display block, margin (px 30), fontSize (Css.em 0.9) ] ] [ showMultilineText subject.objective ]
             ]
         , div
             []
-            [ span [ css [ margin (px 20), color defaultColors.textNormal ] ] [ text "Next Action: " ]
+            [ span [ css [ margin (px 20), color defaultColors.textNormal, fontWeight bold ] ] [ text "Next Action: " ]
             , p [ css [ display block, margin (px 30), fontSize (Css.em 0.9) ] ] [ showMultilineText subject.whatToDoNext ]
             ]
         , div []
@@ -592,16 +594,23 @@ hiddenHtml subject =
             [ text "Remove" ]
         ]
 
+
 showMultilineText str =
-    let 
-     newStr = String.split "\n" str
-        |> String.join "</br>"
+    let
+        newStr =
+            String.split "\n" str
+                |> String.join "</br>"
     in
-    span [ Html.Styled.Attributes.property "innerHTML" (Json.Encode.string newStr) ] []
+        span [ Html.Styled.Attributes.property "innerHTML" (Json.Encode.string newStr) ] []
+
 
 subjectProperty name value =
     div [ css [ margin (px 20) ] ]
-        [ span [ css [ color defaultColors.textNormal ] ] [ text <| name ++ ": " ++ value ]
+        [ span
+            [ css [ color defaultColors.textNormal, fontWeight bold ]
+            ]
+            [ text <| name ++ ": " ]
+        , span [] [ text value ]
         ]
 
 
@@ -676,7 +685,13 @@ selectedColor selectedIndex ( index, subject ) =
 studyEntryToHtml : StudyEntry -> Html Msg
 studyEntryToHtml studyEntry =
     li [ css [ minHeight (px 30) ] ]
-        [ p [ css [ marginTop (px 15), color defaultColors.textHighlight ] ] [ text studyEntry.date ]
+        [ p
+            [ css
+                [ marginTop (px 15)
+                , color defaultColors.textHighlight
+                ]
+            ]
+            [ text studyEntry.date ]
         , p [ css [ marginLeft (px 20) ] ] [ showMultilineText <| studyEntry.description ]
         ]
 
