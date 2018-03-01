@@ -38,7 +38,6 @@ deployApi:
 deploy: build deployFrontend deployApi
 
 watch: copyAssets
-	make servePage
 	my_watch "make build" .
 
 serveApi: clear
