@@ -28,14 +28,13 @@ install:
 servePage:
 	cd dist/ && python -m http.server 5001 &
 
+deploy: build deployFrontend deployApi
 
 deployFrontend:
 	scp -r dist/* blog:"/home/ubuntu/whatnext/frontend/"
 
 deployApi: buildApi
 	./deployApi.sh
-
-deploy: build deployFrontend deployApi
 
 watchFrontend: copyAssets
 	my_watch "make build" src/web/frontend
