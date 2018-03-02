@@ -52,12 +52,35 @@ sideBarHtmlOptional state configuredSidebar =
 
 
 sideBarHtml toggleMenuEvent optionalItems =
-    div [ css [ width (px 250), position absolute ] ]
-        [ div [ css [ displayFlex, flexDirection column ], onClick toggleMenuEvent ]
+    div
+        [ css
+            [ width (px 250)
+            , position absolute
+            ]
+        ]
+        [ div
+            [ css
+                [ displayFlex
+                , flexDirection column
+                ]
+            , onClick toggleMenuEvent
+            ]
             [ button [ css <| List.append View.buttonCss [ textAlign left ] ]
                 [ text "Close menu" ]
             , optionalItems
-            , a [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.fail), href "/" ]
+            , a
+                [ css
+                    <|
+                    List.append
+
+                    [ zIndex (Css.int 333)]
+                    <|
+                    (View.buttonCss
+                        |> View.overrideBackgroundColor
+                            defaultColors.fail
+                    )
+                , href "/"
+                ]
                 [ text "Quit" ]
             ]
         ]

@@ -51,15 +51,15 @@ do
     then
         skipFirstComma=1
     else
-        echo ","
+        echo -e ",\c"
     fi
 
-echo '{
+echo -e '{
     "subject": "'$subject'",
     "date": "'$date'",
     "description": "'$description'",
     "goal": "'$goal'"
-}'
+}\c'
         continue
     }
 

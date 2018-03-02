@@ -62,7 +62,7 @@ def index():
     return content, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 @app.route('/log')
-def log():
+def history():
     email = check_authorization(request)
     my_env = update_environemnt(os.environ.copy(), email)
 
