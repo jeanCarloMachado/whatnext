@@ -6,7 +6,6 @@ import Html.Styled.Attributes exposing (css, href, src, placeholder, type_, id, 
 import Html.Styled.Events exposing (..)
 import Html.Events.Extra exposing (targetValueIntParse)
 import Dom.Scroll
-import Toaster exposing (..)
 import Css exposing (..)
 import Subject exposing (Subject, StudyEntry, DoneData)
 import Json.Decode

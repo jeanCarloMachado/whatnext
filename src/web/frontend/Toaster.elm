@@ -5,14 +5,26 @@ import Html.Styled exposing (..)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css)
 import Css exposing (..)
+import View exposing (defaultColors)
 
 
 html message =
     case String.length message of
         0 ->
-            div [] []
+            text ""
 
         _ ->
-            div [ css [ borderWidth (px 1), textAlign center ] ]
+            div
+                [ css
+                    [ borderWidth (px 1)
+                    , borderStyle solid
+                    , borderColor defaultColors.textNormal
+                    , color defaultColors.textNormal
+                    , fontWeight bold
+                    , padding (px 10)
+                    , margin (px 10)
+                    , textAlign center
+                    ]
+                ]
                 [ text message
                 ]

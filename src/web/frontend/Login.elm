@@ -2,7 +2,7 @@ module Login exposing (..)
 
 import Html
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (placeholder, href, type_, css, type_)
+import Html.Styled.Attributes exposing (placeholder, href, type_, css, type_, required)
 import Html.Styled.Events exposing (onClick, onInput)
 import Http
 import Css exposing (..)
@@ -70,7 +70,7 @@ update msg state =
         RequestResult (Ok message) ->
             case state.pageMode of
                 LoginPage ->
-                    ( state |> Loader.disableLoading, Navigation.load "https://app.thewhatnext.net?page=scheduler" )
+                    ( state, Navigation.load "https://app.thewhatnext.net?page=scheduler" )
 
                 SignupPage ->
                     ( { state | pageMode = togglePageMode state.pageMode } |> Loader.disableLoading, Cmd.none )
@@ -174,23 +174,67 @@ getSubmitText pageMode =
 
 
 view state =
-    div [ css [ displayFlex, justifyContent center, alignItems center, height (pct 100), width (pct 100), position fixed ] ]
+    div
+        [ css
+            [ displayFlex
+            , justifyContent center
+            , alignItems center
+            , height (pct 100)
+            , width (pct 100)
+            , position fixed
+            ]
+        ]
         [ Loader.getLoadingHtml state.loading
         , div [ css [ backgroundColor (Css.hex "ffffff"), padding (px 20), displayFlex, flexDirection column ] ]
-            [ h2 [ css [ color defaultColors.textHighlight ] ] [ text <| getPageTitle state.pageMode ]
-            , div [ css [ marginTop (px 20), marginBottom (px 20) ] ]
-                [ input [ View.inputCss, placeholder "Email", onInput UpdateEmail, type_ "email" ] []
-                , input [ View.inputCss, placeholder "Password", type_ "password", onInput UpdatePassword ] []
+            [ h2
+                [ css
+                    [ color defaultColors.textHighlight
+                    ]
                 ]
-            , div []
-                [ Toaster.html state.errorMessage
+                [ text <| getPageTitle state.pageMode ]
+            , div
+                [ css
+                    [ marginTop (px 20)
+                    , marginBottom (px 20)
+                    ]
+                ]
+                [ input
+                    [ View.inputCss
+                    , placeholder "Email"
+                    , onInput UpdateEmail
+                    , type_ "email"
+                    ]
+                    []
+                , input
+                    [ View.inputCss
+                    , placeholder "Password"
+                    , type_ "password"
+                    , onInput UpdatePassword
+                    , Html.Styled.Attributes.required True
+                    ]
+                    []
                 ]
             , div [ css [ displayFlex, justifyContent flexEnd ] ]
                 [ div [ css [] ]
-                    [ a [ css [ textDecoration underline, fontSize (Css.em 0.9), padding (px 10), color defaultColors.normalButton ], onClick TogglePageMode ] [ text <| getAccessOtherPageText state.pageMode ]
-                    , button [ css View.buttonCss, onClick SubmitForm ] [ text <| getSubmitText state.pageMode ]
+                    [ a
+                        [ css
+                            [ textDecoration underline
+                            , fontSize (Css.em 0.9)
+                            , padding (px 10)
+                            , color defaultColors.normalButton
+                            ]
+                        , onClick TogglePageMode
+                        ]
+                        [ text <| getAccessOtherPageText state.pageMode ]
+                    , button
+                        [ css View.buttonCss
+                        , onClick SubmitForm
+                        ]
+                        [ text <| getSubmitText state.pageMode ]
                     ]
                 ]
+
+            , getToaster state
             ]
         ]
 
@@ -198,3 +242,20 @@ view state =
 subscriptions : Model -> Sub Msg
 subscriptions state =
     Sub.none
+
+
+getToaster state =
+    let
+        message =
+            if String.length state.errorMessage > 0 then
+                state.errorMessage
+            else if String.length state.email < 3 && String.length state.email > 0 then
+                "Email is too small"
+            else if String.length state.password < 3 && String.length state.password > 0 then
+                "The password is too small"
+            else
+                ""
+    in
+        div []
+            [ Toaster.html message
+            ]

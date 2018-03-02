@@ -12,6 +12,7 @@ import Html.Styled.Events exposing (..)
 import Loader
 import Menu
 import View exposing (defaultColors)
+import Array exposing (Array)
 
 
 type alias Flags =
@@ -23,7 +24,7 @@ main =
 
 
 type alias PageData =
-    { history : List StudyEntry
+    { history : Array StudyEntry
     , toasterMsg : String
     , loading : Bool
     , sideMenu : Bool
@@ -39,12 +40,12 @@ type alias StudyEntry =
 
 init : Flags -> ( PageData, Cmd Msg )
 init flags =
-    ( PageData [] "" True False, getHistory flags.apiEndpoint )
+    ( PageData Array.empty "" True False, getHistory flags.apiEndpoint )
 
 
 type Msg
     = None
-    | HistoryResult (Result Http.Error (List StudyEntry))
+    | HistoryResult (Result Http.Error (Array StudyEntry))
     | ToggleSideMenu
     | GoToScheduler
 
@@ -87,7 +88,7 @@ getHistory endpoint =
 
 
 decodeHistory =
-    Json.Decode.list decodeStudyEntry
+    Json.Decode.array decodeStudyEntry
 
 
 
@@ -126,7 +127,7 @@ view state =
 
 getHistoryHtml state =
     ul [ css [ listStyleType none, width (pct 100) ] ]
-        (List.map studyEntryToHtml state.history)
+        (Array.indexedMap (studyEntryToHtml <| Array.length state.history) state.history |> Array.toList)
 
 
 subscriptions : PageData -> Sub Msg
@@ -134,28 +135,40 @@ subscriptions state =
     Sub.none
 
 
-studyEntryToHtml studyEntry =
-    li []
-        [ div [ css [] ]
-            [ div
-                [ css
-                    [ backgroundColor <| Css.hex "fff"
-                    , margin (px 30)
-                    , padding (px 10)
-                    ]
-                ]
-                [ h2
+studyEntryToHtml total indice studyEntry =
+    let
+        historyNumber =
+            total - indice
+    in
+        li []
+            [ div [ css [] ]
+                [ div
                     [ css
-                        [ color defaultColors.textHighlight
-                        , fontSize <| Css.em 1.6
+                        [ backgroundColor <| Css.hex "fff"
+                        , margin (px 30)
+                        , padding (px 10)
                         ]
                     ]
-                    [ text <| studyEntry.subjectName ]
-                , p [ css [ color defaultColors.textNormal ] ] [ text studyEntry.date ]
-                , div [ css [ margin (px 20) ] ] [ text studyEntry.description ]
+                    [ span
+                        [ css
+                            [ fontSize (Css.em 0.5)
+                            , marginRight (px 15)
+                            ]
+                        ]
+                        [ text <| toString historyNumber ]
+                    , h2
+                        [ css
+                            [ color defaultColors.textHighlight
+                            , fontSize <| Css.em 1.6
+                            , display inline
+                            ]
+                        ]
+                        [ text <| studyEntry.subjectName ]
+                    , p [ css [ color defaultColors.textNormal ] ] [ text studyEntry.date ]
+                    , div [ css [ margin (px 20) ] ] [ text studyEntry.description ]
+                    ]
                 ]
             ]
-        ]
 
 
 decodeStudyEntry =
