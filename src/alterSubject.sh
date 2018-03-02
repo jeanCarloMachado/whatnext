@@ -19,7 +19,5 @@ whatToDoNext=$(echo "$whatToDoNext" | sed ':a;N;$!ba;s/\n/\\n/g')
     exit 1
 }
 
-
-
 sed -r -i "/^$name\|/d"  "$WHATNEXT_CONF"
 echo  "$name|$importance|$complexity|$whatToDoNext|$objective" >> "$WHATNEXT_CONF"

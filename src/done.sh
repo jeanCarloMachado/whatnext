@@ -20,6 +20,11 @@ subject="$1"
 doneDescription="$2"
 nextStep="$3"
 
+doneDescription=$(echo "$doneDescription" | sed ':a;N;$!ba;s/\n/\\n/g')
+nextStep=$(echo "$nextStep" | sed ':a;N;$!ba;s/\n/\\n/g')
+
+
+
 "$__dir"/gateway.sh subjectExists "$subject"
 
 [ $? -eq 1 ] && [[ -z ${FORCE+x} ]]  && {

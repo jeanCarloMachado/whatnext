@@ -147,16 +147,11 @@ studyEntryToHtml total indice studyEntry =
                         [ backgroundColor <| Css.hex "fff"
                         , margin (px 30)
                         , padding (px 10)
+                        , position relative
                         ]
                     ]
-                    [ span
-                        [ css
-                            [ fontSize (Css.em 0.5)
-                            , marginRight (px 15)
-                            ]
-                        ]
-                        [ text <| toString historyNumber ]
-                    , h2
+                    [
+                     h2
                         [ css
                             [ color defaultColors.textHighlight
                             , fontSize <| Css.em 1.6
@@ -164,7 +159,23 @@ studyEntryToHtml total indice studyEntry =
                             ]
                         ]
                         [ text <| studyEntry.subjectName ]
-                    , p [ css [ color defaultColors.textNormal ] ] [ text studyEntry.date ]
+                     ,span
+                        [ css
+                            [ fontSize (Css.em 0.5)
+                            , marginLeft (px 15)
+                            , position absolute
+                            , top (px 5)
+                            , right (px 5)
+                            ]
+                        ]
+                        [ text <| (toString historyNumber) ]
+                    , p
+                        [ css
+                            [ color defaultColors.textNormal
+                            , fontSize (Css.em 0.8)
+                            ]
+                        ]
+                        [ text studyEntry.date ]
                     , div [ css [ margin (px 20) ] ] [ text studyEntry.description ]
                     ]
                 ]
