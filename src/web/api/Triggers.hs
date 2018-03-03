@@ -32,8 +32,7 @@ main = do
             Right list ->
 
                 -- print  $  encode <$> list
-                print $ map (\e -> formatTime defaultTimeLocale "%Y-%m-%d" (date e)) list
-                -- print  $ (++) "Done this week: " $ show  $ getDoneThisWeek currentTime list
+                print  $ (++) "Done this week: " $ show  $ getDoneThisWeek currentTime list
                 -- print $ formatTime defaultTimeLocale "%V" (date( list !! 0 ))
 
 
@@ -62,7 +61,7 @@ instance FromJSON StudyEntry where
         subject <- o .: "subject"
         dateStr <- o .: "date"
 
-        let date = parseTimeOrError True defaultTimeLocale "%Y-%m-%d %H:%M:%s" dateStr :: UTCTime
+        let date = parseTimeOrError True defaultTimeLocale "%Y-%m-%d %H:%M:%S" dateStr :: UTCTime
 
         return (StudyEntry subject date)
 
