@@ -29,24 +29,43 @@ main = do
     Left msg   -> putStr msg
     Right list -> putStr $ getResultStr list currentTime
 
-getResultStr list currentTime = donesThisWeekCount ++ "\n" ++ top5Str
+getResultStr list currentTime =
+  donesThisWeekCount ++
+  "\n" ++ timeInvested ++ "\n" ++ allTimeAverage ++ "\n" ++ "\n" ++ topNamesStr
   where
+    timeInvested =
+      "Time invested: " ++
+      (show $ (*) 50 $ length doneThisWeekList) ++ " minutes"
+    allTimeAverage =
+      "Average sessions per week: " ++ (show $ floor averageTime)
     doneThisWeekList = getDoneThisWeek currentTime list
+    totalAlreadyDone = realToFrac $ length list
+    weeksOfUse = (weeksBetweenDates currentTime (date (last list))) 
+    averageTime = totalAlreadyDone / weeksOfUse
+
     donesThisWeekCount =
-      (++) "Done this week: " $ show $ length $ doneThisWeekList
-    topDone =
-      sortBy (flip compare `on` snd) $
-      foldl (\a b -> accOrCreate a b) [] doneThisWeekList
-    top5 = take 5 topDone
-    top5Names = foldl (\a b -> a ++ (fst b) ++ ", ") "" top5
-    top5Str = "Top five: " ++ top5Names
+      (++) "Sessions this week: " $ show $ length $ doneThisWeekList
+    topDone = take 5 $ getSubjectsOrderedByEffort doneThisWeekList
+    names = foldl (\a b -> a ++ (fst b) ++ ", ") "" topDone
+    topNamesStr = "Top five: " ++ names
+
+weeksBetweenDates x y =
+    weeks
+    where
+        weeks = days / 7
+        days = hours / 24
+        hours = minutes / 60
+        minutes = ellapsedSeconds / 60
+        ellapsedSeconds =  toRational $ diffUTCTime x y
+
+getSubjectsOrderedByEffort doneThisWeekList =
+  sortBy (flip compare `on` snd) $
+  foldl (\a b -> accOrCreate a b) [] doneThisWeekList
 
 getDoneThisWeek currentDate list =
-  filter
-    (\e ->
-       (formatTime defaultTimeLocale "%V" (date e)) ==
-       (formatTime defaultTimeLocale "%V" currentDate))
-    list
+  filter (\e -> (weekNumber (date e)) == (weekNumber currentDate)) list
+
+weekNumber date = formatTime defaultTimeLocale "%Y-%V" date
 
 accOrCreate resultList studyEntry =
   case filter (\e -> (fst e) == (subject studyEntry)) resultList of
