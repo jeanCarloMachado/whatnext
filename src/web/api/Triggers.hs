@@ -36,27 +36,25 @@ getResultStr list currentTime =
     timeInvested =
       "Time invested: " ++
       (show $ (*) 50 $ length doneThisWeekList) ++ " minutes"
-    allTimeAverage =
-      "Average sessions per week: " ++ (show $ floor averageTime)
+
+    allTimeAverage = "Average sessions per week: " ++ (show $ floor averageTime)
     doneThisWeekList = getDoneThisWeek currentTime list
     totalAlreadyDone = realToFrac $ length list
-    weeksOfUse = (weeksBetweenDates currentTime (date (last list))) 
+    weeksOfUse = weeksBetweenDates currentTime $ date $ last list
     averageTime = totalAlreadyDone / weeksOfUse
-
     donesThisWeekCount =
       (++) "Sessions this week: " $ show $ length $ doneThisWeekList
     topDone = take 5 $ getSubjectsOrderedByEffort doneThisWeekList
     names = foldl (\a b -> a ++ (fst b) ++ ", ") "" topDone
     topNamesStr = "Top five: " ++ names
 
-weeksBetweenDates x y =
-    weeks
-    where
-        weeks = days / 7
-        days = hours / 24
-        hours = minutes / 60
-        minutes = ellapsedSeconds / 60
-        ellapsedSeconds =  toRational $ diffUTCTime x y
+weeksBetweenDates x y = weeks
+  where
+    weeks = days / 7
+    days = hours / 24
+    hours = minutes / 60
+    minutes = ellapsedSeconds / 60
+    ellapsedSeconds = toRational $ diffUTCTime x y
 
 getSubjectsOrderedByEffort doneThisWeekList =
   sortBy (flip compare `on` snd) $
