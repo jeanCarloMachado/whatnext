@@ -61,12 +61,12 @@ accOrCreate resultList studyEntry =
             ((subject studyEntry), 1) : resultList
 
 
+--entities
+-- date, subject
 data Statistics = Statistics {
     doneThisWeek :: Int
 }
 
---entities
--- date, subject
 data StudyEntry  = StudyEntry {
     subject :: String
     , date :: UTCTime
