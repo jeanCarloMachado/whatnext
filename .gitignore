@@ -2,3 +2,5 @@ test-results
 *.zip
 dist
 distApi
+*.o
+*.hi
