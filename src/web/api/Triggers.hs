@@ -31,36 +31,41 @@ main = do
 
 getResultStr list currentTime =
   donesThisWeekCount ++
-  "\n" ++ timeInvested ++ "\n" ++ allTimeAverage ++ "\n" ++ sessionsToIncreaseAverageStr ++ "\n" ++ topNamesStr
+  "\n" ++
+  timeInvested ++
+  "\n" ++
+  allTimeAverage ++ "\n" ++ sessionsToIncreaseAverageStr ++ "\n" ++ topNamesStr
   where
     timeInvested =
       "Time invested: " ++
       (show $ (*) 50 $ length doneThisWeekList) ++ " minutes"
     allTimeAverage =
       "Average sessions per week: " ++ (show averageSessionsPerWeek)
-
     donesThisWeekCount =
       (++) "Sessions this week: " $ show $ length $ doneThisWeekList
-
     topNamesStr = "Top five: " ++ names
     names = foldl (\a b -> a ++ (fst b) ++ ", ") "" topDone
-
-
     doneThisWeekList = getDoneThisWeek currentTime list
     totalAlreadyDone = length list
     weeksOfUse = floor $ weeksBetweenDates currentTime $ date $ last list
-    averageSessionsPerWeek = floor $ (realToFrac $ totalAlreadyDone) / (realToFrac weeksOfUse)
-
-    minToIncreaseAverage = (-) (sessionsToIncreaseAverage totalAlreadyDone (weeksOfUse+1) averageSessionsPerWeek) totalAlreadyDone
-    sessionsToIncreaseAverageStr = "Min sessions to increase average by 1: " ++ show minToIncreaseAverage
-
+    averageSessionsPerWeek =
+      floor $ (realToFrac $ totalAlreadyDone) / (realToFrac weeksOfUse)
+    minToIncreaseAverage =
+      (-)
+        (sessionsToIncreaseAverage
+           totalAlreadyDone
+           (weeksOfUse + 1)
+           averageSessionsPerWeek)
+        totalAlreadyDone
+    sessionsToIncreaseAverageStr =
+      "Min sessions to increase average by 1: " ++ show minToIncreaseAverage
     topDone = take 5 $ getSubjectsOrderedByEffort doneThisWeekList
 
 sessionsToIncreaseAverage :: Int -> Int -> Int -> Int
 sessionsToIncreaseAverage sessionsCount weeks average
-    | floor (realToFrac (sessionsCount+1) / realToFrac weeks) > average = sessionsCount + 1
-    | otherwise =  sessionsToIncreaseAverage (sessionsCount+1) weeks average
-
+  | floor (realToFrac (sessionsCount + 1) / realToFrac weeks) > average =
+    sessionsCount + 1
+  | otherwise = sessionsToIncreaseAverage (sessionsCount + 1) weeks average
 
 weeksBetweenDates x y = weeks
   where
