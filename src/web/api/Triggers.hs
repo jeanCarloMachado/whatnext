@@ -16,18 +16,29 @@ import           Data.Time.Format
 import           GHC.Generics
 import           Prelude
 import           System.Environment
+import qualified Data.Text.Lazy as L
+import qualified Data.Text as NL
 import           System.Process.ByteString.Lazy
+import           Network.Mail.Mime
+import           Network.Mail.Client.Gmail
 
 main = do
   sourceDirectory <- getEnv ("WHATNEXT_SRC")
+  smtpPassword <- getEnv ("SMTP_PASSWORD")
+  destination <- getEnv ("WHATNEXT_USER")
   (_, history, _) <-
     readProcessWithExitCode (sourceDirectory ++ "/log.sh") ["--json"] ""
   decodedHistory <-
     (eitherDecode <$> return history) :: IO (Either String [StudyEntry])
   currentTime <- getCurrentTime
   case decodedHistory of
-    Left msg   -> putStr msg
-    Right list -> putStr $ getResultStr list currentTime
+    Right list ->
+        deliver smtpPassword destination list currentTime
+    Left error   -> putStr error
+
+deliver smtpPassword destination list currentTime =
+    sendGmail "contato@jeancarlomachado.com.br" (L.pack smtpPassword)  (Address (Just "") "contato@jeancarlomachado.com.br") [Address (Just "") (NL.pack destination)] [] [] "Whatnext - Week status" (L.pack content) [] 10000000
+    where content = getResultStr list currentTime
 
 getResultStr list currentTime =
   donesThisWeekCount ++

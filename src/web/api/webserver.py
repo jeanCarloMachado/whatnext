@@ -26,6 +26,7 @@ def update_environemnt(my_env, email):
     my_env['WHATNEXT_CONF'] = DATA_DIR + "/" + email + "/whatnext.conf"
     my_env['WHATNEXT_GOALS'] = DATA_DIR + "/" + email + "/whatnext_goals.conf"
     my_env['WHATNEXT_HISTORY'] = DATA_DIR + "/" + email + "/whatnext_history"
+    my_env['WHATNEXT_USER'] = email
 
     return my_env
 
