@@ -19,11 +19,10 @@ main = do
   whatnextConf <- readProcess (currentDirectory ++ "/conf2json.sh") [] ""
   tiredModeVal <- lookupEnv "TIRED_MODE"
   timePerSubject <- readProcess (currentDirectory ++ "/timePerSubject.py") [] ""
-  let whatnextConfAsByte = pack whatnextConf
-      tiredMode = tiredModeValToBool tiredModeVal
+  let tiredMode = tiredModeValToBool tiredModeVal
       timePerSubjectAsByte = pack timePerSubject
   decodedWhatnextConf <-
-    (decode <$> return whatnextConfAsByte) :: IO (Maybe [Subject])
+    (decode <$> return (pack whatnextConf)) :: IO (Maybe [Subject])
   let decodedTimePerSubject =
         (decode timePerSubjectAsByte) :: (Maybe [(TimePerSubject)])
       timePerSubjectList = extractTimePerSubject decodedTimePerSubject
@@ -99,10 +98,16 @@ computeWeight tiredMode subject =
     weightedPriority = (regularizedPriority * 0.5)
     weightenedDaysSinceLastStudies = (daysSinceLastStudyQuadratic * 1)
     weightenedTimeAlreadyInvested = (regualarizedTimeAlreadyInvested * 0.3)
+    zeroingFactor = getZeroingFactor (priority subject)
           --calculus
     baseCalculus =
-      (weightedComplexity + weightedPriority + weightenedDaysSinceLastStudies) /
+      ((weightedComplexity + weightedPriority + weightenedDaysSinceLastStudies) * zeroingFactor) /
       (3 + weightenedTimeAlreadyInvested)
+
+getZeroingFactor priority =
+    if priority <= 0
+    then 0 :: Float
+    else 1 :: Float
 
 reasonableMaxTimeStudied val
     -- a reasonable well study has at least 20 hours

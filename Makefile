@@ -43,8 +43,10 @@ serveApi: clear
 	source ${current_dir}/src/config.sh && cd ${current_dir}/src/web/api && python webserver.py &
 
 buildScheduler:
-	ghc --make Scheduler.hs -dynamic && ./Scheduler
+	(cd src/ && ghc --make Scheduler.hs -dynamic)
 
+runScheduler:
+	(cd src/ && source ./config.sh && ./Scheduler)
 
 buildApi:
 	docker run -v /home/jean/projects/whatnext:/whatnext -it 77f66f6665b3 bash -c "/opt/ghc/bin/ghc --make /whatnext/src/Scheduler"
