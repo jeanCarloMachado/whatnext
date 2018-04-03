@@ -56,3 +56,10 @@ wn edit-goals
     }
 }
 ```
+
+
+## Haskell dependencies
+
+stack
+
+aeson

@@ -37,7 +37,7 @@ main = do
     Left error   -> putStr error
 
 deliver smtpPassword destination list currentTime =
-    sendGmail "contato@jeancarlomachado.com.br" (L.pack smtpPassword)  (Address (Just "") "contato@jeancarlomachado.com.br") [Address (Just "") (NL.pack destination)] [] [] "Whatnext - Week status" (L.pack content) [] 10000000
+    sendGmail "contato@jeancarlomachado.com.br" (L.pack smtpPassword)  (Address (Just "") "contato@jeancarlomachado.com.br") [Address (Just "") (NL.pack destination)] [] [] "Whatnext - Day Goals" (L.pack content) [] 10000000
     where content = getResultStr list currentTime
 
 getResultStr list currentTime =
