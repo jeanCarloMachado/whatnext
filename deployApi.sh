@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 REMOTE_SERVE_DIR=/home/ubuntu/whatnext/api
+mkdir distApi || true
 rm -rf distApi/*
 cp -rf src/* distApi/
 rm -rf distApi/web/frontend
