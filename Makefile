@@ -2,7 +2,6 @@
 current_dir = $(shell pwd)
 dist_dir = ${current_dir}/dist
 
-
 test:
 	./testsBootstrap.sh
 
@@ -11,38 +10,36 @@ test:
 install:
 	pip install flask
 	pip install flask_cors
-	cd src/web/frontend && elm-install
-	(cd src/web/frontend/ ; elm-install)
+	cd src/frontend && elm-install
+	(cd src/frontend/ ; elm-install)
 
 #frontend
 
 serveFront:
-	cd dist/ && python3 -m http.server 5001
-
+	cd dist/ && python3 -m http.server 80
 
 deployFrontend:
 	scp -r dist/* blog:"/home/ubuntu/whatnext/frontend/"
 
 build: copyAssets
-	cd src/web/frontend && elm-make Scheduler.elm --output ${dist_dir}/scheduler.js
-	cd src/web/frontend && elm-make History.elm --output ${dist_dir}/history.js
-	cd src/web/frontend && elm-make Login.elm --output ${dist_dir}/login.js
+	cd src/frontend && elm-make Scheduler.elm --output ${dist_dir}/scheduler.js
+	cd src/frontend && elm-make History.elm --output ${dist_dir}/history.js
+	cd src/frontend && elm-make Login.elm --output ${dist_dir}/login.js
 
 copyAssets:
 	mkdir dist || true
-	cp src/web/frontend/*.html dist/ || true
-	cp src/web/frontend/*.css dist/ || true
+	cp src/frontend/*.html dist/ || true
+	cp src/frontend/*.css dist/ || true
 	rm -rf dist/images || true
-	cp -rf src/web/frontend/images dist/images || true
+	cp -rf src/frontend/images dist/images || true
 
 watchFrontend: copyAssets
-	my_watch "make build" src/web/frontend
+	my_watch "make build" src/frontend
 
 #backend
 
 serveApi:
-	source ${current_dir}/src/config.sh && cd ${current_dir}/src/web/api && python3 webserver.py
-
+	source ${current_dir}/src/api/config.sh && cd ${current_dir}/src/api && python3 webserver.py
 
 deployApi:
 	./deployApi.sh
@@ -50,8 +47,7 @@ deployApi:
 
 compileBackend:
 	ghc --make src/Scheduler.hs
-	# ghc --make src/web/api/Triggers.hs
-
+	# ghc --make src/api/Triggers.hs
 
 containerBash:
 	docker run -it wn-build-image bash

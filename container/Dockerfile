@@ -15,5 +15,7 @@ RUN apt install -y libgmp-dev
 RUN cabal update && \
     cabal install aeson
 
+RUN pip3 install flask flask_cors
+
 WORKDIR /
 
