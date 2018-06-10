@@ -22,7 +22,9 @@ SUCCESS_MESSAGE = '{"status": "success"}'
 
 
 def update_environemnt(my_env, email):
-    DATA_DIR="/data/whatnext/users"
+    DATA_DIR= "/data/whatnext/users" 
+    if "WHATNEXT_DATA_DIR" in  os.environ:
+        DATA_DIR=os.environ.get("WHATNEXT_DATA_DIR")
     my_env['WHATNEXT_CONF'] = DATA_DIR + "/" + email + "/whatnext.conf"
     my_env['WHATNEXT_GOALS'] = DATA_DIR + "/" + email + "/whatnext_goals.conf"
     my_env['WHATNEXT_HISTORY'] = DATA_DIR + "/" + email + "/whatnext_history"
