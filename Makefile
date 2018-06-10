@@ -2,15 +2,26 @@
 current_dir = $(shell pwd)
 dist_dir = ${current_dir}/dist
 
-servePage:
-	cd dist/ && python3 -m http.server 5001
-
-serveApi:
-	source ${current_dir}/src/config.sh && cd ${current_dir}/src/web/api && python3 webserver.py
 
 test:
 	./testsBootstrap.sh
 
+#deps
+
+install:
+	pip install flask
+	pip install flask_cors
+	cd src/web/frontend && elm-install
+	(cd src/web/frontend/ ; elm-install)
+
+#frontend
+
+serveFront:
+	cd dist/ && python3 -m http.server 5001
+
+
+deployFrontend:
+	scp -r dist/* blog:"/home/ubuntu/whatnext/frontend/"
 
 build: copyAssets
 	cd src/web/frontend && elm-make Scheduler.elm --output ${dist_dir}/scheduler.js
@@ -24,35 +35,28 @@ copyAssets:
 	rm -rf dist/images || true
 	cp -rf src/web/frontend/images dist/images || true
 
-install:
-	pip install flask
-	pip install flask_cors
-	cd src/web/frontend && elm-install
-	(cd src/web/frontend/ ; elm-install)
-
-
-deploy: build deployFrontend deployApi
-
-deployFrontend:
-	scp -r dist/* blog:"/home/ubuntu/whatnext/frontend/"
-
-deployApi: buildApi
-	./deployApi.sh
-
 watchFrontend: copyAssets
 	my_watch "make build" src/web/frontend
 
-buildScheduler:
+#backend
+
+serveApi:
+	source ${current_dir}/src/config.sh && cd ${current_dir}/src/web/api && python3 webserver.py
+
+
+deployApi:
+	./deployApi.sh
+
+
+compileBackend:
 	ghc --make src/Scheduler.hs
+	# ghc --make src/web/api/Triggers.hs
 
-runScheduler:
-	(cd src/ && source ./config.sh && ./Scheduler)
 
-buildApi:
-	ghc --make src/Scheduler.hs
+containerBash:
+	docker run -it wn-build-image bash
 
-buildTriggers: buildScheduler
-	ghc --make src/web/api/Triggers.hs
+compileLinux:
+	docker run -it -v ${current_dir}:/wn --entrypoint bash wn-build-image -c "cd /wn ; make compileBackend"
 
-watchApi:
-	my_watch "make buildApiDev" src/
+

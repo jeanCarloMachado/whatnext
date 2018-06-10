@@ -14,6 +14,6 @@ pkill -f "webserver" ;
 '
 
 echo "Deploying"
-ssh -n -f blog "bash -c 'cd $REMOTE_SERVE_DIR/web/api && nohup python3 webserver.py  > /dev/null 2>&1 &'"
+ssh -n -f blog "bash -c 'cd $REMOTE_SERVE_DIR/web/api && nohup python3 webserver.py > /dev/null 2>&1 &'"
 
 exit 0
