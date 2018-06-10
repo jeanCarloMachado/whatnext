@@ -1,4 +1,5 @@
 test-results
+__pycache__
 *.zip
 dist
 distApi

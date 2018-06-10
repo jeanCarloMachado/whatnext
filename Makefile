@@ -6,7 +6,7 @@ servePage:
 	cd dist/ && python3 -m http.server 5001
 
 serveApi:
-	source ${current_dir}/src/config.sh && cd ${current_dir}/src/web/api && python webserver.py
+	source ${current_dir}/src/config.sh && cd ${current_dir}/src/web/api && python3 webserver.py
 
 test:
 	./testsBootstrap.sh

@@ -10,4 +10,4 @@ before_script:
     - source venv/bin/activate
 
 script:
-    - bash ./testAll.sh
+    - bash ./testsBootstrap.sh
