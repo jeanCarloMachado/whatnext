@@ -27,75 +27,8 @@ The projects rests on some premises:
 
 For a detailed explanation see [this post](http://jeancarlomachado.net/blog/metodologia-whatnext.html)
 
-----
 
-## Web Version
-
-The web version can be found [here](https://app.thewhatnext.net/) for free.
-
-----
-
-## Cli Version
-
-## Starting
-
-Create your map of study ``whatnext edit-subjects``
-
-```sh
-crypto currencies|99|80|continue reading the book
-category theory|70|90|read category theory for programmers
-cormen book|65|90|do the exercise of how much you can do with a given complexity (wiki)
-kubernetes|79|70|do a tutorial
-haskell|45|90|continue reading the book
-meditation|80|50|read more papers
-math|50|70|master mathematical proophs reading the paper math_proofs 
-elm|40|90|do some other tutorials
-music theory|43|80|
-paraiso perdido|33|20|
-kernel development|30|60|
-chemistry|30|70|
-climate change|10|10|
-dragons book|20|80|
-open source|99|50|
-```
-
-Where the columns are:
-1. name of the subject
-2. priority of the subject (0 to the least important 100 to the most)
-3. the complexity of the subject (0 to the easiest 100 to the hardest)
-4. optional description of what to do in the next session
-
-The output of the program will a contextualized list of priorities to
-study at the moment. The most important one's will be on the top.
-
-```sh
-whatnext
-```
-
-![output](https://i.imgur.com/sbXFpnd.png)
-
-When you study some subject you feed whatnext with this info in order to calculate the next most important item
-
-```sh
-whatnext done 'tese cristiano' 'read about types of polymorpishms'
-#the arguments are: subject studied, description of what was studied
-```
-Informing whatnext about your studies also gives you a nice history of your progress
-```sh
-whatnext log
-```
-
-![log](https://i.imgur.com/N2OMkvH.png)
-
-
-
-When you get something done your goal status will be updated
-
-```sh
-wn status
-```
-
-![status](https://i.imgur.com/imsMToT.png)
+The production version can be found [here](https://app.thewhatnext.net/) for free.
 
 
 To get Further examples at a look at the [documentation](doc.md)
