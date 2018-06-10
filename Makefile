@@ -8,23 +8,22 @@ test:
 #deps
 
 install:
+	cd src/frontend && elm-install
 	pip install flask
 	pip install flask_cors
-	cd src/frontend && elm-install
-	(cd src/frontend/ ; elm-install)
 
 #frontend
 
 serveFront:
 	cd dist/ && python3 -m http.server 80
 
-deployFrontend:
+deployFrontend: build
 	scp -r dist/* blog:"/home/ubuntu/whatnext/frontend/"
 
 build: copyAssets
-	cd src/frontend && elm-make Scheduler.elm --output ${dist_dir}/scheduler.js
-	cd src/frontend && elm-make History.elm --output ${dist_dir}/history.js
-	cd src/frontend && elm-make Login.elm --output ${dist_dir}/login.js
+	cd src/frontend/ ; elm-make Scheduler.elm --output ${dist_dir}/scheduler.js
+	cd src/frontend/ ; elm-make History.elm --output ${dist_dir}/history.js
+	cd src/frontend/ ; elm-make Login.elm --output ${dist_dir}/login.js
 
 copyAssets:
 	mkdir dist || true

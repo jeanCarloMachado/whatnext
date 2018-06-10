@@ -115,7 +115,7 @@ togglePageMode pageMode =
 request state service =
     let
         url =
-            "https://" ++ state.apiEndpoint ++ "/" ++ service
+            state.apiEndpoint ++ "/" ++ service
 
         body =
             Json.Encode.object

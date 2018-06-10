@@ -28,19 +28,22 @@
       return decodeURIComponent(results[2].replace(/\+/g, " "));
     }
 
-    endpoint = "api.thewhatnext.net"
+    endpoint = "https://api.thewhatnext.net"
 
     page = getParameterByName("page") || "index"
     switch (page) {
       case "log":
-        Elm.History.fullscreen({apiEndpoint: endpoint})
+        obj = Elm.History
         break
       case "scheduler":
-        Elm.Scheduler.fullscreen({apiEndpoint: endpoint})
+        obj = Elm.Scheduler
         break
       default:
-        Elm.Login.fullscreen({apiEndpoint: endpoint})
+        obj = Elm.Login
     }
+
+	obj.fullscreen({apiEndpoint: endpoint})
+
   </script>
 </body>
 </html>
