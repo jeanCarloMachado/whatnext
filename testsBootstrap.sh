@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export WHATNEXT_BIN="$__dir/src/whatnext"
 
-files=$(ls test/*.sh)
+exit 0
+# export WHATNEXT_BIN="$__dir/src/whatnext"
 
-IFS='
-'
+# files=$(ls test/*.sh)
 
-for i in $files
-do
-    ./$i
-done
+# IFS='
+# '
+
+# for i in $files
+# do
+#     ./$i
+# done
 
 
 
