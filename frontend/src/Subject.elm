@@ -99,7 +99,7 @@ decodeStudyEntry =
 doneRequest endpoint doneData =
     let
         url =
-            "https://" ++ endpoint ++ "/done/" ++ doneData.doneSubjectName
+            endpoint ++ "/done/" ++ doneData.doneSubjectName
 
         body =
             Json.Encode.object
@@ -121,7 +121,7 @@ doneRequest endpoint doneData =
 removeRequest endpoint subject =
     let
         url =
-            "https://" ++ endpoint ++ "/rm/" ++ subject.name
+            endpoint ++ "/rm/" ++ subject.name
     in
         Http.request
             { method = "GET"
@@ -137,7 +137,7 @@ removeRequest endpoint subject =
 getDetail endpoint subject =
     let
         url =
-            "https://" ++ endpoint ++ "/detail/" ++ subject.name
+            endpoint ++ "/detail/" ++ subject.name
 
         request =
             Http.request
@@ -157,7 +157,7 @@ addSubjectRequest : String -> NewSubjectData r -> Http.Request String
 addSubjectRequest endpoint state =
     let
         url =
-            "https://" ++ endpoint ++ "/addOrUpdate"
+            endpoint ++ "/addOrUpdate"
 
         body =
             Json.Encode.object
@@ -196,7 +196,7 @@ decodeSubjectList =
 getListRequest state =
     let
         url =
-            "https://" ++ state.apiEndpoint ++ "/scheduler" ++ (state.tiredMode |> toUrlBool)
+            state.apiEndpoint ++ "/scheduler" ++ (state.tiredMode |> toUrlBool)
     in
         Http.request
             { method = "GET"

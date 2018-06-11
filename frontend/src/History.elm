@@ -71,7 +71,7 @@ update msg state =
 getHistory endpoint =
     let
         url =
-            "https://" ++ endpoint ++ "/log"
+            endpoint ++ "/log"
 
         request =
             Http.request
