@@ -15,9 +15,17 @@ from gateway import gatewaySuccess,gateway
 
 app = Flask(__name__)
 app.debug=True
-CORS(app)
+cors = CORS(app)
 
 SUCCESS_MESSAGE = '{"status": "success"}'
+
+@app.after_request
+def after_request(response):
+  response.headers.add('Access-Control-Allow-Origin', 'http://localhost:3000')
+  response.headers.add('Access-Control-Allow-Credentials', 'true')
+  response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+  response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+  return response
 
 
 def update_environemnt(my_env, email):
@@ -186,7 +194,6 @@ def error_json (msg):
 @app.route('/login', methods = ['POST'])
 def login():
     data=request.json
-
     m = hashlib.sha256()
     m.update(data['email'].encode('utf-8'))
     m.update(data['password'].encode('utf-8'))

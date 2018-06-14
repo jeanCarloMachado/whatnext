@@ -70,7 +70,7 @@ update msg state =
         RequestResult (Ok message) ->
             case state.pageMode of
                 LoginPage ->
-                    ( state, Navigation.load "https://app.thewhatnext.net?page=scheduler" )
+                    ( state, Cmd.none )
 
                 SignupPage ->
                     ( { state | pageMode = togglePageMode state.pageMode } |> Loader.disableLoading, Cmd.none )
