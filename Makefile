@@ -1,6 +1,11 @@
 .PHONY: test
+.PHONY: api
 current_dir = $(shell pwd)
 dist_dir = ${current_dir}/dist
+
+all: front
+
+
 
 test:
 	./testsBootstrap.sh
@@ -16,10 +21,10 @@ install:
 	pip install flask
 	pip install flask_cors
 
-serveFront:
+front:
 	cd frontend ; elm-app start
 
-serveApi:
+api:
 	source ${current_dir}/api/config.sh && cd ${current_dir}/api && python3 webserver.py
 
 deployApi:

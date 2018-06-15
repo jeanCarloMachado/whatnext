@@ -3,19 +3,21 @@
 import os, sys
 import subprocess
 import hashlib
-import datetime 
-CLI_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(CLI_PATH)
+import datetime
+
+
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(BASE_PATH)
 
 from flask import Flask, request, jsonify, Response, make_response
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 import json
 from detail import get_subject
 from gateway import gatewaySuccess,gateway
 
 app = Flask(__name__)
 app.debug=True
-cors = CORS(app)
+cors = CORS(app, support_credentials=True)
 
 SUCCESS_MESSAGE = '{"status": "success"}'
 
@@ -51,6 +53,7 @@ def check_authorization(request):
 
     return email
 
+@cross_origin(headers=['Content-Type']) # Send Access-Control-Allow-Headers
 @app.route('/scheduler')
 def index():
     email = check_authorization(request)
@@ -62,7 +65,7 @@ def index():
 
 
     cmd = [
-        CLI_PATH + '/Scheduler',
+        BASE_PATH + '/Scheduler',
     ]
 
     my_env["TO_JSON"] = "1"
@@ -76,7 +79,7 @@ def history():
     email = check_authorization(request)
     my_env = update_environemnt(os.environ.copy(), email)
 
-    cmd = [ CLI_PATH + '/log.sh', '--json']
+    cmd = [ BASE_PATH + '/log.sh', '--json']
     content =  subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE).stdout.decode('UTF-8')
 
     return content, 200, {'Content-Type': 'application/json; charset=utf-8'}
@@ -88,7 +91,7 @@ def done(subjectName):
 
     data=request.json
     cmd = [
-        CLI_PATH + '/done.sh',
+        BASE_PATH + '/done.sh',
         subjectName,
         data['description'],
         data['whatToDoNext']
@@ -109,7 +112,7 @@ def add():
 
     data=request.json
     cmd = [
-        CLI_PATH + '/alterSubject.sh',
+        BASE_PATH + '/alterSubject.sh',
         data['name'],
         str(data['priority']),
         str(data['complexity']),
@@ -128,7 +131,7 @@ def rm(subjectName):
     my_env = update_environemnt(os.environ.copy(), email)
 
     cmd = [
-        CLI_PATH + '/rm.sh',
+        BASE_PATH + '/rm.sh',
         subjectName
     ]
     response = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
@@ -147,7 +150,7 @@ def detail(subjectName):
     my_env["TO_JSON"] = "1"
 
     cmd = [
-        CLI_PATH + '/detail.py',
+        BASE_PATH + '/detail.py',
         subjectName
     ]
     result = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE).stdout.decode('UTF-8')
@@ -180,7 +183,7 @@ def signup():
     my_env = update_environemnt(my_env, data['email'])
 
     cmd = [
-        CLI_PATH + '/init.sh',
+        BASE_PATH + '/init.sh',
     ]
 
     result = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
