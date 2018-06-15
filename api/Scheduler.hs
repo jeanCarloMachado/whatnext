@@ -13,11 +13,10 @@ import           GHC.Generics
 import           Prelude
 import           System.Environment
 import           System.Process
-import           Data.Time.Calendar (fromGregorian, Day)
+import           Data.Time.Calendar (fromGregorian, Day, diffDays)
+import Data.Time.Clock (utctDay, getCurrentTime)
 
 
-
-readMyProcess currentDirectory filename = readProcess (currentDirectory ++ "/" ++ filename) [] ""
 
 main :: IO()
 main = do
@@ -25,8 +24,9 @@ main = do
   whatnextConf <- readMyProcess currentDirectory "conf2json.sh"
   tiredModeVal <- lookupEnv "TIRED_MODE"
   timePerSubject <- readMyProcess currentDirectory "timePerSubject.py"
-  let tiredMode = tiredModeValToBool tiredModeVal
-      timePerSubjectAsByte = pack timePerSubject
+  today <- getToday
+  let timePerSubjectAsByte = pack timePerSubject
+      context = Context (tiredModeValToBool tiredModeVal) today
   subjectsConf <-
     (decode <$> return (pack whatnextConf)) :: IO (Maybe [Subject])
   let decodedTimePerSubject =
@@ -37,11 +37,15 @@ main = do
       subjectsWithDays <- mapM (getDaysSinceLastStudy currentDirectory) subjects
       let finalSubjects =
             sortByWeight $
-            computeWeights tiredMode $
+            computeWeights context $
             setTimeAlreadyInvested timePerSubjectList subjectsWithDays
       putStrLn $ mountJson finalSubjects
     _ -> putStrLn "error while decoding subjects"
 
+getToday :: IO (Day) -- :: (year,month,day)
+getToday = getCurrentTime >>= return . utctDay
+
+readMyProcess currentDirectory filename = readProcess (currentDirectory ++ "/" ++ filename) [] ""
 
 getDaysSinceLastStudy :: String -> Subject -> IO(Subject)
 getDaysSinceLastStudy currentDirectory subject = do
@@ -64,13 +68,13 @@ sortByWeight :: [Subject] -> [Subject]
 sortByWeight subjects = reverse $ sortBy (comparing weight) subjects
 
 -- subjects calculus
-computeWeights :: Bool -> [Subject] -> [Subject]
-computeWeights tiredMode subjects =
-  map (\subject -> subject {weight = computeWeight tiredMode subject}) subjects
+computeWeights :: Context -> [Subject] -> [Subject]
+computeWeights context subjects =
+  map (\subject -> subject {weight = computeWeight context subject}) subjects
 
-computeWeight :: Bool -> Subject -> Float
-computeWeight tiredMode subject =
-  case tiredMode of
+computeWeight :: Context -> Subject -> Float
+computeWeight context subject =
+  case tiredMode context of
     True  -> weight / regularizedComplexity
     False -> weight
   where
@@ -83,15 +87,20 @@ computeWeight tiredMode subject =
     iTimeAlreadyInvested = fromIntegral $ (timeAlreadyInvested subject)
     regualarizedTimeAlreadyInvested =
       iTimeAlreadyInvested / reasonableMaxTimeStudied (iTimeAlreadyInvested)
+
+    daysSinceCreation = diffDays (today context) $ creationDate subject
+    regulariedDaysSinceCreation = (1 / ((fromIntegral $ daysSinceCreation ^ 2)  + 0.0001))
          -- apply weights to each value
     wComplexity = (regularizedComplexity * 0.2)
     wPriority = (regularizedPriority * 0.5)
     wDaysSinceLastStudies = (daysSinceLastStudyQuadratic * 1)
     wTimeAlreadyInvested = (regualarizedTimeAlreadyInvested * 0.3)
+    wDaysSinceCreation = (regulariedDaysSinceCreation * 0.9)
     zeroingFactor = getZeroingFactor (priority subject)
 
+    numberOfFactors =4
     weight =
-      ((wComplexity + wPriority + wDaysSinceLastStudies) * zeroingFactor) / (3 + wTimeAlreadyInvested)
+      ((wComplexity + wPriority + wDaysSinceLastStudies + wDaysSinceCreation) * zeroingFactor) / (numberOfFactors + wTimeAlreadyInvested)
 
 getZeroingFactor :: Float -> Float
 getZeroingFactor priority =
@@ -127,6 +136,11 @@ data Subject = Subject
   , timeAlreadyInvested :: Int
   , creationDate :: Day
   } deriving (Show, Generic)
+
+data Context = Context {
+  tiredMode :: Bool,
+  today :: Day
+} deriving (Show, Generic)
 
 type TimePerSubject = (String, Int)
 
@@ -171,7 +185,7 @@ getDay :: [Int] -> Day
 getDay list =
   fromGregorian y m d
   where
-    y = fromIntegral $ head list 
+    y = fromIntegral $ head list
     m = head $ tail list
     d = head $ tail $ tail list
 
