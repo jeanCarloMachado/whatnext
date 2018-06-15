@@ -13,6 +13,7 @@ import           GHC.Generics
 import           Prelude
 import           System.Environment
 import           System.Process
+import           Data.Time.Calendar (fromGregorian, Day)
 
 
 
@@ -26,12 +27,12 @@ main = do
   timePerSubject <- readMyProcess currentDirectory "timePerSubject.py"
   let tiredMode = tiredModeValToBool tiredModeVal
       timePerSubjectAsByte = pack timePerSubject
-  decodedWhatnextConf <-
+  subjectsConf <-
     (decode <$> return (pack whatnextConf)) :: IO (Maybe [Subject])
   let decodedTimePerSubject =
         (decode timePerSubjectAsByte) :: (Maybe [(TimePerSubject)])
       timePerSubjectList = extractWithDefault decodedTimePerSubject []
-  case decodedWhatnextConf of
+  case subjectsConf of
     Just subjects -> do
       subjectsWithDays <- mapM (getDaysSinceLastStudy currentDirectory) subjects
       let finalSubjects =
@@ -70,9 +71,8 @@ computeWeights tiredMode subjects =
 computeWeight :: Bool -> Subject -> Float
 computeWeight tiredMode subject =
   case tiredMode of
-    True  -> baseCalculus / regularizedComplexity
-    False -> baseCalculus
-           --regularize values between 0 and 1
+    True  -> weight / regularizedComplexity
+    False -> weight
   where
     regularizedPriority = (priority subject) / 100
     regularizedComplexity = (complexity subject) / 100
@@ -84,21 +84,25 @@ computeWeight tiredMode subject =
     regualarizedTimeAlreadyInvested =
       iTimeAlreadyInvested / reasonableMaxTimeStudied (iTimeAlreadyInvested)
          -- apply weights to each value
-    weightedComplexity = (regularizedComplexity * 0.2)
-    weightedPriority = (regularizedPriority * 0.5)
-    weightenedDaysSinceLastStudies = (daysSinceLastStudyQuadratic * 1)
-    weightenedTimeAlreadyInvested = (regualarizedTimeAlreadyInvested * 0.3)
+    wComplexity = (regularizedComplexity * 0.2)
+    wPriority = (regularizedPriority * 0.5)
+    wDaysSinceLastStudies = (daysSinceLastStudyQuadratic * 1)
+    wTimeAlreadyInvested = (regualarizedTimeAlreadyInvested * 0.3)
     zeroingFactor = getZeroingFactor (priority subject)
-          --calculus
-    baseCalculus =
-      ((weightedComplexity + weightedPriority + weightenedDaysSinceLastStudies) * zeroingFactor) /
-      (3 + weightenedTimeAlreadyInvested)
 
+    weight =
+      ((wComplexity + wPriority + wDaysSinceLastStudies) * zeroingFactor) / (3 + wTimeAlreadyInvested)
+
+getZeroingFactor :: Float -> Float
 getZeroingFactor priority =
     if priority <= 0
     then 0 :: Float
     else 1 :: Float
 
+
+type Minutes = Float
+
+reasonableMaxTimeStudied :: Minutes -> Minutes
 reasonableMaxTimeStudied val
     -- a reasonable well study has at least 20 hours
  =
@@ -121,6 +125,7 @@ data Subject = Subject
   , objective           :: String
   , whatToDoNext        :: String
   , timeAlreadyInvested :: Int
+  , creationDate :: Day
   } deriving (Show, Generic)
 
 type TimePerSubject = (String, Int)
@@ -138,7 +143,9 @@ instance FromJSON Subject where
       complexity <- o .: "complexity"
       objective <- o .: "objective"
       whatToDoNext <- o .: "whatToDoNext"
-      return (Subject name priority complexity 0 0 objective whatToDoNext 0)
+      creationDate <- o .: "creationDate"
+      let day = getDay $ explodeDate creationDate
+      return ( Subject name priority complexity 0 0 objective whatToDoNext 0 day)
 
 instance ToJSON Subject where
   toJSON Subject {..} =
@@ -151,9 +158,22 @@ instance ToJSON Subject where
       , "objective" .= objective
       , "whatToDoNext" .= whatToDoNext
       , "time_already_invested" .= timeAlreadyInvested
+      , "creationDate" .= creationDate
       ]
 
+explodeDate :: String -> [Int]
+explodeDate dateStr =
+  map (\x -> read x :: Int) array
+  where
+  array = split '-' dateStr
 
+getDay :: [Int] -> Day
+getDay list =
+  fromGregorian y m d
+  where
+    y = fromIntegral $ head list 
+    m = head $ tail list
+    d = head $ tail $ tail list
 
 -- subjects transformations
 
@@ -180,3 +200,6 @@ extractWithDefault maybeList def =
     Just x -> x
     _      -> def
 
+split :: Eq a => a -> [a] -> [[a]]
+split d [] = []
+split d s = x : split d (drop 1 y) where (x,y) = span (/= d) s

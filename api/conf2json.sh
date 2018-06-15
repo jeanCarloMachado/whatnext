@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-
-
 subjectToJson() {
     subjectRow="$1"
 
@@ -11,6 +9,7 @@ subjectToJson() {
     complexity=$(cut -d "|" -f3 <<< $sanitizedSubjectRow)
     whatToDoNext=$(echo "$sanitizedSubjectRow" | cut -d "|" -f4 )
     objective=$(echo "$sanitizedSubjectRow" | cut -d "|" -f5 )
+    creationDate=$(echo "$sanitizedSubjectRow" | cut -d "|" -f6 )
 
 
     echo "{"
@@ -18,7 +17,8 @@ subjectToJson() {
     echo '  "priority": '$priority','
     echo '  "complexity": '$complexity','
     echo '  "whatToDoNext": "'$whatToDoNext'",'
-    echo '  "objective": "'$objective'"'
+    echo '  "objective": "'$objective'",'
+    echo '  "creationDate": "'$creationDate'"'
     echo "}"
 }
 
