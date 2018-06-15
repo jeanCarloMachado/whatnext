@@ -6,3 +6,5 @@ distApi
 *.o
 *.hi
 elm-stuff
+api/Scheduler
+api/Triggers
