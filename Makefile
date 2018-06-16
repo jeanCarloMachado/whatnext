@@ -27,10 +27,10 @@ front:
 api:
 	source ${current_dir}/api/config.sh && cd ${current_dir}/api && python3 webserver.py
 
-deployApi:
+deployApi: compileLinux
 	./deployApi.sh
 
-compileBackend:
+compileApi:
 	ghc --make api/Scheduler.hs
 	# ghc --make api/api/Triggers.hs
 
@@ -38,5 +38,5 @@ containerBash:
 	docker run -it wn-build-image bash
 
 compileLinux:
-	docker run -it -v ${current_dir}:/wn --entrypoint bash wn-build-image -c "cd /wn ; make compileBackend"
+	docker run -it -v ${current_dir}:/wn --entrypoint bash wn-build-image -c "cd /wn ; make compileApi"
 

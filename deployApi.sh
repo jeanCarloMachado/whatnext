@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 REMOTE_SERVE_DIR=/home/ubuntu/whatnext/api
-scp -r distApi/* blog:"$REMOTE_SERVE_DIR/"
+scp -r api/* blog:"$REMOTE_SERVE_DIR/"
 
 ssh blog -t '
 pkill -f "webserver" ;
