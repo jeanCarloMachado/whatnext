@@ -122,7 +122,8 @@ def add():
             str(data['priority']),
             str(data['complexity']),
             data['whatToDoNext'],
-            data['objective']
+            data['objective'],
+            data['previousName']
             ]
     response = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
     if response.stdout.decode('UTF-8') != "":

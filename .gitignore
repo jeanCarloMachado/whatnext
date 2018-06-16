@@ -9,3 +9,4 @@ elm-stuff
 api/Scheduler
 api/Triggers
 frontend/build
+data/*

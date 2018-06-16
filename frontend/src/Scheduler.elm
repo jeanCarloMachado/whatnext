@@ -250,6 +250,7 @@ updateSubject msg model =
             ( { model | newPriority = priority * 10 }, Cmd.none )
 
         ChangeSubjectName subjectName ->
+
             ( { model | newSubjectName = subjectName }, Cmd.none )
 
         ChangeWhatToDoNext whatToDoNext ->
@@ -369,7 +370,7 @@ view state =
             ]
         ]
 
-
+alterSubjectHtml : State -> Html.Styled.Html Msg
 alterSubjectHtml state =
     case state.addSubjectModal of
         True ->
@@ -591,7 +592,7 @@ hiddenHtml subject =
             [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.fail)
             , View.onClickStoppingPropagation <| (MySubjectMsg << RemoveClick) subject
             ]
-            [ text "Remove" ]
+            [ text "Archive" ]
         ]
 
 

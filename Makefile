@@ -30,7 +30,7 @@ api:
 deployApi: compileLinux
 	./deployApi.sh
 
-compileApi:
+compileLocal:
 	ghc --make api/Scheduler.hs
 	# ghc --make api/api/Triggers.hs
 
@@ -38,5 +38,5 @@ containerBash:
 	docker run -it wn-build-image bash
 
 compileLinux:
-	docker run -it -v ${current_dir}:/wn --entrypoint bash wn-build-image -c "cd /wn ; make compileApi"
+	docker run -it -v ${current_dir}:/wn --entrypoint bash wn-build-image -c "cd /wn ; make compileLocal"
 

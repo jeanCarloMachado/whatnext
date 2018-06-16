@@ -35,13 +35,14 @@ type alias DoneData r =
     }
 
 
-type alias NewSubjectData r =
+type alias SubjectData r =
     { r
         | newSubjectName : String
         , newPriority : Int
         , newComplexity : Int
         , newObjective : String
         , newWhatToDoNext : String
+        , openedSubjectName : String
     }
 
 
@@ -153,7 +154,7 @@ getDetail endpoint subject =
         request
 
 
-addSubjectRequest : String -> NewSubjectData r -> Http.Request String
+addSubjectRequest : String -> SubjectData r -> Http.Request String
 addSubjectRequest endpoint state =
     let
         url =
@@ -166,6 +167,7 @@ addSubjectRequest endpoint state =
                 , ( "priority", Json.Encode.int state.newPriority )
                 , ( "whatToDoNext", Json.Encode.string state.newWhatToDoNext )
                 , ( "objective", Json.Encode.string state.newObjective )
+                , ( "previousName", Json.Encode.string state.openedSubjectName )
                 ]
     in
         Http.request

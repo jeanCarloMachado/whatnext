@@ -9,8 +9,13 @@ importance="$2"
 complexity="$3"
 whatToDoNext="$4"
 objective="$5"
+previousName="$6"
 creation=$(date "+%Y-%m-%d")
 
+
+[ -z "$previousName" ] && {
+  previousName=$name
+}
 
 objective=$(echo "$objective" | sed ':a;N;$!ba;s/\n/\\n/g')
 whatToDoNext=$(echo "$whatToDoNext" | sed ':a;N;$!ba;s/\n/\\n/g')
@@ -21,5 +26,5 @@ whatToDoNext=$(echo "$whatToDoNext" | sed ':a;N;$!ba;s/\n/\\n/g')
     exit 1
 }
 
-sed -r -i "/^$name\|/d"  "$WHATNEXT_CONF"
+sed -r -i "/^$previousName\|/d"  "$WHATNEXT_CONF"
 echo  "$name|$importance|$complexity|$whatToDoNext|$objective|$creation" >> "$WHATNEXT_CONF"
