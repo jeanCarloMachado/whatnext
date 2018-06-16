@@ -10,3 +10,4 @@ api/Scheduler
 api/Triggers
 frontend/build
 data/*
+builds/*

@@ -10,7 +10,6 @@ all: front
 test:
 	./testsBootstrap.sh
 
-
 deployFrontend: build
 	 scp -r frontend/build/* blog:"/home/ubuntu/whatnext/frontend/"
 
@@ -27,8 +26,14 @@ front:
 api:
 	source ${current_dir}/api/config.sh && cd ${current_dir}/api && WHATNEXT_ENVIROMENT=development python3 webserver.py
 
-deployApi: compileLinux
+buildApi: compileLinux
+	./buildApi.sh
+
+deployApi:
 	./deployApi.sh
+
+buildAndDeployApi: buildApi deployApi
+
 
 compileLocal:
 	ghc --make api/Scheduler.hs
