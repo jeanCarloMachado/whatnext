@@ -43,6 +43,24 @@ main =
         , subscriptions = subscriptions
         }
 
+type alias State =
+    { subjects : List ( Int, Subject )
+    , loading : Bool
+    , toasterMsg : String
+    , tiredMode : Bool
+    , apiEndpoint : String
+    , doneSubjectName : String
+    , doneDescription : String
+    , doneWhatToDoNext : String
+    , addSubjectModal : Bool
+    , newComplexity : Int
+    , newPriority : Int
+    , newSubjectName : String
+    , newWhatToDoNext : String
+    , openedSubjectName : String
+    , newObjective : String
+    , sideMenu : Bool
+    }
 
 initialState =
     State
@@ -73,26 +91,6 @@ init flags =
 
 updateEndpoint endpoint state =
     { state | apiEndpoint = endpoint }
-
-
-type alias State =
-    { subjects : List ( Int, Subject )
-    , loading : Bool
-    , toasterMsg : String
-    , tiredMode : Bool
-    , apiEndpoint : String
-    , doneSubjectName : String
-    , doneDescription : String
-    , doneWhatToDoNext : String
-    , addSubjectModal : Bool
-    , newComplexity : Int
-    , newPriority : Int
-    , newSubjectName : String
-    , newWhatToDoNext : String
-    , openedSubjectName : String
-    , newObjective : String
-    , sideMenu : Bool
-    }
 
 
 
@@ -136,7 +134,6 @@ type DoneMsg
 
 type alias Flags =
     { apiEndpoint : String }
-
 
 
 -- update
@@ -387,8 +384,7 @@ alterSubjectHtml state =
                         , height (pct 100)
                         ]
                     ]
-                    [ h1 [ css [ fontSize (Css.em 1.6) ] ] [ text "Subject Settings" ]
-                     , input
+                    [ input
                         [ defaultValue state.openedSubjectName
                         , View.inputCss
                         , type_ "text"
@@ -407,24 +403,28 @@ alterSubjectHtml state =
                         , on "change" (Json.Decode.map (MySubjectMsg << ChangeComplexity) targetValueIntParse)
                         ]
                         (renderComplexityOptions <| toString state.newComplexity)
-                    , label [] [ text "Objective" ]
-                    , textarea
-                        [ defaultValue state.newObjective
-                        , css <| List.append View.textAreaCss [ minHeight (px 35) ]
-                        , placeholder "After finishing studying this subject will be able to ..."
-                        , onInput (MySubjectMsg << ChangeObjective)
-                        , Html.Styled.Attributes.required False
-                        ]
-                        []
-                    , label [] [ text "Next step" ]
-                    , textarea
-                        [ defaultValue state.newWhatToDoNext
-                        , css <| List.append View.textAreaCss [ height (px 75), minHeight (px 35) ]
-                        , placeholder "do x y z"
-                        , onInput (MySubjectMsg << ChangeWhatToDoNext)
-                        , Html.Styled.Attributes.required False
-                        ]
-                        []
+                    , span [] [
+                        label [ css View.labelCss] [ text "Objective" ]
+                        , textarea
+                            [ defaultValue state.newObjective
+                            , css <| List.append View.textAreaCss [ minHeight (px 35), height (px 75) ]
+                            , placeholder "After finishing studying this subject will be able to ..."
+                            , onInput (MySubjectMsg << ChangeObjective)
+                            , Html.Styled.Attributes.required False
+                            ]
+                            []
+                    ]
+                    , span [] [
+                        label [] [ text "Next step" ]
+                        , textarea
+                            [ defaultValue state.newWhatToDoNext
+                            , css <| List.append View.textAreaCss [ height (px 75), minHeight (px 35) ]
+                            , placeholder "do x y z"
+                            , onInput (MySubjectMsg << ChangeWhatToDoNext)
+                            , Html.Styled.Attributes.required False
+                            ]
+                            []
+                    ]
                     , div [ css [ displayFlex, justifyContent spaceBetween, width (pct 100) ] ]
                         [ button
                             [ css View.buttonCss, onClick (MySubjectMsg CancelAddSubjectModal) ]

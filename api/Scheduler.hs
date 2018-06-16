@@ -95,10 +95,10 @@ computeWeight context subject =
     wPriority = (regularizedPriority * 0.5)
     wDaysSinceLastStudies = (daysSinceLastStudyQuadratic * 1)
     wTimeAlreadyInvested = (regualarizedTimeAlreadyInvested * 0.3)
-    wDaysSinceCreation = (regulariedDaysSinceCreation * 0.9)
+    wDaysSinceCreation = (regulariedDaysSinceCreation * 0.19)
     zeroingFactor = getZeroingFactor (priority subject)
 
-    numberOfFactors =4
+    numberOfFactors = 4
     weight =
       ((wComplexity + wPriority + wDaysSinceLastStudies + wDaysSinceCreation) * zeroingFactor) / (numberOfFactors + wTimeAlreadyInvested)
 

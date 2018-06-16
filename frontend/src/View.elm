@@ -78,21 +78,23 @@ buttonCss =
 textAreaCss =
     [ borderRadius (px 0)
     , borderStyle solid
-    , borderColor (Css.hex "d3d3d3")
+    , borderColor (Css.hex "efeff4")
     , display block
     , width (px 300)
     , margin (px 1)
     , marginBottom (px 3)
-    , padding (px 10)
+    , padding (px 3)
     , height (px 150)
     ]
 
+labelCss =
+    []
 
 inputCss =
     css
         [ borderRadius (px 0)
         , borderStyle solid
-        , borderColor (Css.hex "d3d3d3")
+        , borderColor (Css.hex "efeff4")
         , display block
         , width (px 300)
         , margin (px 1)
@@ -102,7 +104,7 @@ inputCss =
 
 
 selectCss =
-    [ borderColor (Css.hex "d3d3d3")
+    [ borderColor (Css.hex "efeff4")
     , borderRadius (px 0)
     , borderWidth (px 2)
     , color defaultColors.textNormal
