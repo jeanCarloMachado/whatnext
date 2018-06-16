@@ -70,7 +70,7 @@ update msg state =
         RequestResult (Ok message) ->
             case state.pageMode of
                 LoginPage ->
-                    ( state, Cmd.none )
+                    ( state, Navigation.load "page=scheduler" )
 
                 SignupPage ->
                     ( { state | pageMode = togglePageMode state.pageMode } |> Loader.disableLoading, Cmd.none )

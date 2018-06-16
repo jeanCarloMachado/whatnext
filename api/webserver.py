@@ -20,10 +20,15 @@ app.debug=True
 cors = CORS(app, support_credentials=True)
 
 SUCCESS_MESSAGE = '{"status": "success"}'
+SUCCESS_MESSAGE = '{"status": "success"}'
 
 @app.after_request
 def after_request(response):
-  response.headers.add('Access-Control-Allow-Origin', request.environ['HTTP_ORIGIN'])
+  envi = os.environ.get("WHATNEXT_ENVIROMENT")
+  url = "https://app.thewhatnext.net" if envi == "production" else "http://localhost:3000"
+
+
+  response.headers.add('Access-Control-Allow-Origin', url)
   response.headers.add('Access-Control-Allow-Credentials', 'true')
   response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
   response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
@@ -65,8 +70,8 @@ def index():
 
 
     cmd = [
-        BASE_PATH + '/Scheduler',
-    ]
+            BASE_PATH + '/Scheduler',
+            ]
 
     my_env["TO_JSON"] = "1"
     content = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE).stdout.decode('UTF-8')
@@ -91,11 +96,11 @@ def done(subjectName):
 
     data=request.json
     cmd = [
-        BASE_PATH + '/done.sh',
-        subjectName,
-        data['description'],
-        data['whatToDoNext']
-    ]
+            BASE_PATH + '/done.sh',
+            subjectName,
+            data['description'],
+            data['whatToDoNext']
+            ]
 
     my_env["NO_ITERACTIVE"] = "1"
     response = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
@@ -112,13 +117,13 @@ def add():
 
     data=request.json
     cmd = [
-        BASE_PATH + '/alterSubject.sh',
-        data['name'],
-        str(data['priority']),
-        str(data['complexity']),
-        data['whatToDoNext'],
-        data['objective']
-    ]
+            BASE_PATH + '/alterSubject.sh',
+            data['name'],
+            str(data['priority']),
+            str(data['complexity']),
+            data['whatToDoNext'],
+            data['objective']
+            ]
     response = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
     if response.stdout.decode('UTF-8') != "":
         return error_json(response.stdout.decode('UTF-8')), 500, {'Content-Type': 'application/json; charset=utf-8'}
@@ -131,9 +136,9 @@ def rm(subjectName):
     my_env = update_environemnt(os.environ.copy(), email)
 
     cmd = [
-        BASE_PATH + '/rm.sh',
-        subjectName
-    ]
+            BASE_PATH + '/rm.sh',
+            subjectName
+            ]
     response = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
     if response.stdout.decode('UTF-8') != "":
         return response.stdout.decode('UTF-8'), 500, {'Content-Type': 'application/json; charset=utf-8'}
@@ -150,9 +155,9 @@ def detail(subjectName):
     my_env["TO_JSON"] = "1"
 
     cmd = [
-        BASE_PATH + '/detail.py',
-        subjectName
-    ]
+            BASE_PATH + '/detail.py',
+            subjectName
+            ]
     result = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE).stdout.decode('UTF-8')
     return result, 200, {'Content-Type': 'application/json; charset=utf-8'}
 
@@ -168,10 +173,10 @@ def signup():
 
 
     cmd = [
-        os.path.dirname(os.path.realpath(__file__)) + '/signup.sh',
-        data['email'],
-        authHash
-    ]
+            os.path.dirname(os.path.realpath(__file__)) + '/signup.sh',
+            data['email'],
+            authHash
+            ]
 
     result = subprocess.run(cmd, stdout=subprocess.PIPE)
 
@@ -183,8 +188,8 @@ def signup():
     my_env = update_environemnt(my_env, data['email'])
 
     cmd = [
-        BASE_PATH + '/init.sh',
-    ]
+            BASE_PATH + '/init.sh',
+            ]
 
     result = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE)
 

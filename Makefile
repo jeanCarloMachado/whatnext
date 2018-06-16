@@ -25,7 +25,7 @@ front:
 	cd frontend ; elm-app start
 
 api:
-	source ${current_dir}/api/config.sh && cd ${current_dir}/api && python3 webserver.py
+	source ${current_dir}/api/config.sh && cd ${current_dir}/api && WHATNEXT_ENVIROMENT=development python3 webserver.py
 
 deployApi: compileLinux
 	./deployApi.sh
