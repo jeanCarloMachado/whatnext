@@ -7,30 +7,26 @@ import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (property, css, href, src, placeholder, type_, id, class, value, required, defaultValue)
 import Html.Styled.Events exposing (..)
 import Html.Events.Extra exposing (targetValueIntParse)
-import Dom.Scroll
 import Toaster exposing (..)
 import Css exposing (..)
 import Subject exposing (Subject, StudyEntry, DoneData)
 import View exposing (defaultColors)
 import DOM
 import Menu
-
+import Keyboard.Combo
 
 -- json
 
 import Json.Decode
 import Json.Encode
 import Json.Decode exposing (..)
-import Json.Decode.Pipeline
 
 
 --rest
 
 import Http exposing (..)
-import Platform exposing (..)
 import Array exposing (Array)
 import Task
-import Navigation
 import Loader
 import Subject exposing (Subject, StudyEntry, DoneData)
 
@@ -60,6 +56,8 @@ type alias State =
     , openedSubjectName : String
     , newObjective : String
     , sideMenu : Bool
+    , combos : Keyboard.Combo.Model Msg
+
     }
 
 initialState =
@@ -80,6 +78,7 @@ initialState =
         ""
         ""
         False
+        (Keyboard.Combo.init keyboardCombos ComboMsg)
 
 
 init : Flags -> ( State, Cmd Msg )
@@ -93,6 +92,11 @@ updateEndpoint endpoint state =
     { state | apiEndpoint = endpoint }
 
 
+keyboardCombos : List (Keyboard.Combo.KeyCombo Msg)
+keyboardCombos =
+    [ Keyboard.Combo.combo2 ( Keyboard.Combo.control, Keyboard.Combo.n ) (MySubjectMsg OpenAddModal)
+    ]
+
 
 -- Model
 
@@ -103,6 +107,7 @@ type Msg
     | NoAction
     | ToggleSideMenu
     | MySubjectMsg SubjectMsg
+    | ComboMsg Keyboard.Combo.Msg
 
 
 type SubjectMsg
@@ -124,7 +129,7 @@ type SubjectMsg
 
 
 type DoneMsg
-    = ClickDone Subject
+    = OpenDone Subject
     | DoneResult (Result Http.Error String)
     | DoneChangeDescription String
     | DoneChangeWhatToDoNext String
@@ -163,6 +168,12 @@ update msg model =
                     { model | tiredMode = not model.tiredMode } |> unselectSubject |> Loader.enableLoading
             in
                 ( newState, Http.send NewList <| Subject.getListRequest newState )
+        ComboMsg msg ->
+            let
+                ( updatedKeys, comboCmd ) =
+                    Keyboard.Combo.update msg model.combos
+            in
+            ( { model | combos = updatedKeys }, comboCmd )
 
 
 updateSubject : SubjectMsg -> State -> ( State, Cmd Msg )
@@ -276,7 +287,7 @@ updateDone msg model =
         DoneResult (Err msg) ->
             errorResult model msg
 
-        ClickDone subject ->
+        OpenDone subject ->
             ( { model
                 | doneSubjectName = subject.name
                 , doneDescription = subject.whatToDoNext
@@ -534,7 +545,8 @@ doneStart subject =
     button
         [ css
             View.buttonCss
-        , View.onClickStoppingPropagation <| (MySubjectMsg << MyDoneMsg << ClickDone) subject
+        , View.onClickStoppingPropagation <| (MySubjectMsg << MyDoneMsg <<
+        OpenDone) subject
         ]
         [ text "Done" ]
 
@@ -699,4 +711,4 @@ studyEntryToHtml studyEntry =
 
 subscriptions : State -> Sub Msg
 subscriptions model =
-    Sub.none
+    Keyboard.Combo.subscriptions model.combos
