@@ -17,7 +17,6 @@ import           Data.Time.Calendar (fromGregorian, Day, diffDays)
 import Data.Time.Clock (utctDay, getCurrentTime)
 
 
-
 main :: IO()
 main = do
   currentDirectory <- getEnv ("WHATNEXT_SRC")
