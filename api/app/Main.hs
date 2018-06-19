@@ -13,7 +13,8 @@ import Data.List (concat)
 import Web.Cookie
 import Web.Scotty.Cookie
 import Network.Wai.Middleware.Cors
-import Data.Text (unpack)
+import Data.Text as T
+import Data.Text.Lazy as LT
 import Control.Monad.IO.Class (liftIO)
 
 
@@ -36,22 +37,21 @@ instance FromJSON AuthResult
 
 testAuth wnDir token = do
   result <- readProcess (wnDir ++ "/" ++ "gateway.sh") ["getEmailByHash", tokenStr] ""
-  if Prelude.length result > 3 
+  if Prelude.length result > 3
   then return (Just result)
   else return Nothing
+  where
+  tokenStr = T.unpack token
 
-  where 
-  tokenStr = unpack token
 
-
-procX f = do
-  result <- liftIO $ f
-  case result of
-    Just x -> json (SchedulerOk x)
+procX f wnDir = do
+  token <- liftIO $ f
+  result <- liftIO $ readProcess (wnDir ++ "/" ++ "Scheduler") [] ""
+  case token of
+    Just x -> text $ LT.pack result
     Nothing -> json (ApiError 9 "token invalid")
 
 
- 
 main = do
 
   wnDir <- getEnv ("WHATNEXT_SRC")
@@ -60,29 +60,11 @@ main = do
 
     get "/scheduler" $ do
       cookie <- getCookie "Authorization"
-
-      case cookie of 
-        Just x -> procX (testAuth wnDir x)
+      Web.Scotty.setHeader "Content-Type" "application/json"
+      case cookie of
+        Just x -> procX (testAuth wnDir x) wnDir
         Nothing -> json $ ApiError 6 "Auth cookie needed"
 
-
-      -- email = check_authorization(request)
-      -- my_env = update_environemnt(os.environ.copy(), email)
-
-      -- tiredMode = request.args.get('tiredMode', default = False, type = bool)
-      -- if tiredMode:
-      --     my_env["TIRED_MODE"] = "1"
-
-
-      -- cmd = [
-      --         BASE_PATH + '/Scheduler',
-      --         ]
-
-      -- my_env["TO_JSON"] = "1"
-      -- content = subprocess.run(cmd, env=my_env, stdout=subprocess.PIPE).stdout.decode('UTF-8')
-
-
-      -- return content, 200, {'Content-Type': 'application/json; charset=utf-8'}
     post "/login" $ do
         credentials <- jsonData :: ActionM Credentials
 
@@ -97,7 +79,6 @@ main = do
 
         setCookie cookie
 
-        -- addHeader $ Text.concat ["Set-Cookie: Authorization=", (Text.pack result),"; Domain=.thewhatnext.net; Path=/"]
         json (AuthResult (result) )
     notFound $ do
       text "Invalid route"
