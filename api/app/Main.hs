@@ -34,16 +34,23 @@ instance ToJSON AuthResult
 instance FromJSON AuthResult
 
 
-
-
-testAuth wnDir token =  do
-  result <- liftIO $ readProcess (wnDir ++ "/" ++ "gateway.sh") ["getEmailByHash", tokenStr] ""
+testAuth wnDir token = do
+  result <- readProcess (wnDir ++ "/" ++ "gateway.sh") ["getEmailByHash", tokenStr] ""
   if Prelude.length result > 3 
-  then json (SchedulerOk result)
-  else json (ApiError 9 "Token failed")
+  then return (Just result)
+  else return Nothing
 
   where 
   tokenStr = unpack token
+
+
+procX f = do
+  result <- liftIO $ f
+  case result of
+    Just x -> json (SchedulerOk x)
+    Nothing -> json (ApiError 9 "token invalid")
+
+
  
 main = do
 
@@ -55,7 +62,7 @@ main = do
       cookie <- getCookie "Authorization"
 
       case cookie of 
-        Just x -> testAuth wnDir x
+        Just x -> procX (testAuth wnDir x)
         Nothing -> json $ ApiError 6 "Auth cookie needed"
 
 
