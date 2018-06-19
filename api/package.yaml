@@ -26,7 +26,12 @@ dependencies:
 - bytestring
 - utf8-string
 - aeson
+- text
 - cryptohash
+- scotty-cookie
+- cookie
+- wai-cors
+- process
 
 library:
   source-dirs: src
