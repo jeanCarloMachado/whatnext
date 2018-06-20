@@ -39,17 +39,28 @@ main = do
             ctx2 = hashUpdate ctx1 passwordAsByte
             end = hashFinalize ctx2
             result = toString $ digestToHexByteString end
-            cookie = defaultSetCookie { setCookieName = "Authorization", setCookieValue = (BT.fromString result), setCookiePath = (Just (BT.fromString "/")), setCookieDomain = (Just $ BT.fromString ".thewhatnext.net") }
+            cookie = defaultSetCookie {
+              setCookieName = "Authorization",
+              setCookieValue = (BT.fromString result),
+              setCookiePath = (Just (BT.fromString "/")),
+              setCookieDomain = (Just $ BT.fromString ".thewhatnext.net")
+              }
 
         setCookie cookie
 
         json (AuthResult (result) )
 
-    get "/detail" $ do
-      text "soon"
+    get "/detail/:subjectName" $ do
+      subjectName <- param "subjectName"
+      runAuthenticatedService wnDir $ detail wnDir subjectName
 
     notFound $ do
       text "Invalid route"
+
+detail wnDir subjectName (Right token) = return $ Right token
+detail wnDir subjectName _ = do
+  result <- liftIO $ readProcess (wnDir ++ "/" ++ "detail.py") [subjectName] ""
+  return $ Left result
 
 
 scheduler wnDir (Right token) = return $ Right token
@@ -75,7 +86,6 @@ printResult (Left x) = text $ LT.pack  x
 
 runAuthenticatedService wnDir service =
       getCookie "Authorization" >>= cookieExistence >>= cookieValid wnDir >>= service >>= printResult
-
 
 myPolicy = CorsResourcePolicy
     { corsOrigins = (Just (["http://127.0.0.1:3000"], True))
