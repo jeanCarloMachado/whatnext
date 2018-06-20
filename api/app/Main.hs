@@ -53,9 +53,21 @@ main = do
     get "/detail/:subjectName" $ do
       subjectName <- param "subjectName"
       runAuthenticatedService wnDir $ detail wnDir subjectName
+    post "/addOrUpdate" $ do
+      alterInfo <- jsonData :: ActionM AlterInfo
+      runAuthenticatedService wnDir $ alter wnDir alterInfo
 
     notFound $ do
       text "Invalid route"
+
+
+alter wnDir alterInfo (Right token) = return $ Right token
+alter wnDir alterInfo _ = do
+  result <- liftIO $ readProcess (wnDir ++ "/" ++ "alterSubject.sh") infoList ""
+  return $ Left result
+  where
+    infoList = [ name alterInfo, show $ priority alterInfo, show $ complexity alterInfo, whatToDoNext alterInfo, objective alterInfo, previousName alterInfo ]
+
 
 detail wnDir subjectName (Right token) = return $ Right token
 detail wnDir subjectName _ = do
@@ -115,4 +127,16 @@ instance FromJSON Credentials
 data AuthResult = AuthResult { authHash :: String } deriving (Generic, Show)
 instance ToJSON AuthResult
 instance FromJSON AuthResult
+
+
+data AlterInfo = AlterInfo {
+  name :: String,
+  objective :: String,
+  previousName :: String,
+  whatToDoNext :: String,
+  complexity :: Int,
+  priority :: Int
+  } deriving (Generic, Show)
+instance ToJSON AlterInfo
+instance FromJSON AlterInfo
 
