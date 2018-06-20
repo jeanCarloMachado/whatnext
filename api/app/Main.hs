@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE UnicodeSyntax #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 import Web.Scotty
 import Data.Aeson (FromJSON, ToJSON)
@@ -53,13 +54,27 @@ main = do
     get "/detail/:subjectName" $ do
       subjectName <- param "subjectName"
       runAuthenticatedService wnDir $ detail wnDir subjectName
+
+    get "/rm/:subjectName" $ do
+      subjectName <- param "subjectName"
+      runAuthenticatedService wnDir $ remove wnDir subjectName
+
     post "/addOrUpdate" $ do
       alterInfo <- jsonData :: ActionM AlterInfo
       runAuthenticatedService wnDir $ alter wnDir alterInfo
 
+    get "/log" $ do
+      runAuthenticatedService wnDir $ getLogs wnDir
+
+    post "/done/:subjectName" $ do
+      subjectName <- param "subjectName"
+      doneInfo <- jsonData :: ActionM DoneInfo
+      runAuthenticatedService wnDir $ done wnDir subjectName doneInfo
+
     notFound $ do
       text "Invalid route"
 
+--- state IO
 
 alter wnDir alterInfo (Right token) = return $ Right token
 alter wnDir alterInfo _ = do
@@ -68,17 +83,34 @@ alter wnDir alterInfo _ = do
   where
     infoList = [ name alterInfo, show $ priority alterInfo, show $ complexity alterInfo, whatToDoNext alterInfo, objective alterInfo, previousName alterInfo ]
 
+done wnDir subjectName doneInfo (Right token) = return $ Right token
+done wnDir subjectName doneInfo _ = do
+  liftIO $ readProcess (wnDir ++ "/" ++ "done.sh") infoList ""
+  return $ Left "{\"status\": \"success\"}"
+  where
+    infoList = [ subjectName, description doneInfo, "" ]
+
+remove wnDir subjectName (Right token) = return $ Right token
+remove wnDir subjectName _ = do
+  liftIO $ readProcess (wnDir ++ "/" ++ "rm.sh") [subjectName] ""
+  return $ Left "{\"status\": \"success\"}"
 
 detail wnDir subjectName (Right token) = return $ Right token
 detail wnDir subjectName _ = do
   result <- liftIO $ readProcess (wnDir ++ "/" ++ "detail.py") [subjectName] ""
   return $ Left result
 
+getLogs wnDir (Right token) = return $ Right token
+getLogs wnDir _ = do
+  result <- liftIO $ readProcess (wnDir ++ "/" ++ "log.sh") [] ""
+  return $ Left result
 
 scheduler wnDir (Right token) = return $ Right token
 scheduler wnDir (Left token) = do
   result <- liftIO $ readProcess (wnDir ++ "/" ++ "Scheduler") [] ""
   return $ Left result
+
+----
 
 cookieValid wnDir (Right x) = return $ Right x
 cookieValid wnDir (Left x) = do
@@ -100,7 +132,7 @@ runAuthenticatedService wnDir service =
       getCookie "Authorization" >>= cookieExistence >>= cookieValid wnDir >>= service >>= printResult
 
 myPolicy = CorsResourcePolicy
-    { corsOrigins = (Just (["http://127.0.0.1:3000"], True))
+    { corsOrigins = (Just (["http://127.0.0.1:3000", "https://app.thewhatnext.net"], True))
     , corsMethods = ["GET","PUT","POST","DELETE","OPTIONS"]
     , corsRequestHeaders = ["Content-Type","Authorization"]
     , corsExposedHeaders = Nothing
@@ -116,6 +148,10 @@ data ApiError = ApiError {message:: String} deriving (Generic, Show)
 instance ToJSON ApiError
 instance FromJSON ApiError
 
+data SucessMesssage = SucessMesssage {status:: String} deriving (Generic, Show)
+instance ToJSON SucessMesssage
+instance FromJSON SucessMesssage
+
 data SchedulerOk = SchedulerOk {content :: String} deriving (Generic, Show)
 instance ToJSON SchedulerOk
 instance FromJSON SchedulerOk
@@ -128,7 +164,6 @@ data AuthResult = AuthResult { authHash :: String } deriving (Generic, Show)
 instance ToJSON AuthResult
 instance FromJSON AuthResult
 
-
 data AlterInfo = AlterInfo {
   name :: String,
   objective :: String,
@@ -139,4 +174,13 @@ data AlterInfo = AlterInfo {
   } deriving (Generic, Show)
 instance ToJSON AlterInfo
 instance FromJSON AlterInfo
+
+
+
+data DoneInfo = DoneInfo {
+  description :: String
+  } deriving (Generic, Show)
+instance ToJSON DoneInfo
+instance FromJSON DoneInfo
+
 

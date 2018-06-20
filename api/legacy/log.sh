@@ -33,9 +33,7 @@ fi
 
 current_entry=$(echo "$log" | wc -l )
 
-[[ $* =~ "--json" ]] && {
-    echo "["
-}
+echo "["
 
 for i in $log
 do
@@ -45,7 +43,6 @@ do
     goal=$(echo $i | cut -d '|' -f4)
 
 
-    [[ $* =~ "--json" ]] && {
 
     if [ -z ${skipFirstComma+x} ]
     then
@@ -61,7 +58,6 @@ echo -e '{
     "goal": "'$goal'"
 }\c'
         continue
-    }
 
     echo -e $WN_COLOR_ORANGE"task $current_entry: $subject$WN_COLOR_RESET"
     echo "Date: $date"
@@ -79,6 +75,4 @@ echo -e '{
 
 done
 
-[[ $* =~ "--json" ]] && {
-    echo "]"
-}
+echo "]"

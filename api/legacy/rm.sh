@@ -13,3 +13,5 @@ __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 }
 
 sed -i "/^$subject|/d" $WHATNEXT_CONF
+
+echo "removed"
