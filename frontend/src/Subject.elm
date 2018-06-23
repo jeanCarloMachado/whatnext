@@ -105,7 +105,7 @@ doneRequest endpoint doneData =
         body =
             Json.Encode.object
                 [ ( "description", Json.Encode.string doneData.doneDescription )
-                , ( "whatToDoNext", Json.Encode.string doneData.doneWhatToDoNext )
+                , ( "followup", Json.Encode.string doneData.doneWhatToDoNext )
                 ]
     in
         Http.request

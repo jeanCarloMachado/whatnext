@@ -284,9 +284,6 @@ updateSubject msg model =
 updateDone : DoneMsg -> State -> ( State, Cmd Msg )
 updateDone msg model =
     case msg of
-        DoneResult (Err msg) ->
-            errorResult model msg
-
         OpenDone subject ->
             ( { model
                 | doneSubjectName = subject.name
@@ -313,6 +310,9 @@ updateDone msg model =
 
         CancelDone ->
             ( model |> resetCurrentDone, Cmd.none )
+
+        DoneResult (Err msg) ->
+            errorResult model msg
 
         DoneResult (Ok _) ->
             ( Loader.disableLoading model |> unselectSubject
