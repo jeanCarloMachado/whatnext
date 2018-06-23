@@ -10,10 +10,10 @@ all: front
 test:
 	./testsBootstrap.sh
 
-deployFrontend: build
+deployFrontend: buildFront
 	 scp -r frontend/build/* blog:"/home/ubuntu/whatnext/frontend/"
 
-build:
+buildFront:
 	(cd frontend ; ELM_APP_API_URL=https://api.thewhatnext.net elm-app build)
 
 install:
@@ -27,21 +27,20 @@ api:
 	source ${current_dir}/api/config.sh && cd ${current_dir}/api && WHATNEXT_ENVIROMENT=development python3 webserver.py
 
 buildApi: compileLinux
-	./buildApi.sh
+	./buildPackage.sh
 
 deployApi:
 	./deployApi.sh
 
 buildAndDeployApi: buildApi deployApi
 
-
 compileLocal:
-	ghc --make api/Scheduler.hs
+	cd api ;  stack install
 	# ghc --make api/api/Triggers.hs
 
 containerBash:
 	docker run -it wn-build-image bash
 
 compileLinux:
-	docker run -it -v ${current_dir}:/wn --entrypoint bash wn-build-image -c "cd /wn ; make compileLocal"
+	docker run -it -v ${current_dir}:/wn --entrypoint bash wn-build-image -c "cd /wn ; make compileLocal && cp /root/.local/bin/api-exe /wn/api/api-exe"
 
