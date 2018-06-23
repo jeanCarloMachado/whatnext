@@ -23,7 +23,7 @@ import Control.Monad.IO.Class (liftIO)
 
 main = do
   wnDir <- getEnv ("WHATNEXT_SRC")
-  scotty 6000 $ do
+  scotty 3001 $ do
     -- middleware myCors
     middleware myCors
     get "/scheduler" $ do
@@ -88,7 +88,7 @@ done wnDir subjectName doneInfo _ = do
   liftIO $ readProcess (wnDir ++ "/" ++ "done.sh") infoList ""
   return $ Left "{\"status\": \"success\"}"
   where
-    infoList = [ subjectName, description doneInfo, "" ]
+    infoList = [ subjectName, description doneInfo, followup doneInfo ]
 
 remove wnDir subjectName (Right token) = return $ Right token
 remove wnDir subjectName _ = do
@@ -178,7 +178,8 @@ instance FromJSON AlterInfo
 
 
 data DoneInfo = DoneInfo {
-  description :: String
+  description :: String,
+  followup :: String
   } deriving (Generic, Show)
 instance ToJSON DoneInfo
 instance FromJSON DoneInfo
