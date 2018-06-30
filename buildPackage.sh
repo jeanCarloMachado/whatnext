@@ -4,7 +4,7 @@ set -e
 
 rm -rf /tmp/api || true
 mkdir -p /tmp/api
-cp -rf api/api-exe /tmp/api
+cp -rf api/api /tmp/api
 cp -rf api/legacy /tmp/api
 
 destinationDir=$(pwd)/builds/
