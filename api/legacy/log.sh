@@ -3,12 +3,6 @@
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IFS='
 '
-[ ! -z ${NO_COLOR+x} ] && {
-    WN_COLOR_ORANGE=""
-    WN_COLOR_RESET=""
-    WN_COLOR_TITLE=""
-    WN_COLOR_GREEN=""
-}
 
 [[ "$*" =~ "--help"  ]]  && {
 
@@ -59,12 +53,12 @@ echo -e '{
 }\c'
         continue
 
-    echo -e $WN_COLOR_ORANGE"task $current_entry: $subject$WN_COLOR_RESET"
+    echo -e "task $current_entry: $subject"
     echo "Date: $date"
     [ ! -z "$goal" ] && {
         name=$(echo $goal | cut -d ' ' -f1)
         minutes=$(echo $goal | cut -d ' ' -f2 | tr -d ' ')
-        echo -e "$WN_COLOR_GREEN Goal: $name completed a total of $minutes minutes"
+        echo -e "Goal: $name completed a total of $minutes minutes"
     }
     [ ! -z "$description" ] && {
         echo "

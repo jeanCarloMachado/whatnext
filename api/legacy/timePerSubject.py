@@ -77,22 +77,12 @@ if __name__ == '__main__':
         print(json.dumps(sortedSubjects))
         sys.exit(0)
 
-    resetColor = os.getenv('WN_COLOR_RESET').encode('utf-8').decode('unicode_escape')
-    titleColor = os.getenv('WN_COLOR_TITLE').encode('utf-8').decode('unicode_escape')
-    orange = os.getenv('WN_COLOR_ORANGE').encode('utf-8').decode('unicode_escape')
-
-
-    if os.environ.get('NO_COLOR') is not None:
-        titleColor=''
-        resetColor=''
-        orange=''
-
     total = 0
     for item in sortedSubjects:
         total+= item[1]
         timeInSubject = minutes_to_str(item[1]) if (humanMode) else  str(item[1])
-        print( titleColor + item[0] + resetColor + ": " + orange + timeInSubject + resetColor)
+        print( item[0] + ": " + timeInSubject )
 
     total = minutes_to_str(total) if (humanMode) else  str(total)
 
-    print( titleColor + "Total" + resetColor + ": " + orange + total + resetColor)
+    print( "Total" + ": " + total )

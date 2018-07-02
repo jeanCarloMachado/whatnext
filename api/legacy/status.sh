@@ -30,32 +30,10 @@ donePreviousWeek=$($__dir/gateway.sh donePeriod "$previousWeekFrom" "$previousWe
 
 daysInARow=$($__dir/gateway.sh currentStreak)
 
-resetColor=$WN_COLOR_RESET
-sectionColor="\x1b[1;49;95m"
-[ $doneToday -ge $doneYesterday ] && {
-    dayColor=$WN_COLOR_GREEN
-} || {
-    dayColor=$WN_COLOR_RED
-}
-[ $doneWeek -ge $donePreviousWeek ] && {
-    weekColor=$WN_COLOR_GREEN
-} || {
-    weekColor=$WN_COLOR_RED
-}
-
-[ ! -z ${NO_COLOR+x} ] && {
-    resetColor=""
-    sectionColor=""
-    dayColor=""
-    weekColor=""
-    WN_COLOR_TITLE=""
-}
-
-echo -e "$sectionColor""Status$resetColor"
-echo -e "$WN_COLOR_TITLE""Today$resetColor: $dayColor$doneToday$resetColor"
-echo -e "$WN_COLOR_TITLE""Yesterday$resetColor: $dayColor$doneYesterday$resetColor"
-echo -e "$WN_COLOR_TITLE""Week$resetColor: $weekColor$doneWeek$resetColor"
-echo -e "$WN_COLOR_TITLE""Previous Week$resetColor: $weekColor$donePreviousWeek$resetColor"
-
-echo -e "$WN_COLOR_TITLE""Current streak$resetColor: $weekColor$daysInARow$resetColor days"
+echo -e "Status"
+echo -e "Today: $dayColor$doneToday"
+echo -e "Yesterday: $dayColor$doneYesterday"
+echo -e "Week: $weekColor$doneWeek"
+echo -e "Previous Week: $weekColor$donePreviousWeek"
+echo -e "Current streak: $weekColor$daysInARow days"
 

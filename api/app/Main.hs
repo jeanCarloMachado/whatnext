@@ -120,6 +120,14 @@ cookieValid wnDir (Left x) = do
   else return $ Right "token invalid"
   where
 
+setAuthEnv (Right x) = return $ Right x
+setAuthEnv (Left email) =  do
+    liftIO $ setEnv "WHATNEXT_CONF" $ "/data/whatnext/users/" ++ email ++ "/whatnext.conf"
+    liftIO $ setEnv "WHATNEXT_GOALS" $ "/data/whatnext/users/" ++ email ++ "/whatnext_goals.conf"
+    liftIO $ setEnv "WHATNEXT_HISTORY" $ "/data/whatnext/users/" ++ email ++ "/whatnext_history"
+    return $ Left email
+
+
 cookieExistence cookie =
       case cookie of
         Just x -> return $ Left $ T.unpack x
@@ -129,7 +137,7 @@ printResult (Right x) = json $ ApiError x
 printResult (Left x) = text $ LT.pack  x
 
 runAuthenticatedService wnDir service =
-      getCookie "Authorization" >>= cookieExistence >>= cookieValid wnDir >>= service >>= printResult
+      getCookie "Authorization" >>= cookieExistence >>= cookieValid wnDir >>= setAuthEnv >>= service >>= printResult
 
 myPolicy = CorsResourcePolicy
     { corsOrigins = (Just (["http://127.0.0.1:3000", "https://app.thewhatnext.net"], True))

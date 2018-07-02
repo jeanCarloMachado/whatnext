@@ -38,6 +38,8 @@ buildAndDeployApi: buildApi deployApi
 containerBash:
 	docker run -it wn-build-image bash
 
+watch: 
+	cd api ; stack build --file-watch
 
 compile:
 	cd api ;  stack install --allow-different-user
@@ -46,7 +48,7 @@ compile:
 	# ghc --make api/api/Triggers.hs
 
 compileContainer:
-	docker run -it -v ${current_dir}:/wn --entrypoint bash wn-build-image -c "cd /wn ; make compileLocal && cp /root/.local/bin/api /wn/api/api"
+	docker run -it -v ${current_dir}:/wn --entrypoint bash wn-build-image -c "cd /wn ; make compile && cp /root/.local/bin/api /wn/api/api"
 
 copyContent:
 	scp -r 'blog:~/whatnext_data/*' data/

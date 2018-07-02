@@ -86,7 +86,7 @@ doneInPeriod() {
     dateStart="$2"
     dateEnd="$3"
 
-    doneInPeriod=$(NO_COLOR=1 $__dir/timePerSubject.py "$dateStart" "$dateEnd" |
+    doneInPeriod=$($__dir/timePerSubject.py "$dateStart" "$dateEnd" |
         grep "$subject" | cut -d ':' -f2 | tr -d " ")
     doneInPeriod=${doneInPeriod:-0}
     echo $doneInPeriod
