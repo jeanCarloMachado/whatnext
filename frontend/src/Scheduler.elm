@@ -9,7 +9,7 @@ import Html.Styled.Events exposing (..)
 import Html.Events.Extra exposing (targetValueIntParse)
 import Toaster exposing (..)
 import Css exposing (..)
-import Subject exposing (Subject, StudyEntry, DoneData)
+import Subject exposing (Subject, PastEntry, DoneData)
 import View exposing (defaultColors)
 import DOM
 import Menu
@@ -28,7 +28,7 @@ import Http exposing (..)
 import Array exposing (Array)
 import Task
 import Loader
-import Subject exposing (Subject, StudyEntry, DoneData)
+import Subject exposing (Subject, PastEntry, DoneData)
 
 
 main =
@@ -97,7 +97,6 @@ keyboardCombos : List (Keyboard.Combo.KeyCombo Msg)
 keyboardCombos =
     [ Keyboard.Combo.combo2 ( Keyboard.Combo.control, Keyboard.Combo.n ) (MySubjectMsg OpenAddModal)
     ]
-
 
 
 -- Model
@@ -597,7 +596,7 @@ hiddenHtml subject =
             ]
         , div []
             [ h2 [ css [ textAlign center, marginTop (px 50), fontWeight bold ] ] [ text "History" ]
-            , div [ css [ margin (px 30) ] ] (List.map studyEntryToHtml subject.history)
+            , div [ css [ margin (px 30) ] ] (List.map pastEntryToHtml subject.history)
             ]
         , button
             [ css View.buttonCss
@@ -699,8 +698,8 @@ selectedColor selectedIndex ( index, subject ) =
         defaultColors.normalBackground
 
 
-studyEntryToHtml : StudyEntry -> Html Msg
-studyEntryToHtml studyEntry =
+pastEntryToHtml : PastEntry -> Html Msg
+pastEntryToHtml pastEntry =
     li [ css [ minHeight (px 30) ] ]
         [ p
             [ css
@@ -708,8 +707,8 @@ studyEntryToHtml studyEntry =
                 , color defaultColors.textHighlight
                 ]
             ]
-            [ text studyEntry.date ]
-        , p [ css [ marginLeft (px 20) ] ] [ showMultilineText <| studyEntry.description ]
+            [ text pastEntry.date ]
+        , p [ css [ marginLeft (px 20) ] ] [ showMultilineText <| pastEntry.description ]
         ]
 
 

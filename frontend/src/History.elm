@@ -24,14 +24,14 @@ main =
 
 
 type alias PageData =
-    { history : Array StudyEntry
+    { history : Array PastEntry
     , toasterMsg : String
     , loading : Bool
     , sideMenu : Bool
     }
 
 
-type alias StudyEntry =
+type alias PastEntry =
     { date : String
     , description : String
     , subjectName : String
@@ -45,7 +45,7 @@ init flags =
 
 type Msg
     = None
-    | HistoryResult (Result Http.Error (Array StudyEntry))
+    | HistoryResult (Result Http.Error (Array PastEntry))
     | ToggleSideMenu
     | GoToScheduler
 
@@ -88,7 +88,7 @@ getHistory endpoint =
 
 
 decodeHistory =
-    Json.Decode.array decodeStudyEntry
+    Json.Decode.array decodePastEntry
 
 
 -- view
@@ -112,7 +112,7 @@ view state =
                         , textAlign center
                         ]
                     ]
-                    [ text "History" ]
+                    [ text "Past" ]
                 ]
             , div []
                 [ historyHtml
@@ -122,7 +122,7 @@ view state =
 
 getHistoryHtml state =
     ul [ css [ listStyleType none, width (pct 100) ] ]
-        (Array.indexedMap (studyEntryToHtml <| Array.length state.history) state.history |> Array.toList)
+        (Array.indexedMap (pastEntryToHtml <| Array.length state.history) state.history |> Array.toList)
 
 
 subscriptions : PageData -> Sub Msg
@@ -130,7 +130,7 @@ subscriptions state =
     Sub.none
 
 
-studyEntryToHtml total indice studyEntry =
+pastEntryToHtml total indice pastEntry =
     let
         historyNumber =
             total - indice
@@ -153,7 +153,7 @@ studyEntryToHtml total indice studyEntry =
                             , display inline
                             ]
                         ]
-                        [ text <| studyEntry.subjectName ]
+                        [ text <| pastEntry.subjectName ]
                      ,span
                         [ css
                             [ fontSize (Css.em 0.5)
@@ -170,15 +170,15 @@ studyEntryToHtml total indice studyEntry =
                             , fontSize (Css.em 0.8)
                             ]
                         ]
-                        [ text studyEntry.date ]
-                    , div [ css [ margin (px 20) ] ] [ text studyEntry.description ]
+                        [ text pastEntry.date ]
+                    , div [ css [ margin (px 20) ] ] [ text pastEntry.description ]
                     ]
                 ]
             ]
 
 
-decodeStudyEntry =
-    Json.Decode.Pipeline.decode StudyEntry
+decodePastEntry =
+    Json.Decode.Pipeline.decode PastEntry
         |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)

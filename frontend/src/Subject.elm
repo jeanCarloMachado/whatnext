@@ -12,7 +12,7 @@ type alias Subject =
     { name : String
     , daysSinceLast : Int
     , timeAlreadyInvested : Int
-    , history : List StudyEntry
+    , history : List PastEntry
     , whatToDoNext : String
     , complexity : Int
     , priority : Int
@@ -20,7 +20,7 @@ type alias Subject =
     }
 
 
-type alias StudyEntry =
+type alias PastEntry =
     { date : String
     , description : String
     , subjectName : String
@@ -75,7 +75,7 @@ decodeSubject =
         |> Json.Decode.Pipeline.required "name" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "days_since_last_study" Json.Decode.int
         |> Json.Decode.Pipeline.required "time_already_invested" Json.Decode.int
-        |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodeStudyEntry) []
+        |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodePastEntry) []
         |> Json.Decode.Pipeline.required "whatToDoNext" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "complexity" (Json.Decode.int)
         |> Json.Decode.Pipeline.required "priority" (Json.Decode.int)
@@ -83,11 +83,11 @@ decodeSubject =
 
 
 decodeSubjectHistory =
-    at [ "history" ] (Json.Decode.array decodeStudyEntry)
+    at [ "history" ] (Json.Decode.array decodePastEntry)
 
 
-decodeStudyEntry =
-    Json.Decode.Pipeline.decode StudyEntry
+decodePastEntry =
+    Json.Decode.Pipeline.decode PastEntry
         |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)

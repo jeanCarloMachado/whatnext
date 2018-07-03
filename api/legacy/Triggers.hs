@@ -29,7 +29,7 @@ main = do
   (_, history, _) <-
     readProcessWithExitCode (sourceDirectory ++ "/log.sh") ["--json"] ""
   decodedHistory <-
-    (eitherDecode <$> return history) :: IO (Either String [StudyEntry])
+    (eitherDecode <$> return history) :: IO (Either String [PastEntry])
   currentTime <- getCurrentTime
   case decodedHistory of
     Right list ->
@@ -95,10 +95,10 @@ getDoneThisWeek currentDate list =
 
 weekNumber date = formatTime defaultTimeLocale "%Y-%V" date
 
-accOrCreate resultList studyEntry =
-  case filter (\e -> (fst e) == (subject studyEntry)) resultList of
+accOrCreate resultList pastEntry =
+  case filter (\e -> (fst e) == (subject pastEntry)) resultList of
     (x:_) -> (fst x, 1 + snd x) : delete x resultList
-    _     -> ((subject studyEntry), 1) : resultList
+    _     -> ((subject pastEntry), 1) : resultList
 
 --entities
 -- date, subject
@@ -106,19 +106,19 @@ data Statistics = Statistics
   { doneThisWeek :: Int
   }
 
-data StudyEntry = StudyEntry
+data PastEntry = PastEntry
   { subject :: String
   , date    :: UTCTime
   } deriving (Show, Generic)
 
 --decoder
-instance FromJSON StudyEntry where
+instance FromJSON PastEntry where
   parseJSON =
     withObject "studyentry" $ \o -> do
       subject <- o .: "subject"
       dateStr <- o .: "date"
       let date =
             parseTimeOrError True defaultTimeLocale "%Y-%m-%d %H:%M:%S" dateStr :: UTCTime
-      return (StudyEntry subject date)
+      return (PastEntry subject date)
 
-instance ToJSON StudyEntry
+instance ToJSON PastEntry

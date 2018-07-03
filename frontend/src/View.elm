@@ -7,7 +7,7 @@ import Html.Styled.Events exposing (..)
 import Html.Events.Extra exposing (targetValueIntParse)
 import Dom.Scroll
 import Css exposing (..)
-import Subject exposing (Subject, StudyEntry, DoneData)
+import Subject exposing (Subject, PastEntry, DoneData)
 import Json.Decode
 
 
