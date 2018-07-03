@@ -15,7 +15,6 @@ import DOM
 import Menu
 import Keyboard.Combo
 
-
 -- json
 
 import Json.Decode
