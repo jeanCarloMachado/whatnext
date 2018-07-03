@@ -11,6 +11,7 @@ test:
 	./testsBootstrap.sh
 
 deployFront: buildFront
+	ssh -n -f blog 'rm -rf /home/ubuntu/whatnext/frontend/* ; mkdir -p /home/ubuntu/whatnext/frontend/'
 	 scp -r frontend/build/* blog:"/home/ubuntu/whatnext/frontend/"
 
 buildFront:
