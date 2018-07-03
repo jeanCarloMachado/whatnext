@@ -15,6 +15,7 @@ import DOM
 import Menu
 import Keyboard.Combo
 
+
 -- json
 
 import Json.Decode
@@ -39,6 +40,7 @@ main =
         , subscriptions = subscriptions
         }
 
+
 type alias State =
     { subjects : List ( Int, Subject )
     , loading : Bool
@@ -57,8 +59,8 @@ type alias State =
     , newObjective : String
     , sideMenu : Bool
     , combos : Keyboard.Combo.Model Msg
-
     }
+
 
 initialState =
     State
@@ -96,6 +98,7 @@ keyboardCombos : List (Keyboard.Combo.KeyCombo Msg)
 keyboardCombos =
     [ Keyboard.Combo.combo2 ( Keyboard.Combo.control, Keyboard.Combo.n ) (MySubjectMsg OpenAddModal)
     ]
+
 
 
 -- Model
@@ -141,6 +144,7 @@ type alias Flags =
     { apiEndpoint : String }
 
 
+
 -- update
 
 
@@ -168,12 +172,13 @@ update msg model =
                     { model | tiredMode = not model.tiredMode } |> unselectSubject |> Loader.enableLoading
             in
                 ( newState, Http.send NewList <| Subject.getListRequest newState )
+
         ComboMsg msg ->
             let
                 ( updatedKeys, comboCmd ) =
                     Keyboard.Combo.update msg model.combos
             in
-            ( { model | combos = updatedKeys }, comboCmd )
+                ( { model | combos = updatedKeys }, comboCmd )
 
 
 updateSubject : SubjectMsg -> State -> ( State, Cmd Msg )
@@ -261,7 +266,6 @@ updateSubject msg model =
             ( { model | newPriority = priority * 10 }, Cmd.none )
 
         ChangeSubjectName subjectName ->
-
             ( { model | newSubjectName = subjectName }, Cmd.none )
 
         ChangeWhatToDoNext whatToDoNext ->
@@ -342,10 +346,7 @@ view state =
     div [ css [ color defaultColors.textNormal ] ]
         [ --- left meu
           Menu.sideBarHtmlOptional state <|
-            Menu.sideBarHtml ToggleSideMenu <|
-                a [ css <| List.append View.buttonCss [ marginTop (px 20) ], href "?page=log" ]
-                    [ text "History"
-                    ]
+            Menu.sideBarHtml ToggleSideMenu
 
         --top menu
         , Menu.topBarHtml ToggleSideMenu
@@ -381,6 +382,7 @@ view state =
             ]
         ]
 
+
 alterSubjectHtml : State -> Html.Styled.Html Msg
 alterSubjectHtml state =
     case state.addSubjectModal of
@@ -415,8 +417,8 @@ alterSubjectHtml state =
                         , on "change" (Json.Decode.map (MySubjectMsg << ChangeComplexity) targetValueIntParse)
                         ]
                         (renderComplexityOptions <| toString state.newComplexity)
-                    , span [] [
-                        label [ css View.labelCss] [ text "Objective" ]
+                    , span []
+                        [ label [ css View.labelCss ] [ text "Objective" ]
                         , textarea
                             [ defaultValue state.newObjective
                             , css <| List.append View.textAreaCss [ minHeight (px 35), height (px 75) ]
@@ -425,9 +427,9 @@ alterSubjectHtml state =
                             , Html.Styled.Attributes.required False
                             ]
                             []
-                    ]
-                    , span [] [
-                        label [] [ text "Next step" ]
+                        ]
+                    , span []
+                        [ label [] [ text "Next step" ]
                         , textarea
                             [ defaultValue state.newWhatToDoNext
                             , css <| List.append View.textAreaCss [ height (px 75), minHeight (px 35) ]
@@ -436,7 +438,7 @@ alterSubjectHtml state =
                             , Html.Styled.Attributes.required False
                             ]
                             []
-                    ]
+                        ]
                     , div [ css [ displayFlex, justifyContent spaceBetween, width (pct 100) ] ]
                         [ button
                             [ css View.buttonCss, onClick (MySubjectMsg CancelAddSubjectModal) ]
@@ -454,36 +456,35 @@ alterSubjectHtml state =
             View.emptyNode
 
 
+complexity =
+    [ ( "10", "Easy" )
+    , ( "50", "Medium" )
+    , ( "80", "Hard" )
+    , ( "100", "Hardest" )
+    ]
+
 renderComplexityOptions defaultValue =
-    let
-        complexity =
-            [ ( "10", "Easy" )
-            , ( "50", "Medium" )
-            , ( "80", "Hard" )
-            , ( "100", "Hardest" )
-            ]
-    in
-        List.map (\option -> View.optionFromTuple defaultValue option) complexity
+    List.map (\option -> View.optionFromTuple defaultValue option) complexity
+
+priority =
+    [ ( "0", "0 - No Priority" )
+    , ( "1", "1 - Low Priority" )
+    , ( "2", "2" )
+    , ( "3", "3" )
+    , ( "4", "4" )
+    , ( "5", "5 - Medium Priority" )
+    , ( "6", "6" )
+    , ( "7", "7" )
+    , ( "8", "8" )
+    , ( "9", "9" )
+    , ( "10", "10 - Higest Priority" )
+    ]
 
 
 renderPriorityOptions defaultValue =
     let
         defaultValueNew =
             defaultValue // 10 |> toString
-
-        priority =
-            [ ( "0", "0 - No Priority" )
-            , ( "1", "1 - Low Priority" )
-            , ( "2", "2" )
-            , ( "3", "3" )
-            , ( "4", "4" )
-            , ( "5", "5 - Medium Priority" )
-            , ( "6", "6" )
-            , ( "7", "7" )
-            , ( "8", "8" )
-            , ( "9", "9" )
-            , ( "10", "10 - Higest Priority" )
-            ]
     in
         List.map (\option -> View.optionFromTuple defaultValueNew option) priority
 
@@ -545,8 +546,12 @@ doneStart subject =
     button
         [ css
             View.buttonCss
-        , View.onClickStoppingPropagation <| (MySubjectMsg << MyDoneMsg <<
-        OpenDone) subject
+        , View.onClickStoppingPropagation <|
+            (MySubjectMsg
+                << MyDoneMsg
+                << OpenDone
+            )
+                subject
         ]
         [ text "Done" ]
 

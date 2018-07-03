@@ -91,9 +91,7 @@ decodeHistory =
     Json.Decode.array decodeStudyEntry
 
 
-
 -- view
-
 
 view state =
     let
@@ -104,10 +102,7 @@ view state =
             [ -- conditional loading modals
               Loader.getLoadingHtml state.loading
             , Menu.sideBarHtmlOptional state <|
-                Menu.sideBarHtml ToggleSideMenu <|
-                    a [ css <| List.append View.buttonCss [ marginTop (px 20) ], href "?page=scheduler" ]
-                        [ text "Scheduler"
-                        ]
+                Menu.sideBarHtml ToggleSideMenu 
             , Menu.topBarHtml ToggleSideMenu []
             , div []
                 [ h1

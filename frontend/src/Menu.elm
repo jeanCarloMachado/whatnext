@@ -50,8 +50,12 @@ topBarHtml toggleMenuEvent elements =
 sideBarHtmlOptional state configuredSidebar =
     View.inlineIf (state.sideMenu) (configuredSidebar) View.emptyNode
 
+dropdownMenuItemCss = [
+                zIndex (Css.int 333),
+                marginTop (px 20)
+    ]
 
-sideBarHtml toggleMenuEvent optionalItems =
+sideBarHtml toggleMenuEvent =
     div
         [ css
             [ width (px 250)
@@ -65,20 +69,18 @@ sideBarHtml toggleMenuEvent optionalItems =
                 ]
             , onClick toggleMenuEvent
             ]
-            [ button [ css <| List.append View.buttonCss [ textAlign left ] ]
+            [
+                button [ css <| List.append View.buttonCss [ textAlign left ] ]
                 [ text "Close menu" ]
-            , optionalItems
-            , a
-                [ css
-                    <|
-                    List.append
 
-                    [ zIndex (Css.int 333)]
-                    <|
-                    (View.buttonCss
-                        |> View.overrideBackgroundColor
-                            defaultColors.fail
-                    )
+                ,    a [ css  <| List.append View.buttonCss dropdownMenuItemCss, href "?page=scheduler" ]
+                        [ text "Future"
+                        ]
+                , a [ css <| List.append View.buttonCss dropdownMenuItemCss, href "?page=log" ]
+                    [ text "Past"
+                    ]
+            , a
+                [ css <| View.overrideBackgroundColor defaultColors.fail <| List.append View.buttonCss dropdownMenuItemCss
                 , href "/"
                 ]
                 [ text "Quit" ]
