@@ -38,7 +38,7 @@ buildAndDeployApi: buildApi deployApi
 containerBash:
 	docker run -it wn-build-image bash
 
-watch: 
+watch:
 	cd api ; stack build --file-watch
 
 compile:
@@ -51,4 +51,4 @@ compileContainer:
 	docker run -it -v ${current_dir}:/wn --entrypoint bash wn-build-image -c "cd /wn ; make compile && cp /root/.local/bin/api /wn/api/api"
 
 copyContent:
-	scp -r 'blog:~/whatnext_data/*' data/
+	scp -r 'blog:~/whatnext_data/*' /whatnext/data/

@@ -29,27 +29,33 @@ main = do
     get "/scheduler" $ do
       Web.Scotty.setHeader "Content-Type" "application/json"
       runAuthenticatedService wnDir $ scheduler wnDir
+    post "/signup" $ do
+        credentials <- jsonData :: ActionM Credentials
+        let
+            authToken = createAuthToken credentials
 
+        liftIO $ readProcess (wnDir ++ "/" ++ "signup.sh") [(email credentials), authToken] ""
+
+        setAuthEnv (Left $ email credentials)
+        liftIO $ readProcess (wnDir ++ "/" ++ "init.sh") [] ""
+
+        Web.Scotty.setHeader "Content-Type" "application/json"
+        text "{\"status\": \"success\"}"
     post "/login" $ do
         credentials <- jsonData :: ActionM Credentials
 
-        let loginAsByte = BT.fromString (email credentials)
-            passwordAsByte = BT.fromString (password credentials)
-            ctx = hashInitAlg SHA256
-            ctx1 = hashUpdate ctx loginAsByte
-            ctx2 = hashUpdate ctx1 passwordAsByte
-            end = hashFinalize ctx2
-            result = toString $ digestToHexByteString end
+        let
+            authToken = createAuthToken credentials
             cookie = defaultSetCookie {
               setCookieName = "Authorization",
-              setCookieValue = (BT.fromString result),
+              setCookieValue = (BT.fromString authToken),
               setCookiePath = (Just (BT.fromString "/")),
               setCookieDomain = (Just $ BT.fromString ".thewhatnext.net")
               }
 
         setCookie cookie
 
-        json (AuthResult (result) )
+        json (AuthResult (authToken) )
 
     get "/detail/:subjectName" $ do
       subjectName <- param "subjectName"
@@ -139,6 +145,19 @@ printResult (Left x) = text $ LT.pack  x
 runAuthenticatedService wnDir service =
       getCookie "Authorization" >>= cookieExistence >>= cookieValid wnDir >>= setAuthEnv >>= service >>= printResult
 
+
+createAuthToken credentials = 
+      toString $ digestToHexByteString end
+      where
+        loginAsByte = BT.fromString (email credentials)
+        passwordAsByte = BT.fromString (password credentials)
+        ctx = hashInitAlg SHA256
+        ctx1 = hashUpdate ctx loginAsByte
+        ctx2 = hashUpdate ctx1 passwordAsByte
+        end = hashFinalize ctx2
+
+
+
 myPolicy = CorsResourcePolicy
     { corsOrigins = (Just (["http://127.0.0.1:3000", "https://app.thewhatnext.net"], True))
     , corsMethods = ["GET","PUT","POST","DELETE","OPTIONS"]
@@ -167,6 +186,8 @@ instance FromJSON SchedulerOk
 data Credentials = Credentials { email :: String, password :: String } deriving (Generic, Show)
 instance ToJSON Credentials
 instance FromJSON Credentials
+
+
 
 data AuthResult = AuthResult { authHash :: String } deriving (Generic, Show)
 instance ToJSON AuthResult
