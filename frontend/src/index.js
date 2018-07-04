@@ -27,7 +27,9 @@ switch (page) {
 }
 
 console.log(process.env.ELM_APP_API_URL)
-obj.embed(document.getElementById('root'), {apiEndpoint: process.env.ELM_APP_API_URL})
+obj.embed(document.getElementById('root'), {
+	apiEndpoint: process.env.ELM_APP_API_URL
+})
 
 
 registerServiceWorker();

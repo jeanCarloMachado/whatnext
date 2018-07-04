@@ -15,6 +15,7 @@ import DOM
 import Menu
 import Keyboard.Combo
 
+
 -- json
 
 import Json.Decode
@@ -58,16 +59,26 @@ type alias State =
     , newObjective : String
     , sideMenu : Bool
     , combos : Keyboard.Combo.Model Msg
+    , authToken : String
     }
 
 
-initialState =
+init : Flags -> ( State, Cmd Msg )
+init flags =
+    let
+        state = initialState flags
+
+    in
+        ( state, Http.send NewList <| Subject.getListRequest state)
+
+
+initialState flags =
     State
         []
         True
         ""
         False
-        ""
+        flags.apiEndpoint
         ""
         ""
         ""
@@ -80,23 +91,14 @@ initialState =
         ""
         False
         (Keyboard.Combo.init keyboardCombos ComboMsg)
-
-
-init : Flags -> ( State, Cmd Msg )
-init flags =
-    ( initialState |> updateEndpoint flags.apiEndpoint
-    , Http.send NewList <| Subject.getListRequest (initialState |> updateEndpoint flags.apiEndpoint)
-    )
-
-
-updateEndpoint endpoint state =
-    { state | apiEndpoint = endpoint }
+        ""
 
 
 keyboardCombos : List (Keyboard.Combo.KeyCombo Msg)
 keyboardCombos =
     [ Keyboard.Combo.combo2 ( Keyboard.Combo.control, Keyboard.Combo.n ) (MySubjectMsg OpenAddModal)
     ]
+
 
 
 -- Model
@@ -461,8 +463,10 @@ complexity =
     , ( "100", "Hardest" )
     ]
 
+
 renderComplexityOptions defaultValue =
     List.map (\option -> View.optionFromTuple defaultValue option) complexity
+
 
 priority =
     [ ( "0", "0 - No Priority" )

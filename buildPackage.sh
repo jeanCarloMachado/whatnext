@@ -2,10 +2,12 @@
 
 set -e
 
-rm -rf /tmp/api || true
-mkdir -p /tmp/api
-cp -rf api/api /tmp/api
-cp -rf api/fileStorageGateway /tmp/api
+buildDir=/tmp/api
+
+rm -rf $buildDir || true
+mkdir -p $buildDir
+cp -rf api/api $buildDir
+cp -rf api/fileStorageGateway $buildDir
 
 destinationDir=$(pwd)/builds/
 filename=$( date "+%Y-%m-%d_%H-%M-%S")-api.tar.gz

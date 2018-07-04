@@ -12,6 +12,8 @@ import Toaster
 import Navigation
 import Loader
 import View exposing (defaultColors)
+import Storage.Local
+import Task
 
 
 type alias Flags =
@@ -70,7 +72,10 @@ update msg state =
         RequestResult (Ok message) ->
             case state.pageMode of
                 LoginPage ->
-                    ( state, Navigation.load "?page=scheduler" )
+                    let
+                        setStorage = Storage.Local.set "Authorization" "f29ce3cc5e57a935d601fc87050928e352f31ab3b1127f8930f59cdb39fa574c" 
+                    in
+                    ( state, Cmd.batch [Task.attempt (\a -> (None)) setStorage, Navigation.load "?page=scheduler"  ])
 
                 SignupPage ->
                     ( { state | pageMode = togglePageMode state.pageMode } |> Loader.disableLoading, Cmd.none )
