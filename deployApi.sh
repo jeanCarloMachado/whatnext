@@ -7,7 +7,7 @@ export buildFile=$(ls builds --sort=time | head -n1)
 echo "Deploying file: $buildFile"
 
 scp -r "builds/$buildFile" blog:"$BUILD_DIR/"
-ssh -n -f blog 'ps -aux | grep "api" | cut -d " " -f 4 | head -n 1 | xargs kill -9'
+ssh -n -f blog 'pkill -f "../api"'
 ssh -n -f blog "bash -c 'cd $DEPLOY_DIR/ ; rm -rf api ;  tar -xzf $BUILD_DIR/$buildFile'"
 #kill process
 ssh -n -f blog "bash -c 'cd $DEPLOY_DIR/api/fileStorageGateway ;  source config.sh ; nohup ../api &'"
