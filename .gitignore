@@ -11,3 +11,4 @@ api/Triggers
 frontend/build
 data/*
 builds/*
+api/fileStorageGateway/Scheduler

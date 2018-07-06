@@ -53,3 +53,7 @@ compileContainer:
 
 copyContent:
 	scp -r 'blog:~/whatnext_data/*' /whatnext/data/
+
+
+deployAll: buildAndDeployApi deployFront
+
