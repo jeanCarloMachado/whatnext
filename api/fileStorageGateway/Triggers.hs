@@ -29,7 +29,7 @@ main = do
   (_, history, _) <-
     readProcessWithExitCode (sourceDirectory ++ "/log.sh") ["--json"] ""
   decodedHistory <-
-    (eitherDecode <$> return history) :: IO (Either String [PastEntry])
+    (eitherDecode <$> return history) :: IO (Either String [PastAction])
   currentTime <- getCurrentTime
   case decodedHistory of
     Right list ->
@@ -106,19 +106,19 @@ data Statistics = Statistics
   { doneThisWeek :: Int
   }
 
-data PastEntry = PastEntry
+data PastAction = PastAction
   { subject :: String
   , date    :: UTCTime
   } deriving (Show, Generic)
 
 --decoder
-instance FromJSON PastEntry where
+instance FromJSON PastAction where
   parseJSON =
     withObject "studyentry" $ \o -> do
       subject <- o .: "subject"
       dateStr <- o .: "date"
       let date =
             parseTimeOrError True defaultTimeLocale "%Y-%m-%d %H:%M:%S" dateStr :: UTCTime
-      return (PastEntry subject date)
+      return (PastAction subject date)
 
-instance ToJSON PastEntry
+instance ToJSON PastAction

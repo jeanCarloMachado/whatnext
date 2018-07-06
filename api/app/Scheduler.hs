@@ -27,18 +27,18 @@ main = do
   let timePerSubjectAsByte = pack timePerSubject
       context = Context (tiredModeValToBool tiredModeVal) today
   subjectsConf <-
-    (decode <$> return (pack whatnextConf)) :: IO (Maybe [Subject])
-  let decodedTimePerSubject =
-        (decode timePerSubjectAsByte) :: (Maybe [(TimePerSubject)])
-      timePerSubjectList = extractWithDefault decodedTimePerSubject []
+    (decode <$> return (pack whatnextConf)) :: IO (Maybe [FutureAction])
+  let decodedTimePerFutureAction =
+        (decode timePerSubjectAsByte) :: (Maybe [(TimePerFutureAction)])
+      timePerSubjectList = extractWithDefault decodedTimePerFutureAction []
   case subjectsConf of
     Just subjects -> do
       subjectsWithDays <- mapM (getDaysSinceLastStudy currentDirectory) subjects
-      let finalSubjects =
+      let finalFutureActions =
             sortByWeight $
             computeWeights context $
             setTimeAlreadyInvested timePerSubjectList subjectsWithDays
-      putStrLn $ mountJson finalSubjects
+      putStrLn $ mountJson finalFutureActions
     _ -> putStrLn "error while decoding subjects"
 
 getToday :: IO (Day) -- :: (year,month,day)
@@ -46,7 +46,7 @@ getToday = getCurrentTime >>= return . utctDay
 
 readMyProcess currentDirectory filename = readProcess (currentDirectory ++ "/" ++ filename) [] ""
 
-getDaysSinceLastStudy :: String -> Subject -> IO(Subject)
+getDaysSinceLastStudy :: String -> FutureAction -> IO(FutureAction)
 getDaysSinceLastStudy currentDirectory subject = do
   daysSinceLastStudy <-
     readProcess
@@ -63,15 +63,15 @@ daysToInt "" = 0
 daysToInt x  = read x :: Int
 
 
-sortByWeight :: [Subject] -> [Subject]
+sortByWeight :: [FutureAction] -> [FutureAction]
 sortByWeight subjects = reverse $ sortBy (comparing weight) subjects
 
 -- subjects calculus
-computeWeights :: Context -> [Subject] -> [Subject]
+computeWeights :: Context -> [FutureAction] -> [FutureAction]
 computeWeights context subjects =
   map (\subject -> subject {weight = computeWeight context subject}) subjects
 
-computeWeight :: Context -> Subject -> Float
+computeWeight :: Context -> FutureAction -> Float
 computeWeight context subject =
   case tiredMode context of
     True  -> weight / regularizedComplexity
@@ -124,7 +124,7 @@ reasonableMaxDaysWithoutDoing val =
     else 365.0 / 4
 
 -- entities
-data Subject = Subject
+data FutureAction = FutureAction
   { name                :: String
   , priority            :: Float
   , complexity          :: Float
@@ -141,14 +141,14 @@ data Context = Context {
   today :: Day
 } deriving (Show, Generic)
 
-type TimePerSubject = (String, Int)
+type TimePerFutureAction = (String, Int)
 
 -- json decode
-mountJson :: [Subject] -> String
+mountJson :: [FutureAction] -> String
 mountJson subjects =
   "[" ++ (intercalate "," (Data.List.map unpack (encode <$> subjects))) ++ "]"
 
-instance FromJSON Subject where
+instance FromJSON FutureAction where
   parseJSON =
     withObject "subject" $ \o -> do
       name <- o .: "name"
@@ -158,10 +158,10 @@ instance FromJSON Subject where
       whatToDoNext <- o .: "whatToDoNext"
       creationDate <- o .: "creationDate"
       let day = getDay $ explodeDate creationDate
-      return ( Subject name priority complexity 0 0 objective whatToDoNext 0 day)
+      return ( FutureAction name priority complexity 0 0 objective whatToDoNext 0 day)
 
-instance ToJSON Subject where
-  toJSON Subject {..} =
+instance ToJSON FutureAction where
+  toJSON FutureAction {..} =
     object
       [ "name" .= name
       , "priority" .= priority
@@ -190,21 +190,21 @@ getDay list =
 
 -- subjects transformations
 
-setTimeAlreadyInvested :: [TimePerSubject] -> [Subject] -> [Subject]
+setTimeAlreadyInvested :: [TimePerFutureAction] -> [FutureAction] -> [FutureAction]
 setTimeAlreadyInvested timePerSubject subjects =
   map
-    (\subject -> applyTimeAlreadInvestedForSubject timePerSubject subject)
+    (\subject -> applyTimeAlreadInvestedForFutureAction timePerSubject subject)
     subjects
 
-applyTimeAlreadInvestedForSubject :: [TimePerSubject] -> Subject -> Subject
-applyTimeAlreadInvestedForSubject timePerSubject subject =
+applyTimeAlreadInvestedForFutureAction :: [TimePerFutureAction] -> FutureAction -> FutureAction
+applyTimeAlreadInvestedForFutureAction timePerSubject subject =
   case resultMatch of
     (x:_) -> subject {timeAlreadyInvested = (snd x)}
     _     -> subject
   where
     resultMatch =
       filter
-        (\timeSubject -> (fst timeSubject) == (name subject))
+        (\timeFutureAction -> (fst timeFutureAction) == (name subject))
         timePerSubject
 
 extractWithDefault ::  Maybe a -> a -> a

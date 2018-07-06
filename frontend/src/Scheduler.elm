@@ -9,7 +9,7 @@ import Html.Styled.Events exposing (..)
 import Html.Events.Extra exposing (targetValueIntParse)
 import Toaster exposing (..)
 import Css exposing (..)
-import SDK exposing (Subject, PastEntry, DoneData)
+import SDK exposing (Subject, PastAction, DoneData)
 import View exposing (defaultColors)
 import DOM
 import Menu
@@ -704,7 +704,7 @@ selectedColor selectedIndex ( index, subject ) =
         defaultColors.normalBackground
 
 
-pastEntryToHtml : PastEntry -> Html Msg
+pastEntryToHtml : PastAction -> Html Msg
 pastEntryToHtml pastEntry =
     li [ css [ minHeight (px 30) ] ]
         [ p

@@ -29,7 +29,7 @@ main =
 
 
 type alias State =
-    { history : Array PastEntry
+    { history : Array PastAction
     , toasterMsg : String
     , loading : Bool
     , sideMenu : Bool
@@ -38,7 +38,7 @@ type alias State =
     }
 
 
-type alias PastEntry =
+type alias PastAction =
     { date : String
     , description : String
     , subjectName : String
@@ -55,7 +55,7 @@ init flags =
 
 type Msg
     = None
-    | HistoryResult (Result Http.Error (Array PastEntry))
+    | HistoryResult (Result Http.Error (Array PastAction))
     | ToggleSideMenu
     | GoToScheduler
 
@@ -121,7 +121,7 @@ subscriptions : State -> Sub Msg
 subscriptions state =
     Sub.none
 
-pastEntryToHtml : Int -> Int ->  PastEntry -> Html Msg
+pastEntryToHtml : Int -> Int ->  PastAction -> Html Msg
 pastEntryToHtml total indice pastEntry =
     let
         historyNumber =
