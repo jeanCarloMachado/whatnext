@@ -9,7 +9,7 @@ import Html.Styled.Events exposing (..)
 import Html.Events.Extra exposing (targetValueIntParse)
 import Toaster exposing (..)
 import Css exposing (..)
-import Subject exposing (Subject, PastEntry, DoneData)
+import SDK exposing (Subject, PastEntry, DoneData)
 import View exposing (defaultColors)
 import DOM
 import Menu
@@ -29,7 +29,6 @@ import Http exposing (..)
 import Array exposing (Array)
 import Task
 import Loader
-import Subject exposing (Subject, PastEntry, DoneData)
 
 
 main =
@@ -69,7 +68,7 @@ init flags =
         state = initialState flags
 
     in
-        ( state, Http.send NewList <| Subject.getListRequest state)
+        ( state, Http.send NewList <| SDK.getListRequest state)
 
 
 initialState flags =
@@ -91,7 +90,7 @@ initialState flags =
         ""
         False
         (Keyboard.Combo.init keyboardCombos ComboMsg)
-        ""
+        flags.authToken
 
 
 keyboardCombos : List (Keyboard.Combo.KeyCombo Msg)
@@ -141,7 +140,10 @@ type DoneMsg
 
 
 type alias Flags =
-    { apiEndpoint : String }
+    {
+      apiEndpoint : String,
+      authToken : String
+    }
 
 
 
@@ -171,7 +173,7 @@ update msg model =
                 newState =
                     { model | tiredMode = not model.tiredMode } |> unselectSubject |> Loader.enableLoading
             in
-                ( newState, Http.send NewList <| Subject.getListRequest newState )
+                ( newState, Http.send NewList <| SDK.getListRequest newState )
 
         ComboMsg msg ->
             let
@@ -187,7 +189,7 @@ updateSubject msg model =
         ExpandSubject ( indice, subject ) ->
             let
                 detailCmd =
-                    Http.send (MySubjectMsg << GetDetail) <| Subject.getDetail model.apiEndpoint subject
+                    Http.send (MySubjectMsg << GetDetail) <| SDK.getDetail model subject
 
                 newModel =
                     { model | openedSubjectName = subject.name } |> Loader.enableLoading
@@ -206,7 +208,7 @@ updateSubject msg model =
                     (DOM.scrollIntoView selector)
             in
                 ( { model
-                    | subjects = Subject.replaceSubjectFromList model.subjects subject
+                    | subjects = SDK.replaceSubjectFromList model.subjects subject
                   }
                     |> Loader.disableLoading
                 , Task.attempt (\a -> (NoAction)) task
@@ -214,11 +216,11 @@ updateSubject msg model =
 
         RemoveClick subject ->
             ( model |> Loader.enableLoading
-            , Http.send (MySubjectMsg << Remove) <| Subject.removeRequest model.apiEndpoint subject
+            , Http.send (MySubjectMsg << Remove) <| SDK.removeRequest model subject
             )
 
         Remove (Ok _) ->
-            ( model |> Loader.enableLoading, Http.send NewList <| Subject.getListRequest model )
+            ( model |> Loader.enableLoading, Http.send NewList <| SDK.getListRequest model )
 
         Remove (Err msg) ->
             errorResult model msg
@@ -276,12 +278,12 @@ updateSubject msg model =
 
         AlterSubjectSubmit ->
             ( Loader.enableLoading model
-            , Http.send (MySubjectMsg << NewSubjectResult) <| Subject.addSubjectRequest model.apiEndpoint model
+            , Http.send (MySubjectMsg << NewSubjectResult) <| SDK.addSubjectRequest model model
             )
 
         NewSubjectResult _ ->
             ( { model | addSubjectModal = False, newSubjectName = "" } |> unselectSubject
-            , Http.send NewList <| Subject.getListRequest model
+            , Http.send NewList <| SDK.getListRequest model
             )
 
 
@@ -308,7 +310,7 @@ updateDone msg model =
                     Http.send
                         (MySubjectMsg << MyDoneMsg << DoneResult)
                     <|
-                        Subject.doneRequest model.apiEndpoint model
+                        SDK.doneRequest model model
             in
                 ( model |> Loader.enableLoading |> resetCurrentDone, doneHttp )
 
@@ -320,7 +322,7 @@ updateDone msg model =
 
         DoneResult (Ok _) ->
             ( Loader.disableLoading model |> unselectSubject
-            , Http.send NewList <| Subject.getListRequest model
+            , Http.send NewList <| SDK.getListRequest model
             )
 
 
@@ -634,7 +636,7 @@ subjectProperty name value =
         ]
 
 
-doneModal : Subject.DoneData r -> Html Msg
+doneModal : SDK.DoneData r -> Html Msg
 doneModal doneInfo =
     case String.length doneInfo.doneSubjectName of
         0 ->

@@ -135,7 +135,7 @@ request state service =
             , body = (Http.jsonBody body)
             , expect = Http.expectString
             , timeout = Nothing
-            , withCredentials = True
+            , withCredentials = False
             }
 
 

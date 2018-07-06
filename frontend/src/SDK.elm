@@ -1,4 +1,4 @@
-module Subject exposing (..)
+module SDK exposing (..)
 
 import Http exposing (..)
 import Json.Decode
@@ -34,6 +34,12 @@ type alias DoneData r =
         , doneWhatToDoNext : String
     }
 
+type alias RequestMetadata r =
+    { r
+        | apiEndpoint : String
+        , authToken : String
+    }
+
 
 type alias SubjectData r =
     { r
@@ -43,6 +49,8 @@ type alias SubjectData r =
         , newObjective : String
         , newWhatToDoNext : String
         , openedSubjectName : String
+        , apiEndpoint : String
+        , authToken : String
     }
 
 
@@ -97,10 +105,10 @@ decodePastEntry =
 --- requests
 
 
-doneRequest endpoint doneData =
+doneRequest requestMetadata doneData =
     let
         url =
-            endpoint ++ "/done/" ++ doneData.doneSubjectName
+            requestMetadata.apiEndpoint ++ "/done/" ++ doneData.doneSubjectName
 
         body =
             Json.Encode.object
@@ -110,75 +118,79 @@ doneRequest endpoint doneData =
     in
         Http.request
             { method = "POST"
-            , headers = [ Http.header "Content-Type" "application/json" ]
+            , headers = defaultHeaders requestMetadata
             , url = url
             , body = (Http.jsonBody body)
             , expect = (Http.expectJson decodeEmptyResult)
             , timeout = Nothing
-            , withCredentials = True
+            , withCredentials = False
             }
 
 
-removeRequest endpoint subject =
+removeRequest requestMetadata subject =
     let
         url =
-            endpoint ++ "/rm/" ++ subject.name
+            requestMetadata.apiEndpoint ++ "/rm/" ++ subject.name
     in
         Http.request
             { method = "GET"
-            , headers = [ Http.header "Content-Type" "application/json" ]
+            , headers = defaultHeaders requestMetadata
             , url = url
             , body = Http.emptyBody
             , expect = (Http.expectJson decodeEmptyResult)
             , timeout = Nothing
-            , withCredentials = True
+            , withCredentials = False
             }
 
 
-getDetail endpoint subject =
+getDetail requestMetadata subject =
     let
         url =
-            endpoint ++ "/detail/" ++ subject.name
+            requestMetadata.apiEndpoint ++ "/detail/" ++ subject.name
 
         request =
             Http.request
                 { method = "GET"
-                , headers = [ Http.header "Content-Type" "application/json" ]
+                , headers = defaultHeaders requestMetadata
                 , url = url
                 , body = Http.emptyBody
                 , expect = (Http.expectJson decodeSubject)
                 , timeout = Nothing
-                , withCredentials = True
+                , withCredentials = False
                 }
     in
         request
 
 
-addSubjectRequest : String -> SubjectData r -> Http.Request String
-addSubjectRequest endpoint state =
+addSubjectRequest : RequestMetadata r -> SubjectData r -> Http.Request String
+addSubjectRequest requestMetadata subjectData =
     let
         url =
-            endpoint ++ "/addOrUpdate"
+            requestMetadata.apiEndpoint ++ "/addOrUpdate"
 
         body =
             Json.Encode.object
-                [ ( "name", Json.Encode.string state.newSubjectName )
-                , ( "complexity", Json.Encode.int state.newComplexity )
-                , ( "priority", Json.Encode.int state.newPriority )
-                , ( "whatToDoNext", Json.Encode.string state.newWhatToDoNext )
-                , ( "objective", Json.Encode.string state.newObjective )
-                , ( "previousName", Json.Encode.string state.openedSubjectName )
+                [ ( "name", Json.Encode.string subjectData.newSubjectName )
+                , ( "complexity", Json.Encode.int subjectData.newComplexity )
+                , ( "priority", Json.Encode.int subjectData.newPriority )
+                , ( "whatToDoNext", Json.Encode.string subjectData.newWhatToDoNext )
+                , ( "objective", Json.Encode.string subjectData.newObjective )
+                , ( "previousName", Json.Encode.string subjectData.openedSubjectName )
                 ]
     in
         Http.request
             { method = "POST"
-            , headers = [ Http.header "Content-Type" "application/json" ]
+            , headers = defaultHeaders requestMetadata
             , url = url
             , body = (Http.jsonBody body)
             , expect = (Http.expectJson decodeEmptyResult)
             , timeout = Nothing
-            , withCredentials = True
+            , withCredentials = False
             }
+
+defaultHeaders requestMetadata =
+    [ Http.header "Content-Type" "application/json", Http.header "Authorization" requestMetadata.authToken ]
+
 
 
 decodeEmptyResult =
@@ -202,12 +214,12 @@ getListRequest state =
     in
         Http.request
             { method = "GET"
-            , headers = [ Http.header "Content-Type" "application/json" ]
+            , headers = defaultHeaders state
             , url = url
             , body = Http.emptyBody
             , expect = (Http.expectJson decodeSubjectList)
             , timeout = Nothing
-            , withCredentials = True
+            , withCredentials = False
             }
 
 
@@ -219,3 +231,23 @@ toUrlBool bool =
 
         False ->
             ""
+
+
+getHistory state =
+    let
+        url =
+            state.apiEndpoint ++ "/log"
+    in
+          Http.request
+              { method = "GET"
+              , headers = defaultHeaders state
+              , url = url
+              , body = Http.emptyBody
+              , expect = (Http.expectJson decodeHistory)
+              , timeout = Nothing
+              , withCredentials = False
+              }
+
+
+decodeHistory =
+    Json.Decode.array decodePastEntry

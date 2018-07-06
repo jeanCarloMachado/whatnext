@@ -7,6 +7,7 @@ import Http
 import Html.Styled exposing (..)
 import Json.Decode.Pipeline
 import Json.Decode
+import SDK exposing(..)
 import Html.Styled.Attributes exposing (css, href, src, placeholder, type_)
 import Html.Styled.Events exposing (..)
 import Loader
@@ -16,18 +17,24 @@ import Array exposing (Array)
 
 
 type alias Flags =
-    { apiEndpoint : String }
+    {
+      apiEndpoint : String,
+      authToken : String
+    }
+
 
 
 main =
     Html.programWithFlags { init = init, view = view >> toUnstyled, update = update, subscriptions = subscriptions }
 
 
-type alias PageData =
+type alias State =
     { history : Array PastEntry
     , toasterMsg : String
     , loading : Bool
     , sideMenu : Bool
+    , apiEndpoint : String
+    , authToken : String
     }
 
 
@@ -38,9 +45,12 @@ type alias PastEntry =
     }
 
 
-init : Flags -> ( PageData, Cmd Msg )
+init : Flags -> ( State, Cmd Msg )
 init flags =
-    ( PageData Array.empty "" True False, getHistory flags.apiEndpoint )
+    let
+      state = State Array.empty "" True False flags.apiEndpoint flags.authToken
+    in
+      ( state, Http.send HistoryResult <| SDK.getHistory state)
 
 
 type Msg
@@ -50,6 +60,8 @@ type Msg
     | GoToScheduler
 
 
+
+update : Msg -> State -> (State, Cmd Msg)
 update msg state =
     case msg of
         HistoryResult (Ok historyList) ->
@@ -68,31 +80,10 @@ update msg state =
             ( state, Cmd.none )
 
 
-getHistory endpoint =
-    let
-        url =
-            endpoint ++ "/log"
-
-        request =
-            Http.request
-                { method = "GET"
-                , headers = [ Http.header "Content-Type" "application/json" ]
-                , url = url
-                , body = Http.emptyBody
-                , expect = (Http.expectJson decodeHistory)
-                , timeout = Nothing
-                , withCredentials = True
-                }
-    in
-        Http.send HistoryResult request
-
-
-decodeHistory =
-    Json.Decode.array decodePastEntry
-
 
 -- view
 
+view : State -> Html Msg
 view state =
     let
         historyHtml =
@@ -120,16 +111,17 @@ view state =
             ]
 
 
+getHistoryHtml : State -> Html Msg
 getHistoryHtml state =
     ul [ css [ listStyleType none, width (pct 100) ] ]
         (Array.indexedMap (pastEntryToHtml <| Array.length state.history) state.history |> Array.toList)
 
 
-subscriptions : PageData -> Sub Msg
+subscriptions : State -> Sub Msg
 subscriptions state =
     Sub.none
 
-
+pastEntryToHtml : Int -> Int ->  PastEntry -> Html Msg
 pastEntryToHtml total indice pastEntry =
     let
         historyNumber =
@@ -177,8 +169,3 @@ pastEntryToHtml total indice pastEntry =
             ]
 
 
-decodePastEntry =
-    Json.Decode.Pipeline.decode PastEntry
-        |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)

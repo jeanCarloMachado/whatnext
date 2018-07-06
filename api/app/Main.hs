@@ -10,8 +10,8 @@ import           Data.ByteString.UTF8        as BT
 import           Data.List                   (concat)
 import           Data.String
 import           Data.Text                   as Text
-import           Data.Text                   as T
-import           Data.Text.Lazy              as LT
+import           Data.Text                   as Text
+import           Data.Text.Lazy              as LazyText
 import           GHC.Generics
 import           Network.Wai.Middleware.Cors
 import           System.Environment
@@ -23,7 +23,6 @@ import           Web.Scotty.Cookie
 main = do
   wnDir <- getEnv ("WHATNEXT_SRC")
   scotty 3001 $
-    -- middleware myCors
    do
     middleware myCors
     get "/scheduler" $ do
@@ -44,14 +43,6 @@ main = do
     post "/login" $ do
       credentials <- jsonData :: ActionM Credentials
       let authToken = createAuthToken credentials
-          cookie =
-            defaultSetCookie
-            { setCookieName = "Authorization"
-            , setCookieValue = (BT.fromString authToken)
-            , setCookiePath = (Just (BT.fromString "/"))
-            , setCookieDomain = (Just $ BT.fromString ".thewhatnext.net")
-            }
-      setCookie cookie
       json (AuthResult (authToken))
     get "/detail/:subjectName" $ do
       subjectName <- param "subjectName"
@@ -137,14 +128,14 @@ setAuthEnv (Left email) = do
 
 cookieExistence cookie =
   case cookie of
-    Just x  -> return $ Left $ T.unpack x
+    Just x  -> return $ Left $ LazyText.unpack x
     Nothing -> return $ Right "Auth cookie needed"
 
 printResult (Right x) = json $ ApiError x
-printResult (Left x)  = text $ LT.pack x
+printResult (Left x)  = text $ LazyText.pack x
 
 runAuthenticatedService wnDir service =
-  getCookie "Authorization" >>= cookieExistence >>= cookieValid wnDir >>=
+  header "Authorization" >>= cookieExistence >>= cookieValid wnDir >>=
   setAuthEnv >>=
   service >>=
   printResult
@@ -160,15 +151,14 @@ createAuthToken credentials = toString $ digestToHexByteString end
 
 myPolicy =
   CorsResourcePolicy
-  { corsOrigins =
-      (Just (["http://127.0.0.1:3000", "https://app.thewhatnext.net"], True))
+  { corsOrigins = Nothing
   , corsMethods = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
   , corsRequestHeaders = ["Content-Type", "Authorization"]
   , corsExposedHeaders = Nothing
   , corsMaxAge = Nothing
   , corsVaryOrigin = True
   , corsRequireOrigin = False
-  , corsIgnoreFailures = False
+  , corsIgnoreFailures = True
   }
 
 myCors = cors (const $ Just myPolicy)
