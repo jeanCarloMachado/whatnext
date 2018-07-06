@@ -8,7 +8,7 @@ import Json.Decode.Pipeline
 import Array exposing (Array)
 
 
-type alias Subject =
+type alias FutureAction =
     { name : String
     , daysSinceLast : Int
     , timeAlreadyInvested : Int
@@ -29,7 +29,7 @@ type alias PastAction =
 
 type alias DoneData r =
     { r
-        | doneSubjectName : String
+        | doneFutureActionName : String
         , doneDescription : String
         , doneWhatToDoNext : String
     }
@@ -41,14 +41,14 @@ type alias RequestMetadata r =
     }
 
 
-type alias SubjectData r =
+type alias FutureActionData r =
     { r
-        | newSubjectName : String
+        | newFutureActionName : String
         , newPriority : Int
         , newComplexity : Int
         , newObjective : String
         , newWhatToDoNext : String
-        , openedSubjectName : String
+        , openedFutureActionName : String
         , apiEndpoint : String
         , authToken : String
     }
@@ -58,12 +58,12 @@ type alias SubjectData r =
 --- api
 
 
-setCurrentDoneSubject : DoneData r -> String -> DoneData r
-setCurrentDoneSubject doneData name =
-    { doneData | doneSubjectName = name }
+setCurrentDoneFutureAction : DoneData r -> String -> DoneData r
+setCurrentDoneFutureAction doneData name =
+    { doneData | doneFutureActionName = name }
 
 
-replaceSame : Subject -> ( Int, Subject ) -> ( Int, Subject )
+replaceSame : FutureAction -> ( Int, FutureAction ) -> ( Int, FutureAction )
 replaceSame new ( indice, orig ) =
     case orig.name == new.name of
         True ->
@@ -77,9 +77,9 @@ replaceSame new ( indice, orig ) =
 --decoders
 
 
-decodeSubject : Decoder Subject
-decodeSubject =
-    Json.Decode.Pipeline.decode Subject
+decodeFutureAction : Decoder FutureAction
+decodeFutureAction =
+    Json.Decode.Pipeline.decode FutureAction
         |> Json.Decode.Pipeline.required "name" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "days_since_last_study" Json.Decode.int
         |> Json.Decode.Pipeline.required "time_already_invested" Json.Decode.int
@@ -90,7 +90,7 @@ decodeSubject =
         |> Json.Decode.Pipeline.required "objective" (Json.Decode.string)
 
 
-decodeSubjectHistory =
+decodeFutureActionHistory =
     at [ "history" ] (Json.Decode.array decodePastAction)
 
 
@@ -108,7 +108,7 @@ decodePastAction =
 doneRequest requestMetadata doneData =
     let
         url =
-            requestMetadata.apiEndpoint ++ "/done/" ++ doneData.doneSubjectName
+            requestMetadata.apiEndpoint ++ "/done/" ++ doneData.doneFutureActionName
 
         body =
             Json.Encode.object
@@ -154,7 +154,7 @@ getDetail requestMetadata subject =
                 , headers = defaultHeaders requestMetadata
                 , url = url
                 , body = Http.emptyBody
-                , expect = (Http.expectJson decodeSubject)
+                , expect = (Http.expectJson decodeFutureAction)
                 , timeout = Nothing
                 , withCredentials = False
                 }
@@ -162,20 +162,20 @@ getDetail requestMetadata subject =
         request
 
 
-addSubjectRequest : RequestMetadata r -> SubjectData r -> Http.Request String
-addSubjectRequest requestMetadata subjectData =
+addFutureActionRequest : RequestMetadata r -> FutureActionData r -> Http.Request String
+addFutureActionRequest requestMetadata subjectData =
     let
         url =
             requestMetadata.apiEndpoint ++ "/addOrUpdate"
 
         body =
             Json.Encode.object
-                [ ( "name", Json.Encode.string subjectData.newSubjectName )
+                [ ( "name", Json.Encode.string subjectData.newFutureActionName )
                 , ( "complexity", Json.Encode.int subjectData.newComplexity )
                 , ( "priority", Json.Encode.int subjectData.newPriority )
                 , ( "whatToDoNext", Json.Encode.string subjectData.newWhatToDoNext )
                 , ( "objective", Json.Encode.string subjectData.newObjective )
-                , ( "previousName", Json.Encode.string subjectData.openedSubjectName )
+                , ( "previousName", Json.Encode.string subjectData.openedFutureActionName )
                 ]
     in
         Http.request
@@ -197,14 +197,14 @@ decodeEmptyResult =
     Json.Decode.succeed ""
 
 
-replaceSubjectFromList : List ( Int, Subject ) -> Subject -> List ( Int, Subject )
-replaceSubjectFromList list subject =
+replaceFutureActionFromList : List ( Int, FutureAction ) -> FutureAction -> List ( Int, FutureAction )
+replaceFutureActionFromList list subject =
     (List.map (\x -> replaceSame subject x) list)
 
 
-decodeSubjectList : Decoder (Array Subject)
-decodeSubjectList =
-    Json.Decode.array decodeSubject
+decodeFutureActionList : Decoder (Array FutureAction)
+decodeFutureActionList =
+    Json.Decode.array decodeFutureAction
 
 
 getListRequest state =
@@ -217,7 +217,7 @@ getListRequest state =
             , headers = defaultHeaders state
             , url = url
             , body = Http.emptyBody
-            , expect = (Http.expectJson decodeSubjectList)
+            , expect = (Http.expectJson decodeFutureActionList)
             , timeout = Nothing
             , withCredentials = False
             }

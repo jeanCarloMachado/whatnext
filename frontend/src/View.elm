@@ -7,7 +7,7 @@ import Html.Styled.Events exposing (..)
 import Html.Events.Extra exposing (targetValueIntParse)
 import Dom.Scroll
 import Css exposing (..)
-import SDK exposing (Subject, PastAction, DoneData)
+import SDK exposing (FutureAction, PastAction, DoneData)
 import Json.Decode
 
 

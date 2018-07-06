@@ -9,7 +9,7 @@ import Html.Styled.Events exposing (..)
 import Html.Events.Extra exposing (targetValueIntParse)
 import Toaster exposing (..)
 import Css exposing (..)
-import SDK exposing (Subject, PastAction, DoneData)
+import SDK exposing (FutureAction, PastAction, DoneData)
 import View exposing (defaultColors)
 import DOM
 import Menu
@@ -41,20 +41,20 @@ main =
 
 
 type alias State =
-    { subjects : List ( Int, Subject )
+    { subjects : List ( Int, FutureAction )
     , loading : Bool
     , toasterMsg : String
     , tiredMode : Bool
     , apiEndpoint : String
-    , doneSubjectName : String
+    , doneFutureActionName : String
     , doneDescription : String
     , doneWhatToDoNext : String
-    , addSubjectModal : Bool
+    , addFutureActionModal : Bool
     , newComplexity : Int
     , newPriority : Int
-    , newSubjectName : String
+    , newFutureActionName : String
     , newWhatToDoNext : String
-    , openedSubjectName : String
+    , openedFutureActionName : String
     , newObjective : String
     , sideMenu : Bool
     , combos : Keyboard.Combo.Model Msg
@@ -95,7 +95,7 @@ initialState flags =
 
 keyboardCombos : List (Keyboard.Combo.KeyCombo Msg)
 keyboardCombos =
-    [ Keyboard.Combo.combo2 ( Keyboard.Combo.control, Keyboard.Combo.n ) (MySubjectMsg OpenAddModal)
+    [ Keyboard.Combo.combo2 ( Keyboard.Combo.control, Keyboard.Combo.n ) (MyFutureActionMsg OpenAddModal)
     ]
 
 
@@ -104,34 +104,34 @@ keyboardCombos =
 
 
 type Msg
-    = NewList (Result Http.Error (Array Subject))
+    = NewList (Result Http.Error (Array FutureAction))
     | ToggleTiredMode
     | NoAction
     | ToggleSideMenu
-    | MySubjectMsg SubjectMsg
+    | MyFutureActionMsg FutureActionMsg
     | ComboMsg Keyboard.Combo.Msg
 
 
-type SubjectMsg
-    = ExpandSubject ( Int, Subject )
+type FutureActionMsg
+    = ExpandFutureAction ( Int, FutureAction )
     | Remove (Result Http.Error String)
-    | RemoveClick Subject
-    | GetDetail (Result Http.Error Subject)
+    | RemoveClick FutureAction
+    | GetDetail (Result Http.Error FutureAction)
     | MyDoneMsg DoneMsg
     | OpenAddModal
-    | OpedEditModal Subject
-    | CancelAddSubjectModal
-    | ChangeSubjectName String
+    | OpedEditModal FutureAction
+    | CancelAddFutureActionModal
+    | ChangeFutureActionName String
     | ChangeWhatToDoNext String
     | ChangeObjective String
     | ChangePriority Int
     | ChangeComplexity Int
-    | AlterSubjectSubmit
-    | NewSubjectResult (Result Http.Error String)
+    | AlterFutureActionSubmit
+    | NewFutureActionResult (Result Http.Error String)
 
 
 type DoneMsg
-    = OpenDone Subject
+    = OpenDone FutureAction
     | DoneResult (Result Http.Error String)
     | DoneChangeDescription String
     | DoneChangeWhatToDoNext String
@@ -153,8 +153,8 @@ type alias Flags =
 update : Msg -> State -> ( State, Cmd Msg )
 update msg model =
     case msg of
-        MySubjectMsg a ->
-            updateSubject a model
+        MyFutureActionMsg a ->
+            updateFutureAction a model
 
         NewList (Ok subjects) ->
             ( { model | subjects = Array.toIndexedList subjects } |> Loader.disableLoading, Cmd.none )
@@ -171,7 +171,7 @@ update msg model =
         ToggleTiredMode ->
             let
                 newState =
-                    { model | tiredMode = not model.tiredMode } |> unselectSubject |> Loader.enableLoading
+                    { model | tiredMode = not model.tiredMode } |> unselectFutureAction |> Loader.enableLoading
             in
                 ( newState, Http.send NewList <| SDK.getListRequest newState )
 
@@ -183,21 +183,21 @@ update msg model =
                 ( { model | combos = updatedKeys }, comboCmd )
 
 
-updateSubject : SubjectMsg -> State -> ( State, Cmd Msg )
-updateSubject msg model =
+updateFutureAction : FutureActionMsg -> State -> ( State, Cmd Msg )
+updateFutureAction msg model =
     case msg of
-        ExpandSubject ( indice, subject ) ->
+        ExpandFutureAction ( indice, subject ) ->
             let
                 detailCmd =
-                    Http.send (MySubjectMsg << GetDetail) <| SDK.getDetail model subject
+                    Http.send (MyFutureActionMsg << GetDetail) <| SDK.getDetail model subject
 
                 newModel =
-                    { model | openedSubjectName = subject.name } |> Loader.enableLoading
+                    { model | openedFutureActionName = subject.name } |> Loader.enableLoading
             in
-                if model.openedSubjectName == subject.name then
-                    ( (unselectSubject newModel |> Loader.disableLoading), Cmd.none )
+                if model.openedFutureActionName == subject.name then
+                    ( (unselectFutureAction newModel |> Loader.disableLoading), Cmd.none )
                 else
-                    ( setOpenedSubject newModel subject.name, detailCmd )
+                    ( setOpenedFutureAction newModel subject.name, detailCmd )
 
         GetDetail (Ok subject) ->
             let
@@ -208,7 +208,7 @@ updateSubject msg model =
                     (DOM.scrollIntoView selector)
             in
                 ( { model
-                    | subjects = SDK.replaceSubjectFromList model.subjects subject
+                    | subjects = SDK.replaceFutureActionFromList model.subjects subject
                   }
                     |> Loader.disableLoading
                 , Task.attempt (\a -> (NoAction)) task
@@ -216,7 +216,7 @@ updateSubject msg model =
 
         RemoveClick subject ->
             ( model |> Loader.enableLoading
-            , Http.send (MySubjectMsg << Remove) <| SDK.removeRequest model subject
+            , Http.send (MyFutureActionMsg << Remove) <| SDK.removeRequest model subject
             )
 
         Remove (Ok _) ->
@@ -237,19 +237,19 @@ updateSubject msg model =
             let
                 newModel =
                     { model
-                        | addSubjectModal = True
+                        | addFutureActionModal = True
                         , newObjective = ""
                         , newWhatToDoNext = ""
                     }
             in
-                ( newModel |> unselectSubject, Cmd.none )
+                ( newModel |> unselectFutureAction, Cmd.none )
 
         OpedEditModal subject ->
             let
                 newModel =
                     { model
-                        | addSubjectModal = True
-                        , newSubjectName = subject.name
+                        | addFutureActionModal = True
+                        , newFutureActionName = subject.name
                         , newWhatToDoNext = subject.whatToDoNext
                         , newPriority = subject.priority
                         , newComplexity = subject.complexity
@@ -258,8 +258,8 @@ updateSubject msg model =
             in
                 ( newModel, Cmd.none )
 
-        CancelAddSubjectModal ->
-            ( { model | addSubjectModal = False }, Cmd.none )
+        CancelAddFutureActionModal ->
+            ( { model | addFutureActionModal = False }, Cmd.none )
 
         ChangeComplexity complexity ->
             ( { model | newComplexity = complexity }, Cmd.none )
@@ -267,8 +267,8 @@ updateSubject msg model =
         ChangePriority priority ->
             ( { model | newPriority = priority * 10 }, Cmd.none )
 
-        ChangeSubjectName subjectName ->
-            ( { model | newSubjectName = subjectName }, Cmd.none )
+        ChangeFutureActionName subjectName ->
+            ( { model | newFutureActionName = subjectName }, Cmd.none )
 
         ChangeWhatToDoNext whatToDoNext ->
             ( { model | newWhatToDoNext = whatToDoNext }, Cmd.none )
@@ -276,13 +276,13 @@ updateSubject msg model =
         ChangeObjective objective ->
             ( { model | newObjective = objective }, Cmd.none )
 
-        AlterSubjectSubmit ->
+        AlterFutureActionSubmit ->
             ( Loader.enableLoading model
-            , Http.send (MySubjectMsg << NewSubjectResult) <| SDK.addSubjectRequest model model
+            , Http.send (MyFutureActionMsg << NewFutureActionResult) <| SDK.addFutureActionRequest model model
             )
 
-        NewSubjectResult _ ->
-            ( { model | addSubjectModal = False, newSubjectName = "" } |> unselectSubject
+        NewFutureActionResult _ ->
+            ( { model | addFutureActionModal = False, newFutureActionName = "" } |> unselectFutureAction
             , Http.send NewList <| SDK.getListRequest model
             )
 
@@ -292,7 +292,7 @@ updateDone msg model =
     case msg of
         OpenDone subject ->
             ( { model
-                | doneSubjectName = subject.name
+                | doneFutureActionName = subject.name
                 , doneDescription = subject.whatToDoNext
               }
             , Cmd.none
@@ -308,7 +308,7 @@ updateDone msg model =
             let
                 doneHttp =
                     Http.send
-                        (MySubjectMsg << MyDoneMsg << DoneResult)
+                        (MyFutureActionMsg << MyDoneMsg << DoneResult)
                     <|
                         SDK.doneRequest model model
             in
@@ -321,21 +321,21 @@ updateDone msg model =
             errorResult model msg
 
         DoneResult (Ok _) ->
-            ( Loader.disableLoading model |> unselectSubject
+            ( Loader.disableLoading model |> unselectFutureAction
             , Http.send NewList <| SDK.getListRequest model
             )
 
 
-unselectSubject model =
-    { model | openedSubjectName = "" }
+unselectFutureAction model =
+    { model | openedFutureActionName = "" }
 
 
 resetCurrentDone state =
-    { state | doneSubjectName = "", doneDescription = "", doneWhatToDoNext = "" }
+    { state | doneFutureActionName = "", doneDescription = "", doneWhatToDoNext = "" }
 
 
-setOpenedSubject model name =
-    { model | openedSubjectName = name }
+setOpenedFutureAction model name =
+    { model | openedFutureActionName = name }
 
 
 errorResult : State -> Error -> ( State, Cmd Msg )
@@ -364,7 +364,7 @@ view state =
                     , maxHeight (px 55)
                     ]
                 , src "images/add.png"
-                , onClick (MySubjectMsg OpenAddModal)
+                , onClick (MyFutureActionMsg OpenAddModal)
                 ]
                 []
             ]
@@ -374,20 +374,20 @@ view state =
             [ -- conditional loading, modals
               Loader.getLoadingHtml state.loading
             , doneModal state
-            , alterSubjectHtml state
+            , alterFutureActionHtml state
             , Toaster.html state.toasterMsg
 
             --subject list
             , div []
-                [ subjectsToHtml state.openedSubjectName state.subjects
+                [ subjectsToHtml state.openedFutureActionName state.subjects
                 ]
             ]
         ]
 
 
-alterSubjectHtml : State -> Html.Styled.Html Msg
-alterSubjectHtml state =
-    case state.addSubjectModal of
+alterFutureActionHtml : State -> Html.Styled.Html Msg
+alterFutureActionHtml state =
+    case state.addFutureActionModal of
         True ->
             div [ View.modalCss ]
                 [ div
@@ -401,22 +401,22 @@ alterSubjectHtml state =
                         ]
                     ]
                     [ input
-                        [ defaultValue state.openedSubjectName
+                        [ defaultValue state.openedFutureActionName
                         , View.inputCss
                         , type_ "text"
-                        , placeholder "Subject name"
-                        , onInput (MySubjectMsg << ChangeSubjectName)
+                        , placeholder "FutureAction name"
+                        , onInput (MyFutureActionMsg << ChangeFutureActionName)
                         , Html.Styled.Attributes.required True
                         ]
                         []
                     , select
                         [ css View.selectCss
-                        , on "change" (Json.Decode.map (MySubjectMsg << ChangePriority) targetValueIntParse)
+                        , on "change" (Json.Decode.map (MyFutureActionMsg << ChangePriority) targetValueIntParse)
                         ]
                         (renderPriorityOptions state.newPriority)
                     , select
                         [ css View.selectCss
-                        , on "change" (Json.Decode.map (MySubjectMsg << ChangeComplexity) targetValueIntParse)
+                        , on "change" (Json.Decode.map (MyFutureActionMsg << ChangeComplexity) targetValueIntParse)
                         ]
                         (renderComplexityOptions <| toString state.newComplexity)
                     , span []
@@ -425,7 +425,7 @@ alterSubjectHtml state =
                             [ defaultValue state.newObjective
                             , css <| List.append View.textAreaCss [ minHeight (px 35), height (px 75) ]
                             , placeholder "After finishing studying this subject will be able to ..."
-                            , onInput (MySubjectMsg << ChangeObjective)
+                            , onInput (MyFutureActionMsg << ChangeObjective)
                             , Html.Styled.Attributes.required False
                             ]
                             []
@@ -436,18 +436,18 @@ alterSubjectHtml state =
                             [ defaultValue state.newWhatToDoNext
                             , css <| List.append View.textAreaCss [ height (px 75), minHeight (px 35) ]
                             , placeholder "do x y z"
-                            , onInput (MySubjectMsg << ChangeWhatToDoNext)
+                            , onInput (MyFutureActionMsg << ChangeWhatToDoNext)
                             , Html.Styled.Attributes.required False
                             ]
                             []
                         ]
                     , div [ css [ displayFlex, justifyContent spaceBetween, width (pct 100) ] ]
                         [ button
-                            [ css View.buttonCss, onClick (MySubjectMsg CancelAddSubjectModal) ]
+                            [ css View.buttonCss, onClick (MyFutureActionMsg CancelAddFutureActionModal) ]
                             [ text "Cancel" ]
                         , button
                             [ css <| List.append View.buttonCss [ backgroundColor defaultColors.success ]
-                            , onClick (MySubjectMsg AlterSubjectSubmit)
+                            , onClick (MyFutureActionMsg AlterFutureActionSubmit)
                             ]
                             [ text "Confirm" ]
                         ]
@@ -493,20 +493,20 @@ renderPriorityOptions defaultValue =
         List.map (\option -> View.optionFromTuple defaultValueNew option) priority
 
 
-subjectsToHtml : String -> List ( Int, Subject ) -> Html.Styled.Html Msg
-subjectsToHtml openedSubjectName list =
+subjectsToHtml : String -> List ( Int, FutureAction ) -> Html.Styled.Html Msg
+subjectsToHtml openedFutureActionName list =
     let
         innerList =
-            List.map (subjectToHtml openedSubjectName) list
+            List.map (subjectToHtml openedFutureActionName) list
     in
         ul [ css [ listStyle none ] ] innerList
 
 
-subjectToHtml : String -> ( Int, Subject ) -> Html.Styled.Html Msg
-subjectToHtml openedSubjectName ( indice, subject ) =
+subjectToHtml : String -> ( Int, FutureAction ) -> Html.Styled.Html Msg
+subjectToHtml openedFutureActionName ( indice, subject ) =
     li
-        [ onClick ((MySubjectMsg << ExpandSubject) ( indice, subject ))
-        , subjectCss openedSubjectName ( indice, subject )
+        [ onClick ((MyFutureActionMsg << ExpandFutureAction) ( indice, subject ))
+        , subjectCss openedFutureActionName ( indice, subject )
         , id <| "subject_" ++ subject.name
         ]
         [ div []
@@ -536,22 +536,22 @@ subjectToHtml openedSubjectName ( indice, subject ) =
                             ]
                         ]
                         [ text subject.name ]
-                    , View.inlineIf (subject.name == openedSubjectName) View.emptyNode <| inlineInfoOfSubject subject
+                    , View.inlineIf (subject.name == openedFutureActionName) View.emptyNode <| inlineInfoOfFutureAction subject
                     ]
-                , View.inlineIf (subject.name == openedSubjectName) (doneStart subject) View.emptyNode
+                , View.inlineIf (subject.name == openedFutureActionName) (doneStart subject) View.emptyNode
                 ]
-            , View.inlineIf (subject.name == openedSubjectName) (hiddenHtml subject) View.emptyNode
+            , View.inlineIf (subject.name == openedFutureActionName) (hiddenHtml subject) View.emptyNode
             ]
         ]
 
 
-doneStart : Subject -> Html.Styled.Html Msg
+doneStart : FutureAction -> Html.Styled.Html Msg
 doneStart subject =
     button
         [ css
             View.buttonCss
         , View.onClickStoppingPropagation <|
-            (MySubjectMsg
+            (MyFutureActionMsg
                 << MyDoneMsg
                 << OpenDone
             )
@@ -560,7 +560,7 @@ doneStart subject =
         [ text "Done" ]
 
 
-inlineInfoOfSubject subject =
+inlineInfoOfFutureAction subject =
     span
         [ css [ fontSize (Css.em 0.7), color defaultColors.textNormal ]
         ]
@@ -606,12 +606,12 @@ hiddenHtml subject =
             ]
         , button
             [ css View.buttonCss
-            , View.onClickStoppingPropagation <| (MySubjectMsg << OpedEditModal) subject
+            , View.onClickStoppingPropagation <| (MyFutureActionMsg << OpedEditModal) subject
             ]
             [ text "Edit" ]
         , button
             [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.fail)
-            , View.onClickStoppingPropagation <| (MySubjectMsg << RemoveClick) subject
+            , View.onClickStoppingPropagation <| (MyFutureActionMsg << RemoveClick) subject
             ]
             [ text "Archive" ]
         ]
@@ -638,7 +638,7 @@ subjectProperty name value =
 
 doneModal : SDK.DoneData r -> Html Msg
 doneModal doneInfo =
-    case String.length doneInfo.doneSubjectName of
+    case String.length doneInfo.doneFutureActionName of
         0 ->
             View.emptyNode
 
@@ -660,25 +660,25 @@ doneModal doneInfo =
                         [ css View.textAreaCss
                         , placeholder "studied x y z"
                         , defaultValue doneInfo.doneDescription
-                        , onInput (MySubjectMsg << MyDoneMsg << DoneChangeDescription)
+                        , onInput (MyFutureActionMsg << MyDoneMsg << DoneChangeDescription)
                         ]
                         []
                     , label [] [ text "What to do next" ]
                     , textarea
                         [ css View.textAreaCss
                         , placeholder "study x y z"
-                        , onInput (MySubjectMsg << MyDoneMsg << DoneChangeWhatToDoNext)
+                        , onInput (MyFutureActionMsg << MyDoneMsg << DoneChangeWhatToDoNext)
                         ]
                         []
                     , div [ css [ displayFlex, justifyContent spaceBetween, width (pct 100) ] ]
                         [ button
                             [ css View.buttonCss
-                            , onClick (MySubjectMsg << MyDoneMsg <| CancelDone)
+                            , onClick (MyFutureActionMsg << MyDoneMsg <| CancelDone)
                             ]
                             [ text "Cancel" ]
                         , button
                             [ css (View.buttonCss |> View.overrideBackgroundColor defaultColors.success)
-                            , onClick (MySubjectMsg << MyDoneMsg <| SubmitDone)
+                            , onClick (MyFutureActionMsg << MyDoneMsg <| SubmitDone)
                             ]
                             [ text "Confirm" ]
                         ]
