@@ -59,11 +59,9 @@ type Msg
     | ToggleSideMenu
     | GoToScheduler
     | GetDetail (Result Http.Error FutureAction)
+    | Remove (Result Http.Error String)
+    | RemoveClick FutureAction
 
-
-
--- | Remove (Result Http.Error String)
--- | RemoveClick FutureAction
 -- | MyDoneMsg DoneMsg
 -- | OpenAddModal
 -- | OpedEditModal FutureAction
@@ -99,13 +97,23 @@ update msg state =
             errorResult
                 state
                 msg
+        RemoveClick subject ->
+            ( state |> Loader.enableLoading
+            , Http.send Remove <| SDK.removeRequest state subject
+            )
+
+        Remove (Ok _) ->
+            ( state |> Loader.enableLoading, Navigation.load "?page=scheduler" )
+
+        Remove (Err msg) ->
+            errorResult state msg
 
         None ->
             ( state, Cmd.none )
 
 
-errorResult model msg =
-    ( { model | toasterMsg = (toString msg), loading = False }, Cmd.none )
+errorResult state msg =
+    ( { state | toasterMsg = (toString msg), loading = False }, Cmd.none )
 
 
 
@@ -114,34 +122,40 @@ errorResult model msg =
 
 view : State -> Html.Styled.Html Msg
 view state =
-    div [ css [ color defaultColors.textNormal ] ]
-        [ --- left meu
-          Menu.sideBarHtmlOptional state <|
-            Menu.sideBarHtml ToggleSideMenu
-
-        --top menu
-        , Menu.topBarHtml ToggleSideMenu
-            []
-        , --main content
-          div
-            [ css [ marginTop (px 50), marginLeft (px 10), marginRight (px 10) ] ]
-            [ -- conditional loading, modals
-              Loader.getLoadingHtml state.loading
-            , Toaster.html state.toasterMsg
-            , div []
-                [ viewSubject state.subject
-                ]
-            ]
-        ]
-
-
-viewSubject : Maybe FutureAction -> Html.Styled.Html Msg
-viewSubject msubject =
-    case msubject of
+    case state.subject of
         Nothing ->
             Style.emptyNode
 
         Just subject ->
+            div [ css [ color defaultColors.textNormal ] ]
+                [ --- left meu
+                  Menu.sideBarHtmlOptional state <|
+                    Menu.sideBarHtml ToggleSideMenu
+
+                --top menu
+                , Menu.topBarHtml ToggleSideMenu
+                    [
+                        button
+                    [ css (Style.buttonCss |> Style.overrideBackgroundColor defaultColors.fail)
+                    , Style.onClickStoppingPropagation <| RemoveClick subject
+                    ]
+                    [ text "Archive" ]
+                        ]
+                , --main content
+                  div
+                    [ css [ marginTop (px 50), marginLeft (px 10), marginRight (px 10) ] ]
+                    [ -- conditional loading, modals
+                      Loader.getLoadingHtml state.loading
+                    , Toaster.html state.toasterMsg
+                    , div []
+                        [ viewSubject subject
+                        ]
+                    ]
+                ]
+
+
+viewSubject : FutureAction -> Html.Styled.Html Msg
+viewSubject subject =
             div
                 [ subjectCss ]
                 [ div []
@@ -252,5 +266,5 @@ subjectCss =
 
 
 subscriptions : State -> Sub Msg
-subscriptions model =
+subscriptions state =
     Sub.none
