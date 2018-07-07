@@ -11,7 +11,7 @@ import Json.Encode
 import Toaster
 import Navigation
 import Loader
-import View exposing (defaultColors)
+import Style exposing (defaultColors)
 import Storage.Local
 import Task
 
@@ -204,14 +204,14 @@ view state =
                     ]
                 ]
                 [ input
-                    [ View.inputCss
+                    [ Style.inputCss
                     , placeholder "Email"
                     , onInput UpdateEmail
                     , type_ "email"
                     ]
                     []
                 , input
-                    [ View.inputCss
+                    [ Style.inputCss
                     , placeholder "Password"
                     , type_ "password"
                     , onInput UpdatePassword
@@ -232,7 +232,7 @@ view state =
                         ]
                         [ text <| getAccessOtherPageText state.pageMode ]
                     , button
-                        [ css View.buttonCss
+                        [ css Style.buttonCss
                         , onClick SubmitForm
                         ]
                         [ text <| getSubmitText state.pageMode ]

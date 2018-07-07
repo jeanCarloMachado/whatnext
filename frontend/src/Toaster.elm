@@ -5,7 +5,7 @@ import Html.Styled exposing (..)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css)
 import Css exposing (..)
-import View exposing (defaultColors)
+import Style exposing (defaultColors)
 
 
 html message =

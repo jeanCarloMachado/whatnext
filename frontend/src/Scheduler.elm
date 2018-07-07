@@ -1,6 +1,5 @@
 module Scheduler exposing (..)
 
---view imports
 
 import Html
 import Html.Styled exposing (..)
@@ -9,7 +8,7 @@ import Html.Styled.Events exposing (..)
 import Toaster exposing (..)
 import Css exposing (..)
 import SDK exposing (FutureAction, PastAction, DoneData)
-import View exposing (defaultColors)
+import Style exposing (defaultColors)
 import Menu
 import Keyboard.Combo
 
@@ -187,33 +186,37 @@ subjectToHtml ( indice, subject ) =
         [ subjectCss
         , id <| "subject_" ++ subject.name
         ]
-        [ div []
-            [ div
-                [ css
-                    [ fontSize (Css.em 1.2)
-                    , displayFlex
-                    , justifyContent spaceBetween
-                    , flexDirection row
-                    , alignItems center
+        [
+            a [href <| "?page=view&subjectName=" ++ subject.name ]
+            [
+                div []
+                [ div
+                    [ css
+                        [ fontSize (Css.em 1.2)
+                        , displayFlex
+                        , justifyContent spaceBetween
+                        , flexDirection row
+                        , alignItems center
+                        ]
                     ]
-                ]
-                [ div []
-                    [ span
-                        [ css
-                            [ fontSize (Css.em 0.5)
-                            , marginRight (px 15)
+                    [ div []
+                        [ span
+                            [ css
+                                [ fontSize (Css.em 0.5)
+                                , marginRight (px 15)
+                                ]
                             ]
-                        ]
-                        [ text <| toString (indice + 1) ++ "." ]
-                    , h1
-                        [ class "noselect"
-                        , css
-                            [ display inline
-                            , color defaultColors.textHighlight
-                            , marginRight (px 20)
+                            [ text <| toString (indice + 1) ++ "." ]
+                        , h1
+                            [ class "noselect"
+                            , css
+                                [ display inline
+                                , color defaultColors.textHighlight
+                                , marginRight (px 20)
+                                ]
                             ]
+                            [ text subject.name ]
                         ]
-                        [ text subject.name ]
                     ]
                 ]
             ]
@@ -228,7 +231,7 @@ inlineInfoOfFutureAction subject =
         ]
         [ text <| " " ++ toString subject.daysSinceLast ++ " days ago" ]
      else
-            View.emptyNode
+            Style.emptyNode
 
 
 

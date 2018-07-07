@@ -9,7 +9,7 @@ import Dom.Scroll
 import Toaster exposing (..)
 import Css exposing (..)
 import SDK exposing (FutureAction, PastAction, DoneData)
-import View exposing (defaultColors)
+import Style exposing (defaultColors)
 import DOM
 
 
@@ -48,7 +48,7 @@ topBarHtml toggleMenuEvent elements =
 
 
 sideBarHtmlOptional state configuredSidebar =
-    View.inlineIf (state.sideMenu) (configuredSidebar) View.emptyNode
+    Style.inlineIf (state.sideMenu) (configuredSidebar) Style.emptyNode
 
 dropdownMenuItemCss = [
                 zIndex (Css.int 333),
@@ -70,17 +70,18 @@ sideBarHtml toggleMenuEvent =
             , onClick toggleMenuEvent
             ]
             [
-                button [ css <| List.append View.buttonCss [ textAlign left ] ]
+                button [ css <| List.append Style.buttonCss [ textAlign left ] ]
                 [ text "Close menu" ]
 
-                ,    a [ css  <| List.append View.buttonCss dropdownMenuItemCss, href "?page=scheduler" ]
+                ,    a [ css  <| List.append Style.buttonCss dropdownMenuItemCss, href "?page=scheduler" ]
                         [ text "Next Steps"
                         ]
-                , a [ css <| List.append View.buttonCss dropdownMenuItemCss, href "?page=log" ]
+                , a [ css <| List.append Style.buttonCss dropdownMenuItemCss, href "?page=log" ]
                     [ text "Past Actions"
                     ]
             , a
-                [ css <| View.overrideBackgroundColor defaultColors.fail <| List.append View.buttonCss dropdownMenuItemCss
+                [ css <| Style.overrideBackgroundColor defaultColors.fail <|
+                  List.append Style.buttonCss dropdownMenuItemCss
                 , href "/"
                 ]
                 [ text "Quit" ]

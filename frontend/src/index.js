@@ -1,5 +1,5 @@
 import { Scheduler } from './Scheduler.elm';
-import { Action } from './Action.elm';
+import { View } from './View.elm';
 import { History } from './History.elm';
 import { Login } from './Login.elm';
 import registerServiceWorker from './registerServiceWorker';
@@ -29,8 +29,8 @@ switch (page) {
 	case "scheduler":
 		obj = Scheduler
 		break
-	case "action":
-		obj = Action
+	case "view":
+		obj = View
 		let subjectName = getParameterByName("subjectName") || "index"
 		flags.subjectName = subjectName
 		break

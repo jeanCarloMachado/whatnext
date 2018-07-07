@@ -12,7 +12,7 @@ import Html.Styled.Attributes exposing (css, href, src, placeholder, type_)
 import Html.Styled.Events exposing (..)
 import Loader
 import Menu
-import View exposing (defaultColors)
+import Style exposing (defaultColors)
 import Array exposing (Array)
 
 
