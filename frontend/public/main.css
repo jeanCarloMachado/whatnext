@@ -116,3 +116,8 @@ input:focus + .slider {
 input:checked + .slider:before {
   transform: translateX(26px);
 }
+
+
+ul {
+  list-style-type : none;
+}

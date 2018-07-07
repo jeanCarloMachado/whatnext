@@ -83,7 +83,6 @@ type Msg
 --     | SubmitDone
 --     | CancelDone
 
-
 update : Msg -> State -> ( State, Cmd Msg )
 update msg state =
     case msg of
@@ -162,6 +161,7 @@ viewSubject msubject =
                                     [ display inline
                                     , color defaultColors.textHighlight
                                     , marginRight (px 20)
+                                    , marginLeft (px 20)
                                     ]
                                 ]
                                 [ text subject.name ]
@@ -201,7 +201,7 @@ viewSubject msubject =
                             ]
                         , div []
                             [ h2 [ css [ textAlign center, marginTop (px 50), fontWeight bold ] ] [ text "History" ]
-                            , div [ css [ margin (px 30) ] ] (List.map pastEntryToHtml subject.history)
+                            , ul [ css [ margin (px 30) ] ] (List.map pastEntryToHtml subject.history)
                             ]
                         ]
                     ]
@@ -225,7 +225,6 @@ subjectProperty name value =
             [ text <| name ++ ": " ]
         , span [] [ text value ]
         ]
-
 
 pastEntryToHtml : PastAction -> Html Msg
 pastEntryToHtml pastEntry =
