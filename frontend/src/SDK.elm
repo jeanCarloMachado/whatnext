@@ -143,10 +143,11 @@ removeRequest requestMetadata subject =
             }
 
 
-getDetail requestMetadata subject =
+getDetail : RequestMetadata r  -> String -> Http.Request FutureAction
+getDetail requestMetadata subjectName =
     let
         url =
-            requestMetadata.apiEndpoint ++ "/detail/" ++ subject.name
+            requestMetadata.apiEndpoint ++ "/detail/" ++ subjectName
 
         request =
             Http.request
@@ -195,11 +196,6 @@ defaultHeaders requestMetadata =
 
 decodeEmptyResult =
     Json.Decode.succeed ""
-
-
-replaceFutureActionFromList : List ( Int, FutureAction ) -> FutureAction -> List ( Int, FutureAction )
-replaceFutureActionFromList list subject =
-    (List.map (\x -> replaceSame subject x) list)
 
 
 decodeFutureActionList : Decoder (Array FutureAction)

@@ -15,7 +15,13 @@ function getParameterByName(name, url) {
 }
 
 let page = getParameterByName("page") || "index"
+let token = localStorage.getItem('Authorization')
+let flags = {
+	apiEndpoint: process.env.ELM_APP_API_URL,
+	authToken: token
+}
 let obj = null
+
 switch (page) {
 	case "log":
 		obj = History
@@ -25,23 +31,21 @@ switch (page) {
 		break
 	case "action":
 		obj = Action
+		let subjectName = getParameterByName("subjectName") || "index"
+		flags.subjectName = subjectName
 		break
 	default:
 		page="login"
 		obj = Login
 }
 
-let token = localStorage.getItem('Authorization')
 if (!token && page != "login") {
 	window.location.href = "/";
 }
 
 
 console.log(process.env.ELM_APP_API_URL)
-obj.embed(document.getElementById('root'), {
-	apiEndpoint: process.env.ELM_APP_API_URL,
-	authToken: token
-})
+obj.embed(document.getElementById('root'), flags)
 
 
 registerServiceWorker();

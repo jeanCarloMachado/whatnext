@@ -74,10 +74,10 @@ sideBarHtml toggleMenuEvent =
                 [ text "Close menu" ]
 
                 ,    a [ css  <| List.append View.buttonCss dropdownMenuItemCss, href "?page=scheduler" ]
-                        [ text "Future"
+                        [ text "Next Steps"
                         ]
                 , a [ css <| List.append View.buttonCss dropdownMenuItemCss, href "?page=log" ]
-                    [ text "Past"
+                    [ text "Past Actions"
                     ]
             , a
                 [ css <| View.overrideBackgroundColor defaultColors.fail <| List.append View.buttonCss dropdownMenuItemCss

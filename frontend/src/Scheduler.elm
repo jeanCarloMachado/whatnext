@@ -101,9 +101,7 @@ type alias Flags =
     }
 
 
-
 -- update
-
 
 update : Msg -> State -> ( State, Cmd Msg )
 update msg model =
@@ -126,9 +124,6 @@ update msg model =
                     { model | tiredMode = not model.tiredMode } |> Loader.enableLoading
             in
                 ( newState, Http.send NewList <| SDK.getListRequest newState )
-
-
-
 
 
 
