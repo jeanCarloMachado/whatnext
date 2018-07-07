@@ -1,4 +1,5 @@
 import { Scheduler } from './Scheduler.elm';
+import { Action } from './Action.elm';
 import { History } from './History.elm';
 import { Login } from './Login.elm';
 import registerServiceWorker from './registerServiceWorker';
@@ -21,6 +22,9 @@ switch (page) {
 		break
 	case "scheduler":
 		obj = Scheduler
+		break
+	case "action":
+		obj = Action
 		break
 	default:
 		page="login"
