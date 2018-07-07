@@ -4,7 +4,7 @@ import Navigation
 import Html
 import Http
 import Html.Styled exposing (..)
-import SDK exposing (FutureAction, PastAction)
+import SDK exposing (Subject, PastAction)
 import Loader
 import Menu
 import Html
@@ -50,7 +50,7 @@ type alias State =
     , sideMenu : Bool
     , apiEndpoint : String
     , authToken : String
-    , subject : Maybe FutureAction
+    , subject : Maybe Subject
     }
 
 
@@ -58,21 +58,21 @@ type Msg
     = None
     | ToggleSideMenu
     | GoToScheduler
-    | GetDetail (Result Http.Error FutureAction)
+    | GetDetail (Result Http.Error Subject)
     | Remove (Result Http.Error String)
-    | RemoveClick FutureAction
+    | RemoveClick Subject
 
 -- | MyDoneMsg DoneMsg
--- | CancelAddFutureActionModal
--- | ChangeFutureActionName String
+-- | CancelAddSubjectModal
+-- | ChangeSubjectName String
 -- | ChangeWhatToDoNext String
 -- | ChangeObjective String
 -- | ChangePriority Int
 -- | ChangeComplexity Int
--- | AlterFutureActionSubmit
--- | NewFutureActionResult (Result Http.Error String)
+-- | AlterSubjectSubmit
+-- | NewSubjectResult (Result Http.Error String)
 -- type DoneMsg
---     = OpenDone FutureAction
+--     = OpenDone Subject
 --     | DoneResult (Result Http.Error String)
 --     | DoneChangeDescription String
 --     | DoneChangeWhatToDoNext String
@@ -152,7 +152,7 @@ view state =
                 ]
 
 
-viewSubject : FutureAction -> Html.Styled.Html Msg
+viewSubject : Subject -> Html.Styled.Html Msg
 viewSubject subject =
             div
                 [ subjectCss ]

@@ -5,7 +5,7 @@ import Html.Styled.Attributes exposing (css, href, src, placeholder, type_, id, 
 import Html.Styled.Events exposing (..)
 import Dom.Scroll
 import Css exposing (..)
-import SDK exposing (FutureAction, PastAction, DoneData)
+import SDK exposing (Subject, PastAction, DoneData)
 import Json.Decode
 
 

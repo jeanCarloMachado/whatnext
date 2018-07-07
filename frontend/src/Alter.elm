@@ -39,7 +39,7 @@ type alias State =
     , sideMenu : Bool
     , loading : Bool
     , newComplexity : Int
-    , newFutureActionName : String
+    , newSubjectName : String
     , newPriority : Int
     , newSubjectName : String
     , newWhatToDoNext : String
@@ -84,7 +84,7 @@ update msg state =
 
         AlterSubjectSubmit ->
             ( Loader.enableLoading state
-            , Http.send NewSubjectResult <| SDK.addFutureActionRequest state state
+            , Http.send NewSubjectResult <| SDK.addSubjectRequest state state
             )
         NewSubjectResult _ ->
             ( state, Navigation.load "?page=scheduler" )

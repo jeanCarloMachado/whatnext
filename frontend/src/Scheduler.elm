@@ -6,7 +6,7 @@ import Html.Styled.Attributes exposing (property, css, href, src, placeholder, t
 import Html.Styled.Events exposing (..)
 import Toaster exposing (..)
 import Css exposing (..)
-import SDK exposing (FutureAction, PastAction, DoneData)
+import SDK exposing (Subject, PastAction, DoneData)
 import Style exposing (defaultColors)
 import Menu
 import Keyboard.Combo
@@ -34,18 +34,18 @@ main =
 
 
 type alias State =
-    { subjects : List ( Int, FutureAction )
+    { subjects : List ( Int, Subject )
     , loading : Bool
     , toasterMsg : String
     , tiredMode : Bool
     , apiEndpoint : String
-    , doneFutureActionName : String
+    , doneSubjectName : String
     , doneDescription : String
     , doneWhatToDoNext : String
-    , addFutureActionModal : Bool
+    , addSubjectModal : Bool
     , newComplexity : Int
     , newPriority : Int
-    , newFutureActionName : String
+    , newSubjectName : String
     , newWhatToDoNext : String
     , newObjective : String
     , sideMenu : Bool
@@ -87,7 +87,7 @@ init flags =
 
 
 type Msg
-    = NewList (Result Http.Error (Array FutureAction))
+    = NewList (Result Http.Error (Array Subject))
     | ToggleTiredMode
     | ToggleSideMenu
     | NoAction
@@ -172,7 +172,7 @@ view state =
         ]
 
 
-subjectsToHtml : List ( Int, FutureAction ) -> Html.Styled.Html Msg
+subjectsToHtml : List ( Int, Subject ) -> Html.Styled.Html Msg
 subjectsToHtml list =
     let
         innerList =
@@ -181,7 +181,7 @@ subjectsToHtml list =
         ul [ css [ listStyle none ] ] innerList
 
 
-subjectToHtml : ( Int, FutureAction ) -> Html.Styled.Html Msg
+subjectToHtml : ( Int, Subject ) -> Html.Styled.Html Msg
 subjectToHtml ( indice, subject ) =
     li
         [ subjectCss
@@ -222,7 +222,7 @@ subjectToHtml ( indice, subject ) =
         ]
 
 
-inlineInfoOfFutureAction subject =
+inlineInfoOfSubject subject =
     if subject.daysSinceLast > 0 then
         span
             [ css [ fontSize (Css.em 0.7), color defaultColors.textNormal ]
