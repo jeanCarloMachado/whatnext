@@ -2,6 +2,7 @@ import { Scheduler } from './Scheduler.elm';
 import { View } from './View.elm';
 import { History } from './History.elm';
 import { Login } from './Login.elm';
+import { Alter } from './Alter.elm';
 import registerServiceWorker from './registerServiceWorker';
 
 function getParameterByName(name, url) {
@@ -28,6 +29,10 @@ switch (page) {
 		break
 	case "scheduler":
 		obj = Scheduler
+		break
+	case "add":
+	case "alter":
+		obj = Alter
 		break
 	case "view":
 		obj = View

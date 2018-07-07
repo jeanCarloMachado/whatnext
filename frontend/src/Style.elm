@@ -1,10 +1,8 @@
 module Style exposing (..)
 
-import Html
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, src, placeholder, type_, id, class, value, required)
 import Html.Styled.Events exposing (..)
-import Html.Events.Extra exposing (targetValueIntParse)
 import Dom.Scroll
 import Css exposing (..)
 import SDK exposing (FutureAction, PastAction, DoneData)
@@ -96,7 +94,7 @@ inputCss =
         , borderStyle solid
         , borderColor (Css.hex "efeff4")
         , display block
-        , width (px 300)
+        , minWidth (px 300)
         , margin (px 1)
         , marginBottom (px 3)
         , padding (px 10)
@@ -148,3 +146,5 @@ inlineIf test ifTrue ifFalse =
         ifTrue
     else
         ifFalse
+
+

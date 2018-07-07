@@ -48,7 +48,6 @@ type alias FutureActionData r =
         , newComplexity : Int
         , newObjective : String
         , newWhatToDoNext : String
-        , openedFutureActionName : String
         , apiEndpoint : String
         , authToken : String
     }
@@ -176,7 +175,7 @@ addFutureActionRequest requestMetadata subjectData =
                 , ( "priority", Json.Encode.int subjectData.newPriority )
                 , ( "whatToDoNext", Json.Encode.string subjectData.newWhatToDoNext )
                 , ( "objective", Json.Encode.string subjectData.newObjective )
-                , ( "previousName", Json.Encode.string subjectData.openedFutureActionName )
+                , ( "previousName", Json.Encode.string "")
                 ]
     in
         Http.request

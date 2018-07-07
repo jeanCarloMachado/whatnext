@@ -63,8 +63,6 @@ type Msg
     | RemoveClick FutureAction
 
 -- | MyDoneMsg DoneMsg
--- | OpenAddModal
--- | OpedEditModal FutureAction
 -- | CancelAddFutureActionModal
 -- | ChangeFutureActionName String
 -- | ChangeWhatToDoNext String

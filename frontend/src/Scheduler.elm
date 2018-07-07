@@ -1,6 +1,5 @@
 module Scheduler exposing (..)
 
-
 import Html
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (property, css, href, src, placeholder, type_, id, class, value, required, defaultValue)
@@ -53,6 +52,7 @@ type alias State =
     , authToken : String
     }
 
+
 initialState flags =
     State
         []
@@ -72,13 +72,14 @@ initialState flags =
         False
         flags.authToken
 
+
 init : Flags -> ( State, Cmd Msg )
 init flags =
     let
-        state = initialState flags
-
+        state =
+            initialState flags
     in
-        ( state, Http.send NewList <| SDK.getListRequest state)
+        ( state, Http.send NewList <| SDK.getListRequest state )
 
 
 
@@ -92,15 +93,15 @@ type Msg
     | NoAction
 
 
-
 type alias Flags =
-    {
-      apiEndpoint : String,
-      authToken : String
+    { apiEndpoint : String
+    , authToken : String
     }
 
 
+
 -- update
+
 
 update : Msg -> State -> ( State, Cmd Msg )
 update msg model =
@@ -125,7 +126,6 @@ update msg model =
                 ( newState, Http.send NewList <| SDK.getListRequest newState )
 
 
-
 errorResult : State -> Error -> ( State, Cmd Msg )
 errorResult model msg =
     ( { model | toasterMsg = (toString msg), loading = False }, Cmd.none )
@@ -145,15 +145,17 @@ view state =
                 [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
                 , span [ class "slider" ] []
                 ]
-            , img
-                [ css
-                    [ marginLeft (px 30)
-                    , marginRight (px 10)
-                    , maxHeight (px 55)
+            , a [ href "?page=add" ]
+                [ img
+                    [ css
+                        [ marginLeft (px 30)
+                        , marginRight (px 10)
+                        , maxHeight (px 55)
+                        ]
+                    , src "images/add.png"
                     ]
-                , src "images/add.png"
+                    []
                 ]
-                []
             ]
         , --main content
           div
@@ -170,12 +172,11 @@ view state =
         ]
 
 
-
 subjectsToHtml : List ( Int, FutureAction ) -> Html.Styled.Html Msg
 subjectsToHtml list =
     let
         innerList =
-            List.map (subjectToHtml ) list
+            List.map (subjectToHtml) list
     in
         ul [ css [ listStyle none ] ] innerList
 
@@ -186,10 +187,8 @@ subjectToHtml ( indice, subject ) =
         [ subjectCss
         , id <| "subject_" ++ subject.name
         ]
-        [
-            a [href <| "?page=view&subjectName=" ++ subject.name ]
-            [
-                div []
+        [ a [ href <| "?page=view&subjectName=" ++ subject.name ]
+            [ div []
                 [ div
                     [ css
                         [ fontSize (Css.em 1.2)
@@ -223,16 +222,14 @@ subjectToHtml ( indice, subject ) =
         ]
 
 
-
 inlineInfoOfFutureAction subject =
-   if subject.daysSinceLast > 0 then
-    span
-        [ css [ fontSize (Css.em 0.7), color defaultColors.textNormal ]
-        ]
-        [ text <| " " ++ toString subject.daysSinceLast ++ " days ago" ]
-     else
-            Style.emptyNode
-
+    if subject.daysSinceLast > 0 then
+        span
+            [ css [ fontSize (Css.em 0.7), color defaultColors.textNormal ]
+            ]
+            [ text <| " " ++ toString subject.daysSinceLast ++ " days ago" ]
+    else
+        Style.emptyNode
 
 
 showMultilineText str =
@@ -254,7 +251,6 @@ subjectProperty name value =
         ]
 
 
-
 subjectCss =
     css
         [ display block
@@ -264,7 +260,6 @@ subjectCss =
         , backgroundColor <| Css.rgb 255 255 255
         , borderStyle none
         ]
-
 
 
 pastEntryToHtml : PastAction -> Html Msg

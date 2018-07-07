@@ -29,7 +29,7 @@ type PageMode
     | SignupPage
 
 
-type alias Model =
+type alias State =
     { email : String
     , password : String
     , apiEndpoint : String
@@ -39,9 +39,9 @@ type alias Model =
     }
 
 
-init : Flags -> ( Model, Cmd Msg )
+init : Flags -> ( State, Cmd Msg )
 init flags =
-    ( Model "" "" flags.apiEndpoint "" LoginPage False, Cmd.none )
+    ( State "" "" flags.apiEndpoint "" LoginPage False, Cmd.none )
 
 
 type Msg
@@ -82,20 +82,20 @@ update msg state =
 
         RequestResult (Err msg) ->
             let
-                newModel =
+                newState =
                     Loader.disableLoading state
             in
                 case msg of
                     Http.BadStatus response ->
                         case (response.body |> Json.Decode.decodeString decodeError) of
                             Ok string ->
-                                ( { newModel | errorMessage = string }, Cmd.none )
+                                ( { newState | errorMessage = string }, Cmd.none )
 
                             _ ->
-                                ( { newModel | errorMessage = "Generic error 2" }, Cmd.none )
+                                ( { newState | errorMessage = "Generic error 2" }, Cmd.none )
 
                     _ ->
-                        ( { newModel | errorMessage = "Generic Error" }, Cmd.none )
+                        ( { newState | errorMessage = "Generic Error" }, Cmd.none )
 
         TogglePageMode ->
             ( { state | pageMode = togglePageMode state.pageMode }, Cmd.none )
@@ -244,7 +244,7 @@ view state =
         ]
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : State -> Sub Msg
 subscriptions state =
     Sub.none
 
