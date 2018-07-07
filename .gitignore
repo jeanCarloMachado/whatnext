@@ -12,3 +12,4 @@ frontend/build
 data/*
 builds/*
 api/fileStorageGateway/Scheduler
+api/api
