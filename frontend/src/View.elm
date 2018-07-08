@@ -116,8 +116,6 @@ update msg state =
 
 
 
-
-
 -- view
 
 
@@ -135,27 +133,22 @@ view state =
 
                 --top menu
                 , Menu.topBarHtml ToggleSideMenu
-                    [
-                    img
-                    [ css Style.topMenuIconCss
-                    , onClick <| RemoveClick subject
-                    , src "images/remove.png"
-                    ]
-                    []
-
-                      , a
-                        [ css (Style.buttonCss)
-                          , href <| "?page=alter&subjectName=" ++ subject.name
+                    [ img
+                        [ css Style.topMenuIconCss
+                        , onClick <| RemoveClick subject
+                        , src "images/remove.png"
                         ]
-                        [
-                            img
+                        []
+                    , a
+                        [ href <| "?page=alter&subjectName=" ++ subject.name
+                        ]
+                        [ img
                             [ css Style.topMenuIconCss
                             , src "images/edit.png"
                             ]
                             []
                         ]
-                      ,
-                      Style.doneButton <| Just subject.name
+                    , Style.doneButton <| Just subject.name
                     ]
                 , --main content
                   div
@@ -186,12 +179,12 @@ viewSubject subject =
                 ]
                 [ div []
                     [ h1
-                        [ class "noselect"
-                        , css
+                        [ css
                             [ display inline
                             , color defaultColors.textHighlight
                             , marginRight (px 20)
                             , marginLeft (px 20)
+                            , fontSize (Css.em 1.8)
                             ]
                         ]
                         [ text subject.name ]

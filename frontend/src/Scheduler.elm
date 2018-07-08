@@ -142,8 +142,8 @@ view state =
         , Menu.topBarHtml ToggleSideMenu
             [
               tiredButton
-            ,
-              Style.addButton
+              , Style.addButton
+              , Style.doneButton Nothing
             ]
         , --main content
           div
@@ -176,7 +176,6 @@ tiredButton = div [
                 [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
                 , span [ class "slider" ] []
                 ]
-              , Style.doneButton Nothing
               ]
 
 

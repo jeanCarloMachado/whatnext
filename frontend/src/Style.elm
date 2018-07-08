@@ -149,8 +149,10 @@ inlineIf test ifTrue ifFalse =
 
 topMenuIconCss =
       [ marginLeft (px 35)
-        , height (px 44)
+        , height (px buttonHeight)
       ]
+
+buttonHeight = 39
 
 doneButton : Maybe String -> Html msg
 doneButton subjectName  =
@@ -161,21 +163,21 @@ doneButton subjectName  =
       doneButtonHtml "?page=done"
 
 doneButtonHtml url = a
-    [ href url , css topMenuIconCss]
+    [ href url , css <| List.append [marginRight (px 25) ] topMenuIconCss]
     [
         img
         [
-        css [height (px 44)]
+        css [height (px buttonHeight )]
         , src "images/done.png"
         ]
         []
     ]
 
 
-addButton = a [ href "?page=add", css <| List.append topMenuIconCss [marginRight (px 25) ]  ]
+addButton = a [ href "?page=add", css  topMenuIconCss   ]
                 [ img
                     [
-                    css [height (px 44)]
+                    css [height (px buttonHeight )]
                     , src "images/add.png"
                     ]
                     []

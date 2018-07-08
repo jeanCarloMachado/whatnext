@@ -1,16 +1,10 @@
 module Menu exposing (..)
 
-import Html
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, src, placeholder, type_, id, class, value, required, defaultValue)
 import Html.Styled.Events exposing (..)
-import Html.Events.Extra exposing (targetValueIntParse)
-import Dom.Scroll
-import Toaster exposing (..)
 import Css exposing (..)
 import Style exposing (defaultColors)
-import DOM
-
 
 type alias MenuState r =
     { r
@@ -53,6 +47,7 @@ dropdownMenuItemCss = [
                 zIndex (Css.int 333),
                 marginTop (px 20)
     ]
+
 
 sideBarHtml toggleMenuEvent =
     div
