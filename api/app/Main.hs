@@ -54,10 +54,9 @@ main = do
       alterInfo <- jsonData :: ActionM AlterInfo
       runAuthenticatedService wnDir $ alter wnDir alterInfo
     get "/log" $ do runAuthenticatedService wnDir $ getLogs wnDir
-    post "/done/:subjectName" $ do
-      subjectName <- param "subjectName"
+    post "/done" $ do
       doneInfo <- jsonData :: ActionM DoneInfo
-      runAuthenticatedService wnDir $ done wnDir subjectName doneInfo
+      runAuthenticatedService wnDir $ done wnDir doneInfo
     notFound $ do text "Invalid route"
 
 --- state IO
@@ -75,12 +74,12 @@ alter wnDir alterInfo _ = do
       , previousName alterInfo
       ]
 
-done wnDir subjectName doneInfo (Right token) = return $ Right token
-done wnDir subjectName doneInfo _ = do
+done wnDir doneInfo (Right token) = return $ Right token
+done wnDir doneInfo _ = do
   liftIO $ readProcess (wnDir ++ "/" ++ "done.sh") infoList ""
   return $ Left "{\"status\": \"success\"}"
   where
-    infoList = [subjectName, description doneInfo, followup doneInfo]
+    infoList = [subjectName doneInfo, description doneInfo, followup doneInfo]
 
 remove wnDir subjectName (Right token) = return $ Right token
 remove wnDir subjectName _ = do
@@ -220,6 +219,7 @@ instance FromJSON AlterInfo
 data DoneInfo = DoneInfo
   { description :: String
   , followup    :: String
+  , subjectName    :: String
   } deriving (Generic, Show)
 
 instance ToJSON DoneInfo

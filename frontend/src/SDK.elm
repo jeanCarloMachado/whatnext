@@ -19,27 +19,6 @@ type alias Subject =
     , objective : String
     }
 
-emptySubject : Subject
-emptySubject = Subject
-                ""
-                0
-                0
-                []
-                ""
-                50
-                50
-                ""
-
-setName subject name =
-  {subject | name = name }
-setComplexity subject complexity =
-  {subject | complexity = complexity }
-setPriority subject priority =
-  {subject | priority = priority }
-setObjective subject objective =
-  {subject | objective = objective }
-setWhatToDoNext subject whatToDoNext =
-  {subject | whatToDoNext = whatToDoNext }
 
 
 type alias PastAction =
@@ -48,13 +27,6 @@ type alias PastAction =
     , subjectName : String
     }
 
-
-type alias DoneData r =
-    { r
-        | doneSubjectName : String
-        , doneDescription : String
-        , doneWhatToDoNext : String
-    }
 
 type alias RequestMetadata r =
     { r
@@ -70,18 +42,18 @@ type alias SubjectData r =
         , newComplexity : Int
         , newObjective : String
         , newWhatToDoNext : String
-        , apiEndpoint : String
-        , authToken : String
     }
 
 
+type alias DoneInfo r =
+    { r
+        | subjectName : String
+        , description : String
+        , whatToDoNext : String
+    }
+
 
 --- api
-
-
-setCurrentDoneSubject : DoneData r -> String -> DoneData r
-setCurrentDoneSubject doneData name =
-    { doneData | doneSubjectName = name }
 
 
 replaceSame : Subject -> ( Int, Subject ) -> ( Int, Subject )
@@ -126,15 +98,17 @@ decodePastAction =
 --- requests
 
 
-doneRequest requestMetadata doneData =
+doneRequest : RequestMetadata r -> DoneInfo i -> Http.Request String
+doneRequest requestMetadata doneInfo =
     let
         url =
-            requestMetadata.apiEndpoint ++ "/done/" ++ doneData.doneSubjectName
+            requestMetadata.apiEndpoint ++ "/done"
 
         body =
             Json.Encode.object
-                [ ( "description", Json.Encode.string doneData.doneDescription )
-                , ( "followup", Json.Encode.string doneData.doneWhatToDoNext )
+                [ ( "description", Json.Encode.string doneInfo.description )
+                , ( "followup", Json.Encode.string doneInfo.whatToDoNext )
+                , ( "subjectName", Json.Encode.string doneInfo.subjectName )
                 ]
     in
         Http.request
@@ -272,4 +246,33 @@ decodeHistory =
 
 errorResult state msg =
     ( { state | toasterMsg = (toString msg), loading = False }, Cmd.none )
+
+
+--- default values
+
+emptySubject : Subject
+emptySubject = Subject
+                ""
+                0
+                0
+                []
+                ""
+                50
+                50
+                ""
+
+
+--- setters
+
+setName subject name =
+  {subject | name = name }
+setComplexity subject complexity =
+  {subject | complexity = complexity }
+setPriority subject priority =
+  {subject | priority = priority }
+setObjective subject objective =
+  {subject | objective = objective }
+setWhatToDoNext subject whatToDoNext =
+  {subject | whatToDoNext = whatToDoNext }
+
 

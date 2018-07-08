@@ -6,7 +6,7 @@ import Html.Styled.Attributes exposing (property, css, href, src, placeholder, t
 import Html.Styled.Events exposing (..)
 import Toaster exposing (..)
 import Css exposing (..)
-import SDK exposing (Subject, PastAction, DoneData)
+import SDK exposing (Subject, PastAction)
 import Style exposing (defaultColors)
 import Menu
 import Keyboard.Combo

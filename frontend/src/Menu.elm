@@ -8,7 +8,6 @@ import Html.Events.Extra exposing (targetValueIntParse)
 import Dom.Scroll
 import Toaster exposing (..)
 import Css exposing (..)
-import SDK exposing (Subject, PastAction, DoneData)
 import Style exposing (defaultColors)
 import DOM
 
