@@ -146,6 +146,11 @@ view state =
                           , href <| "?page=alter&subjectName=" ++ subject.name
                         ]
                         [ text "Edit" ]
+                      , a
+                        [ css (Style.buttonCss)
+                          , href <| "?page=done&subjectName=" ++ subject.name
+                        ]
+                        [ text "Done" ]
                     ]
                 , --main content
                   div

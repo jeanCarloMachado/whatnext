@@ -35,7 +35,16 @@ init : Flags -> ( State, Cmd Msg )
 init flags =
     let
         state =
-            State "" False False "" flags.authToken flags.apiEndpoint "" "" ""
+            State
+               ""
+               False
+               False
+               ""
+               flags.authToken
+               flags.apiEndpoint
+               flags.subjectName
+               ""
+               ""
     in
         ( state, Cmd.none )
 
@@ -150,6 +159,7 @@ content state =
                 , placeholder "Name"
                 , Html.Styled.Attributes.required True
                 , onInput ChangeSubjectName
+                , defaultValue state.subjectName
                 ]
                 []
             ]
