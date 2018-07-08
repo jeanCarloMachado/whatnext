@@ -19,6 +19,28 @@ type alias Subject =
     , objective : String
     }
 
+emptySubject : Subject
+emptySubject = Subject
+                ""
+                0
+                0
+                []
+                ""
+                50
+                50
+                ""
+
+setName subject name =
+  {subject | name = name }
+setComplexity subject complexity =
+  {subject | complexity = complexity }
+setPriority subject priority =
+  {subject | priority = priority }
+setObjective subject objective =
+  {subject | objective = objective }
+setWhatToDoNext subject whatToDoNext =
+  {subject | whatToDoNext = whatToDoNext }
+
 
 type alias PastAction =
     { date : String
@@ -162,7 +184,7 @@ getDetail requestMetadata subjectName =
         request
 
 
-addSubjectRequest : RequestMetadata r -> SubjectData r -> Http.Request String
+addSubjectRequest : RequestMetadata r -> Subject -> Http.Request String
 addSubjectRequest requestMetadata subjectData =
     let
         url =
@@ -170,11 +192,11 @@ addSubjectRequest requestMetadata subjectData =
 
         body =
             Json.Encode.object
-                [ ( "name", Json.Encode.string subjectData.newSubjectName )
-                , ( "complexity", Json.Encode.int subjectData.newComplexity )
-                , ( "priority", Json.Encode.int subjectData.newPriority )
-                , ( "whatToDoNext", Json.Encode.string subjectData.newWhatToDoNext )
-                , ( "objective", Json.Encode.string subjectData.newObjective )
+                [ ( "name", Json.Encode.string subjectData.name )
+                , ( "complexity", Json.Encode.int subjectData.complexity )
+                , ( "priority", Json.Encode.int subjectData.priority )
+                , ( "whatToDoNext", Json.Encode.string subjectData.whatToDoNext )
+                , ( "objective", Json.Encode.string subjectData.objective )
                 , ( "previousName", Json.Encode.string "")
                 ]
     in
@@ -246,3 +268,8 @@ getHistory state =
 
 decodeHistory =
     Json.Decode.array decodePastAction
+
+
+errorResult state msg =
+    ( { state | toasterMsg = (toString msg), loading = False }, Cmd.none )
+

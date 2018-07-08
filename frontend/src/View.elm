@@ -62,6 +62,8 @@ type Msg
     | Remove (Result Http.Error String)
     | RemoveClick Subject
 
+
+
 -- | MyDoneMsg DoneMsg
 -- | CancelAddSubjectModal
 -- | ChangeSubjectName String
@@ -79,6 +81,7 @@ type Msg
 --     | SubmitDone
 --     | CancelDone
 
+
 update : Msg -> State -> ( State, Cmd Msg )
 update msg state =
     case msg of
@@ -92,9 +95,10 @@ update msg state =
             ( { state | subject = Just subject } |> Loader.disableLoading, Cmd.none )
 
         GetDetail (Err msg) ->
-            errorResult
+            SDK.errorResult
                 state
                 msg
+
         RemoveClick subject ->
             ( state |> Loader.enableLoading
             , Http.send Remove <| SDK.removeRequest state subject
@@ -104,14 +108,12 @@ update msg state =
             ( state |> Loader.enableLoading, Navigation.load "?page=scheduler" )
 
         Remove (Err msg) ->
-            errorResult state msg
+            SDK.errorResult state msg
 
         None ->
             ( state, Cmd.none )
 
 
-errorResult state msg =
-    ( { state | toasterMsg = (toString msg), loading = False }, Cmd.none )
 
 
 
@@ -133,12 +135,18 @@ view state =
                 --top menu
                 , Menu.topBarHtml ToggleSideMenu
                     [
-                        button
-                    [ css (Style.buttonCss |> Style.overrideBackgroundColor defaultColors.fail)
-                    , Style.onClickStoppingPropagation <| RemoveClick subject
-                    ]
-                    [ text "Archive" ]
+                      button
+                        [ css (Style.buttonCss |> Style.overrideBackgroundColor defaultColors.fail)
+                        , Style.onClickStoppingPropagation <| RemoveClick subject
                         ]
+                        [ text "Archive" ]
+
+                      , a
+                        [ css (Style.buttonCss)
+                          , href <| "?page=alter&subjectName=" ++ subject.name
+                        ]
+                        [ text "Edit" ]
+                    ]
                 , --main content
                   div
                     [ css [ marginTop (px 50), marginLeft (px 10), marginRight (px 10) ] ]
@@ -154,70 +162,70 @@ view state =
 
 viewSubject : Subject -> Html.Styled.Html Msg
 viewSubject subject =
-            div
-                [ subjectCss ]
+    div
+        [ subjectCss ]
+        [ div []
+            [ div
+                [ css
+                    [ fontSize (Css.em 1.2)
+                    , displayFlex
+                    , justifyContent spaceBetween
+                    , flexDirection row
+                    , alignItems center
+                    ]
+                ]
                 [ div []
+                    [ h1
+                        [ class "noselect"
+                        , css
+                            [ display inline
+                            , color defaultColors.textHighlight
+                            , marginRight (px 20)
+                            , marginLeft (px 20)
+                            ]
+                        ]
+                        [ text subject.name ]
+                    ]
+                ]
+            , div []
+                [ --properity container
+                  div [ css [ displayFlex ] ]
                     [ div
                         [ css
-                            [ fontSize (Css.em 1.2)
-                            , displayFlex
+                            [ displayFlex
                             , justifyContent spaceBetween
-                            , flexDirection row
-                            , alignItems center
+                            , width (pct 70)
+                            , minWidth (px 300)
+                            , flexWrap wrap
                             ]
                         ]
                         [ div []
-                            [ h1
-                                [ class "noselect"
-                                , css
-                                    [ display inline
-                                    , color defaultColors.textHighlight
-                                    , marginRight (px 20)
-                                    , marginLeft (px 20)
-                                    ]
-                                ]
-                                [ text subject.name ]
-                            ]
-                        ]
-                    , div []
-                        [ --properity container
-                          div [ css [ displayFlex ] ]
-                            [ div
-                                [ css
-                                    [ displayFlex
-                                    , justifyContent spaceBetween
-                                    , width (pct 70)
-                                    , minWidth (px 300)
-                                    , flexWrap wrap
-                                    ]
-                                ]
-                                [ div []
-                                    [ subjectProperty "Priority" <| toString subject.priority
-                                    , subjectProperty "Complexity" <| toString subject.complexity
-                                    ]
-                                , div []
-                                    [ subjectProperty "Last session" <| toString subject.daysSinceLast ++ " days ago"
-                                    , subjectProperty "Already invested" <| (toString subject.timeAlreadyInvested) ++ " minutes"
-                                    ]
-                                ]
-                            ]
-                        , div
-                            []
-                            [ span [ css [ margin (px 20), color defaultColors.textNormal, fontWeight bold ] ] [ text "Objective: " ]
-                            , p [ css [ display block, margin (px 30), fontSize (Css.em 0.9) ] ] [ showMultilineText subject.objective ]
-                            ]
-                        , div
-                            []
-                            [ span [ css [ margin (px 20), color defaultColors.textNormal, fontWeight bold ] ] [ text "Next Action: " ]
-                            , p [ css [ display block, margin (px 30), fontSize (Css.em 0.9) ] ] [ showMultilineText subject.whatToDoNext ]
+                            [ subjectProperty "Priority" <| toString subject.priority
+                            , subjectProperty "Complexity" <| toString subject.complexity
                             ]
                         , div []
-                            [ h2 [ css [ textAlign center, marginTop (px 50), fontWeight bold ] ] [ text "History" ]
-                            , ul [ css [ margin (px 30) ] ] (List.map pastEntryToHtml subject.history)
+                            [ subjectProperty "Last session" <| toString subject.daysSinceLast ++ " days ago"
+                            , subjectProperty "Already invested" <| (toString subject.timeAlreadyInvested) ++ " minutes"
                             ]
                         ]
                     ]
+                , div
+                    []
+                    [ span [ css [ margin (px 20), color defaultColors.textNormal, fontWeight bold ] ] [ text "Objective: " ]
+                    , p [ css [ display block, margin (px 30), fontSize (Css.em 0.9) ] ] [ showMultilineText subject.objective ]
+                    ]
+                , div
+                    []
+                    [ span [ css [ margin (px 20), color defaultColors.textNormal, fontWeight bold ] ] [ text "Next Action: " ]
+                    , p [ css [ display block, margin (px 30), fontSize (Css.em 0.9) ] ] [ showMultilineText subject.whatToDoNext ]
+                    ]
+                , div []
+                    [ h2 [ css [ textAlign center, marginTop (px 50), fontWeight bold ] ] [ text "History" ]
+                    , ul [ css [ margin (px 30) ] ] (List.map pastEntryToHtml subject.history)
+                    ]
                 ]
+            ]
+        ]
 
 
 showMultilineText str =
@@ -237,6 +245,7 @@ subjectProperty name value =
             [ text <| name ++ ": " ]
         , span [] [ text value ]
         ]
+
 
 pastEntryToHtml : PastAction -> Html Msg
 pastEntryToHtml pastEntry =

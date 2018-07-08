@@ -14,12 +14,16 @@ import Toaster exposing (..)
 import SDK
 import Http
 import Navigation
+import SDK exposing (Subject)
+import String
 
 
 type alias Flags =
     { apiEndpoint : String
     , authToken : String
+    , subjectName : String
     }
+
 
 main =
     Html.programWithFlags
@@ -29,25 +33,31 @@ main =
         , subscriptions = subscriptions
         }
 
+
 init : Flags -> ( State, Cmd Msg )
 init flags =
-    ( State "" False False 50 "" 50 "" "" "" "" flags.authToken flags.apiEndpoint, Cmd.none )
+    let
+        subject = SDK.emptySubject
+        state = State "" False False "" subject flags.authToken flags.apiEndpoint
+    in
+        if String.isEmpty flags.subjectName
+        then
+          ( state , Cmd.none )
+        else
+          ( state , Http.send GetDetail <| SDK.getDetail state flags.subjectName )
+
+
 
 type alias State =
-    {
-    errorMessage : String
+    { errorMessage : String
     , sideMenu : Bool
     , loading : Bool
-    , newComplexity : Int
-    , newSubjectName : String
-    , newPriority : Int
-    , newSubjectName : String
-    , newWhatToDoNext : String
-    , newObjective: String
     , toasterMsg : String
+    , subject : Subject
     , authToken : String
     , apiEndpoint : String
     }
+
 
 type Msg
     = None
@@ -59,136 +69,154 @@ type Msg
     | ChangeComplexity Int
     | AlterSubjectSubmit
     | NewSubjectResult (Result Http.Error String)
+    | GetDetail (Result Http.Error Subject)
+
 
 update : Msg -> State -> ( State, Cmd Msg )
 update msg state =
     case msg of
         ToggleSideMenu ->
             ( Menu.toggle state, Cmd.none )
+
         None ->
             ( state, Cmd.none )
+
         ChangeComplexity complexity ->
-            ( { state | newComplexity = complexity }, Cmd.none )
+            ( { state | subject = SDK.setComplexity state.subject complexity}, Cmd.none )
 
         ChangePriority priority ->
-            ( { state | newPriority = priority * 10 }, Cmd.none )
+            ( { state | subject = SDK.setPriority state.subject <| priority * 10 }, Cmd.none )
 
-        ChangeSubjectName subjectName ->
-            ( { state | newSubjectName = subjectName }, Cmd.none )
+        ChangeSubjectName name ->
+            ( { state | subject = SDK.setName state.subject name }, Cmd.none )
 
         ChangeWhatToDoNext whatToDoNext ->
-            ( { state | newWhatToDoNext = whatToDoNext }, Cmd.none )
+            ( { state | subject = SDK.setWhatToDoNext state.subject whatToDoNext }, Cmd.none )
 
         ChangeObjective objective ->
-            ( { state | newObjective = objective }, Cmd.none )
+            ( { state | subject = SDK.setObjective state.subject objective }, Cmd.none )
 
         AlterSubjectSubmit ->
             ( Loader.enableLoading state
-            , Http.send NewSubjectResult <| SDK.addSubjectRequest state state
+            , Http.send NewSubjectResult <| SDK.addSubjectRequest state state.subject
             )
         NewSubjectResult _ ->
             ( state, Navigation.load "?page=scheduler" )
 
+        GetDetail (Ok subject) ->
+            ( { state | subject = subject } |> Loader.disableLoading, Cmd.none )
+
+        GetDetail (Err msg) ->
+            SDK.errorResult
+                state
+                msg
+
+
+
 view : State -> Html.Styled.Html Msg
 view state =
-      div [ css [ color defaultColors.textNormal ] ]
-          [ --- left meu
-            Menu.sideBarHtmlOptional state <|
-              Menu.sideBarHtml ToggleSideMenu
-          --top menu
-          , Menu.topBarHtml ToggleSideMenu
-              [
-                button
+    div [ css [ color defaultColors.textNormal ] ]
+        [ --- left meu
+          Menu.sideBarHtmlOptional state <|
+            Menu.sideBarHtml ToggleSideMenu
+
+        --top menu
+        , Menu.topBarHtml ToggleSideMenu
+            [ button
                 [ css <| List.append Style.buttonCss [ backgroundColor defaultColors.success ]
                 , onClick (AlterSubjectSubmit)
                 ]
                 [ text "Confirm" ]
-              ]
-          , --main content
-            div
-              [ css [ marginTop (px 50), marginLeft (px 10), marginRight (px 10) ] ]
-              [
-                Loader.getLoadingHtml state.loading
-              , Toaster.html state.toasterMsg
-              , div []
-                  [ content state
-                  ]
-              ]
-          ]
-
-
-content state = div []
-                [ div
-                    [ css
-                        [ displayFlex
-                        , justifyContent center
-                        , flexDirection column
-                        , alignItems center
-                        ]
-                    ]
-                    [ input
-                        [
-                        Style.inputCss
-                        , type_ "text"
-                        , placeholder "Subject name"
-                        , onInput (ChangeSubjectName)
-                        , Html.Styled.Attributes.required True
-                        ]
-                        []
-                    , select
-                        [ css Style.selectCss
-                        , on "change" (Json.Decode.map (ChangePriority) targetValueIntParse)
-                        ]
-                        (renderPriorityOptions state.newPriority)
-                    , select
-                        [ css Style.selectCss
-                        , on "change" (Json.Decode.map (ChangeComplexity) targetValueIntParse)
-                        ]
-                        (renderComplexityOptions <| toString state.newComplexity)
-                    , span []
-                        [ label [ css Style.labelCss ] [ text "Objective" ]
-                        , textarea
-                            [ defaultValue state.newObjective
-                            , css <| List.append Style.textAreaCss [ minHeight (px 35)]
-                            , placeholder "After finishing studying this subject will be able to ..."
-                            , onInput (ChangeObjective)
-                            , Html.Styled.Attributes.required False
-                            ]
-                            []
-                        ]
-                    , span []
-                        [ label [] [ text "Next step" ]
-                        , textarea
-                            [ defaultValue state.newWhatToDoNext
-                            , css <| List.append Style.textAreaCss [  minHeight (px 35) ]
-                            , placeholder "do x y z"
-                            , onInput (ChangeWhatToDoNext)
-                            , Html.Styled.Attributes.required False
-                            ]
-                            []
-                        ]
-                    ]
+            ]
+        , --main content
+          div
+            [ css [ marginTop (px 50), marginLeft (px 10), marginRight (px 10) ] ]
+            [ Loader.getLoadingHtml state.loading
+            , Toaster.html state.toasterMsg
+            , div []
+                [ content state
                 ]
+            ]
+        ]
 
+
+content state =
+    div []
+        [ div
+            [ css
+                [ displayFlex
+                , justifyContent center
+                , flexDirection column
+                , alignItems center
+                ]
+            ]
+            [
+             span []
+                [ label [ css Style.labelCss ] [ text "Subject name" ]
+              , input
+                [ Style.inputCss
+                , type_ "text"
+                , placeholder "Name"
+                , onInput (ChangeSubjectName)
+                , Html.Styled.Attributes.required True
+                , defaultValue state.subject.name
+                ]
+                []
+                ]
+            , span []
+                [ label [ css Style.labelCss ] [ text "Priority" ]
+                , select
+                    [ css Style.selectCss
+                    , on "change" (Json.Decode.map (ChangePriority) targetValueIntParse)
+                    ]
+                    (renderPriorityOptions state.subject.priority)
+                ]
+            , span []
+                [ label [ css Style.labelCss ] [ text "Complexity" ]
+                ,select [ css Style.selectCss
+                , on "change" (Json.Decode.map (ChangeComplexity) targetValueIntParse)
+                ]
+                (renderComplexityOptions <| toString state.subject.complexity)
+                ]
+            , span []
+                [ label [ css Style.labelCss ] [ text "Objective" ]
+                , textarea
+                    [ defaultValue state.subject.objective
+                    , css <| List.append Style.textAreaCss [ minHeight (px 35) ]
+                    , placeholder "After finishing studying this subject will be able to ..."
+                    , onInput (ChangeObjective)
+                    , Html.Styled.Attributes.required False
+                    ]
+                    []
+                ]
+            , span []
+                [ label [] [ text "Next step" ]
+                , textarea
+                    [ defaultValue state.subject.whatToDoNext
+                    , css <| List.append Style.textAreaCss [ minHeight (px 35) ]
+                    , placeholder "do x y z"
+                    , onInput (ChangeWhatToDoNext)
+                    , Html.Styled.Attributes.required False
+                    ]
+                    []
+                ]
+            ]
+        ]
 
 
 subscriptions : State -> Sub Msg
 subscriptions state =
     Sub.none
 
+
 priority =
-    [ ( "0", "0 - No Priority" )
-    , ( "1", "1 - Low Priority" )
-    , ( "2", "2" )
-    , ( "3", "3" )
-    , ( "4", "4" )
-    , ( "5", "5 - Medium Priority" )
-    , ( "6", "6" )
-    , ( "7", "7" )
-    , ( "8", "8" )
-    , ( "9", "9" )
-    , ( "10", "10 - Higest Priority" )
+    [ ( "0", "No Priority" )
+    , ( "2", "Low" )
+    , ( "5", "Medium" )
+    , ( "7", "High" )
+    , ( "10", "Higest" )
     ]
+
 
 renderPriorityOptions defaultValue =
     let
@@ -198,13 +226,13 @@ renderPriorityOptions defaultValue =
         List.map (\option -> Style.optionFromTuple defaultValueNew option) priority
 
 
-
 complexity =
     [ ( "10", "Easy" )
     , ( "50", "Medium" )
     , ( "80", "Hard" )
     , ( "100", "Hardest" )
     ]
+
 
 renderComplexityOptions defaultValue =
     List.map (\option -> Style.optionFromTuple defaultValue option) complexity
