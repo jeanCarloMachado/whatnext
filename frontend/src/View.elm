@@ -4,6 +4,7 @@ import Navigation
 import Html
 import Http
 import Html.Styled exposing (..)
+import Html.Styled.Events exposing (..)
 import SDK exposing (Subject, PastAction)
 import Loader
 import Menu
@@ -135,22 +136,26 @@ view state =
                 --top menu
                 , Menu.topBarHtml ToggleSideMenu
                     [
-                      button
-                        [ css (Style.buttonCss |> Style.overrideBackgroundColor defaultColors.fail)
-                        , Style.onClickStoppingPropagation <| RemoveClick subject
-                        ]
-                        [ text "Archive" ]
+                    img
+                    [ css Style.topMenuIconCss
+                    , onClick <| RemoveClick subject
+                    , src "images/remove.png"
+                    ]
+                    []
 
                       , a
                         [ css (Style.buttonCss)
                           , href <| "?page=alter&subjectName=" ++ subject.name
                         ]
-                        [ text "Edit" ]
-                      , a
-                        [ css (Style.buttonCss)
-                          , href <| "?page=done&subjectName=" ++ subject.name
+                        [
+                            img
+                            [ css Style.topMenuIconCss
+                            , src "images/edit.png"
+                            ]
+                            []
                         ]
-                        [ text "Done" ]
+                      ,
+                      Style.doneButton <| Just subject.name
                     ]
                 , --main content
                   div

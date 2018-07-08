@@ -140,29 +140,10 @@ view state =
 
         --top menu
         , Menu.topBarHtml ToggleSideMenu
-            [ span [ css [ marginRight (px 10), color (Css.hex "ffffff") ] ] [ text "Tired" ]
-            , label [ class "switch" ]
-                [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
-                , span [ class "slider" ] []
-                ]
-              , a
-                [ css (Style.buttonCss)
-                  , href <| "?page=done"
-                ]
-                [ text "Done" ]
-            , a [ href "?page=add" ]
-                [ img
-                    [ css
-                        [ marginLeft (px 30)
-                        , marginRight (px 10)
-                        , maxHeight (px 55)
-                        ]
-                    , src "images/add.png"
-                    ]
-                    []
-                ]
-
-
+            [
+              tiredButton
+            ,
+              Style.addButton
             ]
         , --main content
           div
@@ -177,6 +158,26 @@ view state =
                 ]
             ]
         ]
+
+
+tiredButton = div [
+        css [ backgroundColor defaultColors.barColor
+            , displayFlex
+            , justifyContent spaceBetween
+            , flexDirection row
+            , minHeight (px 50)
+            , alignItems center
+            ]
+
+      ] [
+            span [ css [ marginRight (px 10), color (Css.hex "ffffff") ] ] [ text "Tired" ]
+            ,
+            label [ class "switch" ]
+                [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
+                , span [ class "slider" ] []
+                ]
+              , Style.doneButton Nothing
+              ]
 
 
 subjectsToHtml : List ( Int, Subject ) -> Html.Styled.Html Msg

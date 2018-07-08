@@ -14,7 +14,6 @@ import Http
 import Navigation
 import SDK exposing (Subject)
 
-
 type alias Flags =
     { apiEndpoint : String
     , authToken : String

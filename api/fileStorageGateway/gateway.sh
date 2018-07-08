@@ -43,16 +43,6 @@ subjectJson() {
     $__dir/conf2json.sh "$subject"
 }
 
-goalExists() {
-    goalName="$1"
-    goals=$(cat $WHATNEXT_GOALS)
-    result=$(echo "$goals" | jq ".$goalName")
-    test "$result" != "null"
-}
-
-getGoals() {
-    cat $WHATNEXT_GOALS
-}
 
 subjectExists() {
     subject="$1"

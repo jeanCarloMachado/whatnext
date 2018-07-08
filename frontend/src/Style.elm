@@ -3,9 +3,9 @@ module Style exposing (..)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, src, placeholder, type_, id, class, value, required)
 import Html.Styled.Events exposing (..)
-import Dom.Scroll
 import Css exposing (..)
 import Json.Decode
+import List
 
 
 type alias Colors =
@@ -145,5 +145,40 @@ inlineIf test ifTrue ifFalse =
         ifTrue
     else
         ifFalse
+
+
+topMenuIconCss =
+      [ marginLeft (px 35)
+        , height (px 44)
+      ]
+
+doneButton : Maybe String -> Html msg
+doneButton subjectName  =
+  case subjectName of
+    Just name ->
+       doneButtonHtml <| "?page=done&subjectName=" ++ name
+    Nothing ->
+      doneButtonHtml "?page=done"
+
+doneButtonHtml url = a
+    [ href url , css topMenuIconCss]
+    [
+        img
+        [
+        css [height (px 44)]
+        , src "images/done.png"
+        ]
+        []
+    ]
+
+
+addButton = a [ href "?page=add", css <| List.append topMenuIconCss [marginRight (px 25) ]  ]
+                [ img
+                    [
+                    css [height (px 44)]
+                    , src "images/add.png"
+                    ]
+                    []
+                ]
 
 
