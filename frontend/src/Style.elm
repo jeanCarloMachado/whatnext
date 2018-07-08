@@ -19,6 +19,7 @@ type alias Colors =
     , success : Css.Color
     , fail : Css.Color
     , barColor : Css.Color
+    , invertedHighlight : Css.Color
     }
 
 
@@ -34,6 +35,7 @@ defaultColors =
         (Css.rgb 76 217 100)
         (Css.hex "ff2d55")
         (Css.rgb 0 122 255)
+        (Css.hex "f0f0f0")
 
 
 modalCss =
@@ -84,8 +86,10 @@ textAreaCss =
     , height (px 150)
     ]
 
+
 labelCss =
     []
+
 
 inputCss =
     css
@@ -148,39 +152,41 @@ inlineIf test ifTrue ifFalse =
 
 
 topMenuIconCss =
-      [ marginLeft (px 35)
-        , height (px buttonHeight)
-      ]
-
-buttonHeight = 39
-
-doneButton : Maybe String -> Html msg
-doneButton subjectName  =
-  case subjectName of
-    Just name ->
-       doneButtonHtml <| "?page=done&subjectName=" ++ name
-    Nothing ->
-      doneButtonHtml "?page=done"
-
-doneButtonHtml url = a
-    [ href url , css <| List.append [marginRight (px 25) ] topMenuIconCss]
-    [
-        img
-        [
-        css [height (px buttonHeight )]
-        , src "images/done.png"
-        ]
-        []
+    [ marginLeft (px 17)
+    , height (px buttonHeight)
     ]
 
 
-addButton = a [ href "?page=add", css  topMenuIconCss   ]
-                [ img
-                    [
-                    css [height (px buttonHeight )]
-                    , src "images/add.png"
-                    ]
-                    []
-                ]
+buttonHeight =
+    39
 
 
+doneButton : Maybe String -> Html msg
+doneButton subjectName =
+    case subjectName of
+        Just name ->
+            doneButtonHtml <| "?page=done&subjectName=" ++ name
+
+        Nothing ->
+            doneButtonHtml "?page=done"
+
+
+doneButtonHtml url =
+    a
+        [ href url, css <| List.append [ marginRight (px 15) ] topMenuIconCss ]
+        [ img
+            [ css [ height (px buttonHeight) ]
+            , src "images/done.png"
+            ]
+            []
+        ]
+
+
+addButton =
+    a [ href "?page=add", css topMenuIconCss ]
+        [ img
+            [ css [ height (px buttonHeight) ]
+            , src "images/add.png"
+            ]
+            []
+        ]

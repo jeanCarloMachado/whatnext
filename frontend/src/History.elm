@@ -93,18 +93,8 @@ view state =
             [ -- conditional loading modals
               Loader.getLoadingHtml state.loading
             , Menu.sideBarHtmlOptional state <|
-                Menu.sideBarHtml ToggleSideMenu 
-            , Menu.topBarHtml ToggleSideMenu []
-            , div []
-                [ h1
-                    [ css
-                        [ margin (px 20)
-                        , fontSize <| Css.em 1.9
-                        , textAlign center
-                        ]
-                    ]
-                    [ text "Past" ]
-                ]
+                Menu.sideBarHtml
+            , Menu.topBarHtml ToggleSideMenu "Log" []
             , div []
                 [ historyHtml
                 ]

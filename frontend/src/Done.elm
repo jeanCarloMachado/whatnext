@@ -105,10 +105,10 @@ view state =
     div [ css [ color defaultColors.textNormal ] ]
         [ --- left meu
           Menu.sideBarHtmlOptional state <|
-            Menu.sideBarHtml ToggleSideMenu
+            Menu.sideBarHtml
 
         --top menu
-        , Menu.topBarHtml ToggleSideMenu
+        , Menu.topBarHtml ToggleSideMenu "Done"
             [ button
                 [ css <| List.append Style.buttonCss [ backgroundColor defaultColors.success ]
                 , onClick SubmitDone

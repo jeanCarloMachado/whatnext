@@ -6,17 +6,19 @@ import Html.Styled.Events exposing (..)
 import Css exposing (..)
 import Style exposing (defaultColors)
 
+
 type alias MenuState r =
     { r
         | sideMenu : Bool
     }
 
 
+toggle : MenuState r -> MenuState r
 toggle menuState =
     { menuState | sideMenu = not menuState.sideMenu }
 
 
-topBarHtml toggleMenuEvent elements =
+topBarHtml toggleMenuEvent title elements =
     div
         [ css
             [ backgroundColor defaultColors.barColor
@@ -26,15 +28,34 @@ topBarHtml toggleMenuEvent elements =
             , minHeight (px 50)
             ]
         ]
-        [ img
-            [ css
-                [ paddingLeft (px 3)
-                , maxHeight (px 55)
-                ]
-            , src "images/expandMenu.png"
-            , onClick toggleMenuEvent
+        [
+          div [
+            css
+              [ backgroundColor defaultColors.barColor
+              , displayFlex
+              , justifyContent spaceBetween
+              , flexDirection row
+              , minHeight (px 50)
+              , alignItems center
             ]
-            []
+            ]
+          [
+              img
+                [ css
+                    [ paddingLeft (px 3)
+                    , maxHeight (px 55)
+                    ]
+                , src "images/expandMenu.png"
+                , onClick toggleMenuEvent
+                ]
+                []
+            , h1 [
+              css [
+                color defaultColors.invertedHighlight
+                , fontSize (Css.em 1.7)
+                ]
+            ] [ text title ]
+        ]
         , div [ css [ displayFlex, justifyContent flexEnd, alignItems center ] ]
             elements
         ]
@@ -43,17 +64,14 @@ topBarHtml toggleMenuEvent elements =
 sideBarHtmlOptional state configuredSidebar =
     Style.inlineIf (state.sideMenu) (configuredSidebar) Style.emptyNode
 
-dropdownMenuItemCss = [
-                zIndex (Css.int 333),
-                marginTop (px 20)
-    ]
 
-
-sideBarHtml toggleMenuEvent =
+sideBarHtml : Html msg
+sideBarHtml =
     div
         [ css
             [ width (px 250)
             , position absolute
+            , top (px 50)
             ]
         ]
         [ div
@@ -61,23 +79,27 @@ sideBarHtml toggleMenuEvent =
                 [ displayFlex
                 , flexDirection column
                 ]
-            , onClick toggleMenuEvent
             ]
-            [
-                button [ css <| List.append Style.buttonCss [ textAlign left ] ]
-                [ text "Close menu" ]
-
-                ,    a [ css  <| List.append Style.buttonCss dropdownMenuItemCss, href "?page=scheduler" ]
-                        [ text "Next Steps"
-                        ]
-                , a [ css <| List.append Style.buttonCss dropdownMenuItemCss, href "?page=log" ]
-                    [ text "Past Actions"
-                    ]
+            [ a [ css <| List.append Style.buttonCss dropdownMenuItemCss, href "?page=scheduler" ]
+                [ text "Next Steps"
+                ]
+            , a [ css <| List.append Style.buttonCss dropdownMenuItemCss, href "?page=log" ]
+                [ text "Past Actions"
+                ]
             , a
-                [ css <| Style.overrideBackgroundColor defaultColors.fail <|
-                  List.append Style.buttonCss dropdownMenuItemCss
+                [ css <|
+                    Style.overrideBackgroundColor defaultColors.fail <|
+                        List.append Style.buttonCss dropdownMenuItemCss
                 , href "/"
                 ]
                 [ text "Quit" ]
             ]
         ]
+
+
+dropdownMenuItemCss =
+    [ zIndex (Css.int 333)
+    , marginTop (px 20)
+    ]
+
+

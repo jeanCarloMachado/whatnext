@@ -136,10 +136,10 @@ view state =
     div [ css [ color defaultColors.textNormal ] ]
         [ --- left meu
           Menu.sideBarHtmlOptional state <|
-            Menu.sideBarHtml ToggleSideMenu
+            Menu.sideBarHtml
 
         --top menu
-        , Menu.topBarHtml ToggleSideMenu
+        , Menu.topBarHtml ToggleSideMenu ""
             [
               tiredButton
               , Style.addButton
@@ -222,6 +222,7 @@ subjectToHtml ( indice, subject ) =
                                 ]
                             ]
                             [ text subject.name ]
+                          , inlineInfoOfSubject subject
                         ]
                     ]
                 ]

@@ -129,10 +129,10 @@ view state =
             div [ css [ color defaultColors.textNormal ] ]
                 [ --- left meu
                   Menu.sideBarHtmlOptional state <|
-                    Menu.sideBarHtml ToggleSideMenu
+                    Menu.sideBarHtml
 
                 --top menu
-                , Menu.topBarHtml ToggleSideMenu
+                , Menu.topBarHtml ToggleSideMenu "View"
                     [ img
                         [ css Style.topMenuIconCss
                         , onClick <| RemoveClick subject
