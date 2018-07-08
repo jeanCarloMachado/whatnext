@@ -109,7 +109,9 @@ view state =
 
         --top menu
         , Menu.topBarHtml ToggleSideMenu "Done"
-            [ button
+            [
+                Style.backButton
+              , button
                 [ css <| List.append Style.buttonCss [ backgroundColor defaultColors.success ]
                 , onClick SubmitDone
                 ]

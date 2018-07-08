@@ -132,7 +132,7 @@ view state =
                     Menu.sideBarHtml
 
                 --top menu
-                , Menu.topBarHtml ToggleSideMenu "View"
+                , Menu.topBarHtml ToggleSideMenu ""
                     [ img
                         [ css Style.topMenuIconCss
                         , onClick <| RemoveClick subject

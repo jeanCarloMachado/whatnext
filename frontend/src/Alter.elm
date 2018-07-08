@@ -37,15 +37,16 @@ main =
 init : Flags -> ( State, Cmd Msg )
 init flags =
     let
-        subject = SDK.emptySubject
-        state = State "" False False "" subject flags.authToken flags.apiEndpoint
-    in
-        if String.isEmpty flags.subjectName
-        then
-          ( state , Cmd.none )
-        else
-          ( state , Http.send GetDetail <| SDK.getDetail state flags.subjectName )
+        subject =
+            SDK.emptySubject
 
+        state =
+            State "" False False "" subject flags.authToken flags.apiEndpoint
+    in
+        if String.isEmpty flags.subjectName then
+            ( state, Cmd.none )
+        else
+            ( state, Http.send GetDetail <| SDK.getDetail state flags.subjectName )
 
 
 type alias State =
@@ -82,7 +83,7 @@ update msg state =
             ( state, Cmd.none )
 
         ChangeComplexity complexity ->
-            ( { state | subject = SDK.setComplexity state.subject complexity}, Cmd.none )
+            ( { state | subject = SDK.setComplexity state.subject complexity }, Cmd.none )
 
         ChangePriority priority ->
             ( { state | subject = SDK.setPriority state.subject <| priority * 10 }, Cmd.none )
@@ -100,6 +101,7 @@ update msg state =
             ( Loader.enableLoading state
             , Http.send NewSubjectResult <| SDK.addSubjectRequest state state.subject
             )
+
         NewSubjectResult _ ->
             ( state, Navigation.load "?page=scheduler" )
 
@@ -112,7 +114,6 @@ update msg state =
                 msg
 
 
-
 view : State -> Html.Styled.Html Msg
 view state =
     div [ css [ color defaultColors.textNormal ] ]
@@ -121,12 +122,17 @@ view state =
             Menu.sideBarHtml
 
         --top menu
-        , Menu.topBarHtml ToggleSideMenu "Alter"
-            [ button
+        , Menu.topBarHtml ToggleSideMenu
+            "Alter"
+            [
+
+                Style.backButton
+                , button
                 [ css <| List.append Style.buttonCss [ backgroundColor defaultColors.success ]
                 , onClick (AlterSubjectSubmit)
                 ]
                 [ text "Confirm" ]
+
             ]
         , --main content
           div
@@ -150,18 +156,17 @@ content state =
                 , alignItems center
                 ]
             ]
-            [
-             span []
+            [ span []
                 [ label [ css Style.labelCss ] [ text "Subject name" ]
-              , input
-                [ Style.inputCss
-                , type_ "text"
-                , placeholder "Name"
-                , onInput (ChangeSubjectName)
-                , Html.Styled.Attributes.required True
-                , defaultValue state.subject.name
-                ]
-                []
+                , input
+                    [ Style.inputCss
+                    , type_ "text"
+                    , placeholder "Name"
+                    , onInput (ChangeSubjectName)
+                    , Html.Styled.Attributes.required True
+                    , defaultValue state.subject.name
+                    ]
+                    []
                 ]
             , span []
                 [ label [ css Style.labelCss ] [ text "Priority" ]
@@ -173,10 +178,11 @@ content state =
                 ]
             , span []
                 [ label [ css Style.labelCss ] [ text "Complexity" ]
-                ,select [ css Style.selectCss
-                , on "change" (Json.Decode.map (ChangeComplexity) targetValueIntParse)
-                ]
-                (renderComplexityOptions <| toString state.subject.complexity)
+                , select
+                    [ css Style.selectCss
+                    , on "change" (Json.Decode.map (ChangeComplexity) targetValueIntParse)
+                    ]
+                    (renderComplexityOptions <| toString state.subject.complexity)
                 ]
             , span []
                 [ label [ css Style.labelCss ] [ text "Objective" ]

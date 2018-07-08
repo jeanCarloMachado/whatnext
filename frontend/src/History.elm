@@ -94,7 +94,10 @@ view state =
               Loader.getLoadingHtml state.loading
             , Menu.sideBarHtmlOptional state <|
                 Menu.sideBarHtml
-            , Menu.topBarHtml ToggleSideMenu "Log" []
+            , Menu.topBarHtml ToggleSideMenu "Log" [
+                Style.addButton
+              , Style.doneButton Nothing
+              ]
             , div []
                 [ historyHtml
                 ]
@@ -157,5 +160,4 @@ pastEntryToHtml total indice pastEntry =
                     ]
                 ]
             ]
-
 

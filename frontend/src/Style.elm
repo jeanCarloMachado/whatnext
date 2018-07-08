@@ -171,6 +171,17 @@ doneButton subjectName =
             doneButtonHtml "?page=done"
 
 
+backButton = a
+        [ href "javascript:history.back()", css <| List.append [ marginRight (px 15) ] topMenuIconCss ]
+        [ img
+            [ css [ height (px buttonHeight) ]
+            , src "images/close.png"
+            ]
+            []
+        ]
+
+
+
 doneButtonHtml url =
     a
         [ href url, css <| List.append [ marginRight (px 15) ] topMenuIconCss ]
