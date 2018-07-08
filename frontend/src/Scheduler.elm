@@ -145,6 +145,11 @@ view state =
                 [ input [ type_ "checkbox", onClick ToggleTiredMode ] []
                 , span [ class "slider" ] []
                 ]
+              , a
+                [ css (Style.buttonCss)
+                  , href <| "?page=done"
+                ]
+                [ text "Done" ]
             , a [ href "?page=add" ]
                 [ img
                     [ css
@@ -156,6 +161,8 @@ view state =
                     ]
                     []
                 ]
+
+
             ]
         , --main content
           div

@@ -1,5 +1,6 @@
 import { Scheduler } from './Scheduler.elm';
 import { View } from './View.elm';
+import { Done } from './Done.elm';
 import { History } from './History.elm';
 import { Login } from './Login.elm';
 import { Alter } from './Alter.elm';
@@ -39,6 +40,11 @@ switch (page) {
 		break
 	case "view":
 		obj = View
+		subjectName = getParameterByName("subjectName") || ""
+		flags.subjectName = subjectName
+		break
+	case "done":
+		obj = Done
 		subjectName = getParameterByName("subjectName") || ""
 		flags.subjectName = subjectName
 		break
