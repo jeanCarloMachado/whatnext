@@ -127,8 +127,7 @@ view state =
             [
 
                 Style.backButton
-                , 
-                Style.confirmButton AlterSubjectSubmit
+                , Style.confirmButton AlterSubjectSubmit
 
             ]
         , --main content

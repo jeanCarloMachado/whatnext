@@ -111,11 +111,7 @@ view state =
         , Menu.topBarHtml ToggleSideMenu "Done"
             [
                 Style.backButton
-              , button
-                [ css <| List.append Style.buttonCss [ backgroundColor defaultColors.success ]
-                , onClick SubmitDone
-                ]
-                [ text "Confirm" ]
+                , Style.confirmButton SubmitDone
             ]
         , --main content
           div
