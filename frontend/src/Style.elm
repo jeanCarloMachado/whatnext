@@ -171,6 +171,20 @@ doneButton subjectName =
             doneButtonHtml "?page=done"
 
 
+confirmButton event =
+    a
+        [
+          css <| List.append [ marginRight (px 15) ] topMenuIconCss
+          , onClick event
+          ]
+        [ img
+            [ css [ height (px buttonHeight) ]
+            , src "images/done.png"
+            ]
+            []
+        ]
+
+
 backButton = a
         [ href "javascript:history.back()", css <| List.append [ marginRight (px 15) ] topMenuIconCss ]
         [ img

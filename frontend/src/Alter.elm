@@ -127,11 +127,8 @@ view state =
             [
 
                 Style.backButton
-                , button
-                [ css <| List.append Style.buttonCss [ backgroundColor defaultColors.success ]
-                , onClick (AlterSubjectSubmit)
-                ]
-                [ text "Confirm" ]
+                , 
+                Style.confirmButton AlterSubjectSubmit
 
             ]
         , --main content
