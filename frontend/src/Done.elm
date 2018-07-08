@@ -135,7 +135,18 @@ content state =
                 , alignItems center
                 ]
             ]
-            [ label [] [ text "What was done?" ]
+            [
+            label [ css Style.labelCss ] [ text "Subject name" ]
+            , input
+                [ Style.inputCss
+                , type_ "text"
+                , placeholder "Name"
+                , Html.Styled.Attributes.required True
+                , onInput ChangeSubjectName
+                , defaultValue state.subjectName
+                ]
+                []
+            , label [] [ text "What was done?" ]
             , textarea
                 [ css Style.textAreaCss
                 , placeholder "studied x y z"
@@ -147,16 +158,6 @@ content state =
                 [ css Style.textAreaCss
                 , placeholder "study x y z"
                 , onInput ChangeWhatToDoNext
-                ]
-                []
-            , label [ css Style.labelCss ] [ text "Subject name" ]
-            , input
-                [ Style.inputCss
-                , type_ "text"
-                , placeholder "Name"
-                , Html.Styled.Attributes.required True
-                , onInput ChangeSubjectName
-                , defaultValue state.subjectName
                 ]
                 []
             ]

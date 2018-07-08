@@ -95,7 +95,8 @@ view state =
             , Menu.sideBarHtmlOptional state <|
                 Menu.sideBarHtml
             , Menu.topBarHtml ToggleSideMenu "Log" [
-                Style.addButton
+               Style.backToHome
+              , Style.addButton
               , Style.doneButton Nothing
               ]
             , div []

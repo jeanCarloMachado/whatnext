@@ -133,8 +133,11 @@ view state =
 
                 --top menu
                 , Menu.topBarHtml ToggleSideMenu ""
-                    [ img
+                    [ 
+                       Style.backToHome
+                     , img
                         [ css Style.topMenuIconCss
+
                         , onClick <| RemoveClick subject
                         , src "images/remove.png"
                         ]

@@ -184,6 +184,15 @@ confirmButton event =
             []
         ]
 
+backToHome = a
+        [ href "?page=scheduler", css topMenuIconCss ]
+        [ img
+            [ css [ height (px buttonHeight) ]
+            , src "images/back.png"
+            ]
+            []
+        ]
+
 
 backButton = a
         [ href "javascript:history.back()", css <| List.append [ marginRight (px 15) ] topMenuIconCss ]
