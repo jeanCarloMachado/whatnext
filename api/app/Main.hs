@@ -25,9 +25,6 @@ main = do
   scotty 3001 $
    do
     middleware myCors
-    get "/scheduler" $ do
-      Web.Scotty.setHeader "Content-Type" "application/json"
-      runAuthenticatedService wnDir $ scheduler wnDir
     post "/signup" $ do
       credentials <- jsonData :: ActionM Credentials
       let authToken = createAuthToken credentials
@@ -44,6 +41,12 @@ main = do
       credentials <- jsonData :: ActionM Credentials
       let authToken = createAuthToken credentials
       json (AuthResult (authToken))
+    get "/scheduler" $ do
+      params <- params
+
+      setTiredMode params
+      Web.Scotty.setHeader "Content-Type" "application/json"
+      runAuthenticatedService wnDir $ scheduler wnDir
     get "/detail/:subjectName" $ do
       subjectName <- param "subjectName"
       runAuthenticatedService wnDir $ detail wnDir subjectName
@@ -73,6 +76,14 @@ alter wnDir alterInfo _ = do
       , objective alterInfo
       , previousName alterInfo
       ]
+
+
+setTiredMode params = 
+  case elem ("tiredMode", "True") params of
+  True ->
+      liftIO $ setEnv "TIRED_MODE" "1"
+  False ->
+      liftIO $ setEnv "TIRED_MODE" ""
 
 done wnDir doneInfo (Right token) = return $ Right token
 done wnDir doneInfo _ = do
@@ -110,6 +121,7 @@ cookieValid wnDir (Left x) = do
     then return $ Left $ result
     else return $ Right "token invalid"
   where
+
 
 
 setAuthEnv (Right x) = return $ Right x
