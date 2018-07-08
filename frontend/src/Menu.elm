@@ -69,7 +69,7 @@ sideBarHtml : Html msg
 sideBarHtml =
     div
         [ css
-            [ width (px 250)
+            [ width (px 200)
             , position absolute
             , top (px 50)
             ]
