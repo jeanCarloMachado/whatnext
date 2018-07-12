@@ -37,11 +37,16 @@ main =
 init : Flags -> ( State, Cmd Msg )
 init flags =
     let
-        subject =
-            SDK.emptySubject
-
         state =
-            State "" False False "" subject flags.authToken flags.apiEndpoint
+            State
+                ""
+                False
+                False
+                ""
+                SDK.emptySubject
+                flags.authToken
+                flags.apiEndpoint
+                False
     in
         if String.isEmpty flags.subjectName then
             ( state, Cmd.none )
@@ -57,6 +62,7 @@ type alias State =
     , subject : Subject
     , authToken : String
     , apiEndpoint : String
+    , formValid : Bool
     }
 
 
@@ -89,7 +95,11 @@ update msg state =
             ( { state | subject = SDK.setPriority state.subject <| priority * 10 }, Cmd.none )
 
         ChangeSubjectName name ->
-            ( { state | subject = SDK.setName state.subject name }, Cmd.none )
+            let
+                newState =
+                    { state | subject = SDK.setName state.subject name }
+            in
+                ( validateInnerState newState, Cmd.none )
 
         ChangeWhatToDoNext whatToDoNext ->
             ( { state | subject = SDK.setWhatToDoNext state.subject whatToDoNext }, Cmd.none )
@@ -106,12 +116,29 @@ update msg state =
             ( state, Navigation.load "?page=scheduler" )
 
         GetDetail (Ok subject) ->
-            ( { state | subject = subject } |> Loader.disableLoading, Cmd.none )
+            let
+                newState =
+                    { state | subject = subject } |> Loader.disableLoading
+            in
+                ( validateInnerState newState, Cmd.none )
 
         GetDetail (Err msg) ->
             SDK.errorResult
                 state
                 msg
+
+
+validateInnerState : State -> State
+validateInnerState state =
+    { state | formValid = validateState state }
+
+
+validateState : State -> Bool
+validateState state =
+    if (String.length state.subject.name) <= 3 then
+        False
+    else
+        True
 
 
 view : State -> Html.Styled.Html Msg
@@ -124,11 +151,8 @@ view state =
         --top menu
         , Menu.topBarHtml ToggleSideMenu
             "Alter"
-            [
-
-                Style.backButton
-                , Style.confirmButton AlterSubjectSubmit
-
+            [ Style.backButton
+            , Style.confirmButton (confirmButtonAction state)  state.formValid
             ]
         , --main content
           div
@@ -140,6 +164,13 @@ view state =
                 ]
             ]
         ]
+
+confirmButtonAction state =
+    case state.formValid of
+        True ->
+            AlterSubjectSubmit
+        False ->
+            None
 
 
 content state =

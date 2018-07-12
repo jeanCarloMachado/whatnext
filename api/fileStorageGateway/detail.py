@@ -11,8 +11,8 @@ import json
 def get_subject(name):
     subject = {}
     subject['name']  = name
-    if not gatewaySuccess(['subjectExists', subject['name']]):
-        print ("you must pass a valid subject")
+    if not gatewaySuccess(['subjectExists', name]):
+        print ('Subject "'+ name + '" was not found')
         sys.exit()
 
     subjectRow = gateway(['subjectJson', subject['name']])

@@ -44,6 +44,8 @@ init flags =
                flags.subjectName
                ""
                ""
+               False
+               50
     in
         ( state, Cmd.none )
 
@@ -58,6 +60,8 @@ type alias State =
     , subjectName : String
     , description : String
     , whatToDoNext : String
+    , formValid : Bool
+    , duration : Int
     }
 
 
@@ -87,7 +91,10 @@ update msg state =
             ( { state | whatToDoNext = description }, Cmd.none )
 
         ChangeSubjectName name ->
-            ( { state | subjectName = name }, Cmd.none )
+          let
+            newState =  { state | subjectName = name }
+          in
+            (validateInnerState newState, Cmd.none )
 
         SubmitDone ->
             let
@@ -111,7 +118,7 @@ view state =
         , Menu.topBarHtml ToggleSideMenu "Done"
             [
                 Style.backButton
-                , Style.confirmButton SubmitDone
+                , Style.confirmButton (confirmButtonAction state)  state.formValid
             ]
         , --main content
           div
@@ -119,12 +126,31 @@ view state =
             [ Loader.getLoadingHtml state.loading
             , Toaster.html state.toasterMsg
             , div []
-                [ content state
-                ]
+                [ content state ]
             ]
         ]
 
+confirmButtonAction state =
+    case state.formValid of
+        True ->
+            SubmitDone
+        False ->
+            None
 
+validateInnerState : State -> State
+validateInnerState state =
+    { state | formValid = validateState state }
+
+
+validateState : State -> Bool
+validateState state =
+    if (String.length state.subjectName) <= 3 then
+        False
+    else
+        True
+
+
+content : State -> Html.Styled.Html Msg
 content state =
     div []
         [ div
@@ -160,7 +186,19 @@ content state =
                 , onInput ChangeWhatToDoNext
                 ]
                 []
+
+            , label [] [ text "Duration in minutes" ]
+            , input
+                [ Style.inputCss
+                , type_ "text"
+                , placeholder ""
+                , Html.Styled.Attributes.required True
+                , defaultValue <| toString state.duration
+                ]
+                []
+
             ]
+
         ]
 
 

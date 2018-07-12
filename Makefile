@@ -52,7 +52,9 @@ compileContainer:
 	docker run -it -v ${current_dir}:/wn --entrypoint bash wn-build-image -c "cd /wn ; make compile && cp /root/.local/bin/api /wn/api/api"
 
 copyContent:
-	scp -r 'blog:~/whatnext_data/*' /whatnext/data/
+	scp -r 'blog:~/whatnext_data' /tmp/data
+	rm -rf data/* || true
+	cp -rf /tmp/data/* /data/whatnext
 
 
 deployAll: buildAndDeployApi deployFront

@@ -133,7 +133,7 @@ view state =
 
                 --top menu
                 , Menu.topBarHtml ToggleSideMenu ""
-                    [ 
+                    [
                        Style.backToHome
                      , img
                         [ css Style.topMenuIconCss

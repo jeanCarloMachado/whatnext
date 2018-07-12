@@ -10,7 +10,6 @@ import           Data.ByteString.UTF8        as BT
 import           Data.List                   (concat)
 import           Data.String
 import           Data.Text                   as Text
-import           Data.Text                   as Text
 import           Data.Text.Lazy              as LazyText
 import           GHC.Generics
 import           Network.Wai.Middleware.Cors
@@ -55,7 +54,9 @@ main = do
       runAuthenticatedService wnDir $ remove wnDir subjectName
     post "/addOrUpdate" $ do
       alterInfo <- jsonData :: ActionM AlterInfo
-      runAuthenticatedService wnDir $ alter wnDir alterInfo
+
+
+      runAuthenticatedService wnDir $ alterSubject wnDir alterInfo
     get "/log" $ do runAuthenticatedService wnDir $ getLogs wnDir
     post "/done" $ do
       doneInfo <- jsonData :: ActionM DoneInfo
@@ -63,22 +64,27 @@ main = do
     notFound $ do text "Invalid route"
 
 --- state IO
-alter wnDir alterInfo (Right token) = return $ Right token
-alter wnDir alterInfo _ = do
+alterSubject wnDir alterInfo (Right token) = return $ Right token
+alterSubject wnDir alterInfo _ = do
   result <- liftIO $ readProcess (wnDir ++ "/" ++ "alterSubject.sh") infoList ""
   return $ Left result
   where
+    alterInfoNew = filterAlterData alterInfo
+
     infoList =
-      [ name alterInfo
-      , show $ priority alterInfo
-      , show $ complexity alterInfo
-      , whatToDoNext alterInfo
-      , objective alterInfo
-      , previousName alterInfo
+      [
+      name alterInfoNew
+      , show $ priority alterInfoNew
+      , show $ complexity alterInfoNew
+      , whatToDoNext alterInfoNew
+      , objective alterInfoNew
+      , previousName alterInfoNew
       ]
 
+filterAlterData subject =
+    subject { name = Text.unpack $ Text.strip  $ Text.pack $ name subject }
 
-setTiredMode params = 
+setTiredMode params =
   case elem ("tiredMode", "True") params of
   True ->
       liftIO $ setEnv "TIRED_MODE" "1"

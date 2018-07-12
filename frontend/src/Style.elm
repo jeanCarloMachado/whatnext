@@ -171,15 +171,23 @@ doneButton subjectName =
             doneButtonHtml "?page=done"
 
 
-confirmButton event =
-    a
-        [
-          css <| List.append [ marginRight (px 15) ] topMenuIconCss
-          , onClick event
-          ]
+confirmButton event enabled =
+  let
+      myCss = List.append [ marginRight (px 15) ] topMenuIconCss
+  in
+    case enabled of
+      True ->
+          confirmButtonHtml "images/done.png" [onClick event, css myCss]
+
+      False ->
+          confirmButtonHtml "images/doneDisabled.png" [onClick event, css myCss]
+
+
+confirmButtonHtml url parameters = a
+         parameters
         [ img
             [ css [ height (px buttonHeight) ]
-            , src "images/done.png"
+            , src url
             ]
             []
         ]
@@ -193,7 +201,6 @@ backToHome = a
             []
         ]
 
-
 backButton = a
         [ href "javascript:history.back()", css <| List.append [ marginRight (px 15) ] topMenuIconCss ]
         [ img
@@ -202,8 +209,6 @@ backButton = a
             ]
             []
         ]
-
-
 
 doneButtonHtml url =
     a
@@ -214,7 +219,6 @@ doneButtonHtml url =
             ]
             []
         ]
-
 
 addButton =
     a [ href "?page=add", css topMenuIconCss ]
