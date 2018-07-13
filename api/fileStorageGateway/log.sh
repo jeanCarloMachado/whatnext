@@ -4,7 +4,15 @@ __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IFS='
 '
 
-log=$( "$__dir"/gateway.sh logEntries)
+filter=""
+if [[ "$*" =~ "--filter"  ]]
+then
+    shift
+    subject="$1"
+    log=$( "$__dir"/gateway.sh logEntriesOfSubject "$subject")
+else
+    log=$( "$__dir"/gateway.sh logEntries)
+fi
 
 
 current_entry=$(echo "$log" | wc -l )
