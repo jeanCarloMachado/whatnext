@@ -65,23 +65,6 @@ type Msg
 
 
 
--- | MyDoneMsg DoneMsg
--- | CancelAddSubjectModal
--- | ChangeSubjectName String
--- | ChangeWhatToDoNext String
--- | ChangeObjective String
--- | ChangePriority Int
--- | ChangeComplexity Int
--- | AlterSubjectSubmit
--- | NewSubjectResult (Result Http.Error String)
--- type DoneMsg
---     = OpenDone Subject
---     | DoneResult (Result Http.Error String)
---     | DoneChangeDescription String
---     | DoneChangeWhatToDoNext String
---     | SubmitDone
---     | CancelDone
-
 
 update : Msg -> State -> ( State, Cmd Msg )
 update msg state =

@@ -20,6 +20,12 @@ type alias Subject =
     }
 
 
+type alias SubjectIdentifier r =
+    { r
+        | name : String
+    }
+
+
 type alias PastAction =
     { date : String
     , description : String
@@ -28,13 +34,11 @@ type alias PastAction =
     }
 
 
-
 type alias RequestMetadata r =
     { r
         | apiEndpoint : String
         , authToken : String
     }
-
 
 type alias SubjectData r =
     { r
@@ -48,15 +52,11 @@ type alias SubjectData r =
 
 type alias DoneInfo r =
     { r
-        | subjectName : String
+        | name : String
         , description : String
         , whatToDoNext : String
         , duration : Int
     }
-
-
---- api
-
 
 replaceSame : Subject -> ( Int, Subject ) -> ( Int, Subject )
 replaceSame new ( indice, orig ) =
@@ -66,38 +66,6 @@ replaceSame new ( indice, orig ) =
 
         False ->
             ( indice, orig )
-
-
-
---decoders
-
-
-decodeSubject : Decoder Subject
-decodeSubject =
-    Json.Decode.Pipeline.decode Subject
-        |> Json.Decode.Pipeline.required "name" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "days_since_last_study" Json.Decode.int
-        |> Json.Decode.Pipeline.required "time_already_invested" Json.Decode.int
-        |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodePastAction) []
-        |> Json.Decode.Pipeline.required "whatToDoNext" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "complexity" (Json.Decode.int)
-        |> Json.Decode.Pipeline.required "priority" (Json.Decode.int)
-        |> Json.Decode.Pipeline.required "objective" (Json.Decode.string)
-
-
-decodeSubjectHistory =
-    at [ "history" ] (Json.Decode.array decodePastAction)
-
-
-
-
-decodePastAction =
-    Json.Decode.Pipeline.decode PastAction
-        |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "duration" (Json.Decode.int)
-
 
 
 --- requests
@@ -113,7 +81,7 @@ doneRequest requestMetadata doneInfo =
             Json.Encode.object
                 [ ( "description", Json.Encode.string doneInfo.description )
                 , ( "followup", Json.Encode.string doneInfo.whatToDoNext )
-                , ( "subjectName", Json.Encode.string doneInfo.subjectName )
+                , ( "subjectName", Json.Encode.string doneInfo.name )
                 , ( "duration", Json.Encode.int doneInfo.duration )
                 ]
     in
@@ -128,6 +96,7 @@ doneRequest requestMetadata doneInfo =
             }
 
 
+removeRequest : RequestMetadata r -> SubjectIdentifier i -> Http.Request String
 removeRequest requestMetadata subject =
     let
         url =
@@ -280,5 +249,35 @@ setObjective subject objective =
   {subject | objective = objective }
 setWhatToDoNext subject whatToDoNext =
   {subject | whatToDoNext = whatToDoNext }
+
+
+--decoders
+
+
+decodeSubject : Decoder Subject
+decodeSubject =
+    Json.Decode.Pipeline.decode Subject
+        |> Json.Decode.Pipeline.required "name" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "days_since_last_study" Json.Decode.int
+        |> Json.Decode.Pipeline.required "time_already_invested" Json.Decode.int
+        |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodePastAction) []
+        |> Json.Decode.Pipeline.required "whatToDoNext" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "complexity" (Json.Decode.int)
+        |> Json.Decode.Pipeline.required "priority" (Json.Decode.int)
+        |> Json.Decode.Pipeline.required "objective" (Json.Decode.string)
+
+
+decodeSubjectHistory =
+    at [ "history" ] (Json.Decode.array decodePastAction)
+
+
+
+
+decodePastAction =
+    Json.Decode.Pipeline.decode PastAction
+        |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "duration" (Json.Decode.int)
 
 

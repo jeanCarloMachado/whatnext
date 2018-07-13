@@ -21,15 +21,6 @@ type alias Flags =
     }
 
 
-main =
-    Html.programWithFlags
-        { init = init
-        , view = view >> Html.Styled.toUnstyled
-        , update = update
-        , subscriptions = subscriptions
-        }
-
-
 init : Flags -> ( State, Cmd Msg )
 init flags =
     let
@@ -47,8 +38,18 @@ init flags =
                ""
                valid
                50
+               False
     in
         ( state, Cmd.none )
+
+main =
+    Html.programWithFlags
+        { init = init
+        , view = view >> Html.Styled.toUnstyled
+        , update = update
+        , subscriptions = subscriptions
+        }
+
 
 
 type alias State =
@@ -58,11 +59,12 @@ type alias State =
     , toasterMsg : String
     , authToken : String
     , apiEndpoint : String
-    , subjectName : String
+    , name : String
     , description : String
     , whatToDoNext : String
     , formValid : Bool
     , duration : Int
+    , archive : Bool
     }
 
 
@@ -74,7 +76,9 @@ type Msg
     | ChangeSubjectName String
     | ChangeDuration String
     | SubmitDone
+    | ArchiveToggle
     | DoneResult (Result Http.Error String)
+    | ArchiveResult (Result Http.Error String)
 
 
 update : Msg -> State -> ( State, Cmd Msg )
@@ -94,26 +98,29 @@ update msg state =
 
         ChangeSubjectName name ->
           let
-            newState =  { state | subjectName = name }
+            newState =  { state | name = name }
           in
             (validateInnerState newState, Cmd.none )
 
         ChangeDuration duration ->
            let
-               durationInt= Result.withDefault 0 (String.toInt duration) 
+               durationInt= Result.withDefault 0 (String.toInt duration)
            in
             ({ state | duration = durationInt }, Cmd.none )
 
         SubmitDone ->
-            let
-                request =
-                    SDK.doneRequest state state
-            in
-                ( state, Http.send DoneResult request )
+                ( state, Http.send DoneResult <| SDK.doneRequest state state)
 
         DoneResult _ ->
-            ( state, Navigation.load "?page=log" )
+            case state.archive of
+                True -> ( state, Http.send ArchiveResult <| SDK.removeRequest state state )
+                False -> ( state, Navigation.back 1 )
 
+        ArchiveResult _ ->
+                ( state, Navigation.load "?page=log"  )
+
+        ArchiveToggle ->
+            ({state | archive = not state.archive}, Cmd.none)
 
 view : State -> Html.Styled.Html Msg
 view state =
@@ -152,7 +159,7 @@ validateInnerState state =
 
 validateState : State -> Bool
 validateState state =
-    if (String.length state.subjectName) <= 3 then
+    if (String.length state.name) <= 3 then
         False
     else
         True
@@ -177,7 +184,7 @@ content state =
                 , placeholder "Name"
                 , Html.Styled.Attributes.required True
                 , onInput ChangeSubjectName
-                , defaultValue state.subjectName
+                , defaultValue state.name
                 ]
                 []
             , label [] [ text "What was done?" ]
@@ -206,6 +213,11 @@ content state =
                 ]
                 []
 
+            , span [ css [ marginRight (px 10) ] ] [ text "Archive subject" ]
+            , label [ class "switch" ]
+                [ input [ type_ "checkbox", onClick ArchiveToggle ] []
+                , span [ class "slider" ] []
+                ]
             ]
 
         ]
