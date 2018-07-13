@@ -57,10 +57,10 @@ main = do
 
 
       runAuthenticatedService wnDir $ alterSubject wnDir alterInfo
-    get "/log" $ do runAuthenticatedService wnDir $ getLogs wnDir
+    get "/log" $ do runAuthenticatedService wnDir $ getHistory wnDir
     post "/done" $ do
       doneInfo <- jsonData :: ActionM DoneInfo
-      runAuthenticatedService wnDir $ done wnDir doneInfo
+      runAuthenticatedService wnDir $ newDoneEntry wnDir doneInfo
     notFound $ do text "Invalid route"
 
 --- state IO
@@ -91,12 +91,12 @@ setTiredMode params =
   False ->
       liftIO $ setEnv "TIRED_MODE" ""
 
-done wnDir doneInfo (Right token) = return $ Right token
-done wnDir doneInfo _ = do
+newDoneEntry wnDir doneInfo (Right token) = return $ Right token
+newDoneEntry wnDir doneInfo _ = do
   liftIO $ readProcess (wnDir ++ "/" ++ "done.sh") infoList ""
   return $ Left "{\"status\": \"success\"}"
   where
-    infoList = [subjectName doneInfo, description doneInfo, followup doneInfo]
+    infoList = [subjectName doneInfo, description doneInfo, followup doneInfo, show $ duration doneInfo]
 
 remove wnDir subjectName (Right token) = return $ Right token
 remove wnDir subjectName _ = do
@@ -108,8 +108,8 @@ detail wnDir subjectName _ = do
   result <- liftIO $ readProcess (wnDir ++ "/" ++ "detail.py") [subjectName] ""
   return $ Left result
 
-getLogs wnDir (Right token) = return $ Right token
-getLogs wnDir _ = do
+getHistory wnDir (Right token) = return $ Right token
+getHistory wnDir _ = do
   result <- liftIO $ readProcess (wnDir ++ "/" ++ "log.sh") [] ""
   return $ Left result
 
@@ -238,6 +238,7 @@ data DoneInfo = DoneInfo
   { description :: String
   , followup    :: String
   , subjectName    :: String
+  , duration   :: Int
   } deriving (Generic, Show)
 
 instance ToJSON DoneInfo

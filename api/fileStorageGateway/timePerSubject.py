@@ -28,10 +28,11 @@ def time_of_subjects(dateStart=None, date_end=None):
         columns = line.split('|')
         name = columns[1]
         done_start_str = columns[0]
+        duration = int(columns[4])
         done_start = datetime.strptime(done_start_str, '%Y-%m-%d %H:%M:%S')
 
         if done_start > dateStart and done_start < date_end:
-            subjectData[name] = subjectData[name]+50 if name in subjectData else 50;
+            subjectData[name] = subjectData[name]+duration if name in subjectData else duration;
 
     return subjectData
 

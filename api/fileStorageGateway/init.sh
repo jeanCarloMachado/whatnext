@@ -15,9 +15,4 @@ mkdir -p $(dirname "$WHATNEXT_CONF")
 
 }
 
-[ ! -f "$WHATNEXT_GOALS" ] && {
-   touch "$WHATNEXT_GOALS"
-}
-
-
 exit 0

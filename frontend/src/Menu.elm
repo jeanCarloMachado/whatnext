@@ -84,7 +84,7 @@ sideBarHtml =
                 [ text "Next Steps"
                 ]
             , a [ css <| List.append Style.buttonCss dropdownMenuItemCss, href "?page=log" ]
-                [ text "Past Actions"
+                [ text "History"
                 ]
             , a
                 [ css <|

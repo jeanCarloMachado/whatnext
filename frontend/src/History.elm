@@ -23,7 +23,6 @@ type alias Flags =
     }
 
 
-
 main =
     Html.programWithFlags { init = init, view = view >> toUnstyled, update = update, subscriptions = subscriptions }
 
@@ -35,13 +34,6 @@ type alias State =
     , sideMenu : Bool
     , apiEndpoint : String
     , authToken : String
-    }
-
-
-type alias PastAction =
-    { date : String
-    , description : String
-    , subjectName : String
     }
 
 
@@ -156,7 +148,7 @@ pastEntryToHtml total indice pastEntry =
                             , fontSize (Css.em 0.8)
                             ]
                         ]
-                        [ text pastEntry.date ]
+                        [ text <| pastEntry.date ++ " " ++ (toString pastEntry.duration)  ++ " minutes"]
                     , div [ css [ margin (px 20) ] ] [ text pastEntry.description ]
                     ]
                 ]

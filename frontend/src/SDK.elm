@@ -20,12 +20,13 @@ type alias Subject =
     }
 
 
-
 type alias PastAction =
     { date : String
     , description : String
     , subjectName : String
+    , duration : Int
     }
+
 
 
 type alias RequestMetadata r =
@@ -50,6 +51,7 @@ type alias DoneInfo r =
         | subjectName : String
         , description : String
         , whatToDoNext : String
+        , duration : Int
     }
 
 
@@ -87,11 +89,14 @@ decodeSubjectHistory =
     at [ "history" ] (Json.Decode.array decodePastAction)
 
 
+
+
 decodePastAction =
     Json.Decode.Pipeline.decode PastAction
         |> Json.Decode.Pipeline.required "date" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)
+        |> Json.Decode.Pipeline.required "duration" (Json.Decode.int)
 
 
 
@@ -109,6 +114,7 @@ doneRequest requestMetadata doneInfo =
                 [ ( "description", Json.Encode.string doneInfo.description )
                 , ( "followup", Json.Encode.string doneInfo.whatToDoNext )
                 , ( "subjectName", Json.Encode.string doneInfo.subjectName )
+                , ( "duration", Json.Encode.int doneInfo.duration )
                 ]
     in
         Http.request

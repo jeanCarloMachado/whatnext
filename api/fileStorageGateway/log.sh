@@ -4,25 +4,7 @@ __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IFS='
 '
 
-[[ "$*" =~ "--help"  ]]  && {
-
-    echo "View the log
-
-        Options:
-            --filter <filterStr>    to filter by text
-    "
-    exit 0
-}
-
-filter=""
-if [[ "$*" =~ "--filter"  ]]
-then
-    shift
-    subject="$1"
-    log=$( "$__dir"/gateway.sh logEntriesOfSubject "$subject")
-else
-    log=$( "$__dir"/gateway.sh logEntries)
-fi
+log=$( "$__dir"/gateway.sh logEntries)
 
 
 current_entry=$(echo "$log" | wc -l )
@@ -35,6 +17,7 @@ do
     subject=$(echo $i | cut -d '|' -f2)
     description=$(echo $i | cut -d '|' -f3)
     goal=$(echo $i | cut -d '|' -f4)
+    duration=$(echo $i | cut -d '|' -f5)
 
 
 
@@ -49,7 +32,8 @@ echo -e '{
     "subject": "'$subject'",
     "date": "'$date'",
     "description": "'$description'",
-    "goal": "'$goal'"
+    "goal": "'$goal'",
+    "duration": '$duration'
 }\c'
         continue
 

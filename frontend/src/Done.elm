@@ -33,6 +33,7 @@ main =
 init : Flags -> ( State, Cmd Msg )
 init flags =
     let
+        valid = not <| String.isEmpty flags.subjectName
         state =
             State
                ""
@@ -44,7 +45,7 @@ init flags =
                flags.subjectName
                ""
                ""
-               False
+               valid
                50
     in
         ( state, Cmd.none )
@@ -71,6 +72,7 @@ type Msg
     | ChangeDescription String
     | ChangeWhatToDoNext String
     | ChangeSubjectName String
+    | ChangeDuration String
     | SubmitDone
     | DoneResult (Result Http.Error String)
 
@@ -95,6 +97,12 @@ update msg state =
             newState =  { state | subjectName = name }
           in
             (validateInnerState newState, Cmd.none )
+
+        ChangeDuration duration ->
+           let
+               durationInt= Result.withDefault 0 (String.toInt duration) 
+           in
+            ({ state | duration = durationInt }, Cmd.none )
 
         SubmitDone ->
             let
@@ -194,6 +202,7 @@ content state =
                 , placeholder ""
                 , Html.Styled.Attributes.required True
                 , defaultValue <| toString state.duration
+                , onInput ChangeDuration
                 ]
                 []
 
