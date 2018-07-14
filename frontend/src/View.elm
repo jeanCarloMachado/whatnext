@@ -134,6 +134,7 @@ view state =
                             ]
                             []
                         ]
+                      , Style.addButton subject.name
                     , Style.doneButton <| Just subject.name
                     ]
                 , --main content

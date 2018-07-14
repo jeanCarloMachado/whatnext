@@ -22,8 +22,20 @@ type alias Flags =
     { apiEndpoint : String
     , authToken : String
     , subjectName : String
+    , parentName : String
     }
 
+type alias State =
+    { errorMessage : String
+    , sideMenu : Bool
+    , loading : Bool
+    , toasterMsg : String
+    , subject : Subject
+    , authToken : String
+    , apiEndpoint : String
+    , formValid : Bool
+    , previousName: String
+    }
 
 main =
     Html.programWithFlags
@@ -43,7 +55,7 @@ init flags =
                 False
                 False
                 ""
-                SDK.emptySubject
+                (SDK.setParent SDK.emptySubject flags.parentName)
                 flags.authToken
                 flags.apiEndpoint
                 False
@@ -54,18 +66,6 @@ init flags =
         else
             ( state, Http.send GetDetail <| SDK.getDetail state flags.subjectName )
 
-
-type alias State =
-    { errorMessage : String
-    , sideMenu : Bool
-    , loading : Bool
-    , toasterMsg : String
-    , subject : Subject
-    , authToken : String
-    , apiEndpoint : String
-    , formValid : Bool
-    , previousName: String
-    }
 
 
 type Msg

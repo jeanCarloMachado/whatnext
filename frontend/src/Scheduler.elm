@@ -140,7 +140,7 @@ view state =
         , Menu.topBarHtml ToggleSideMenu ""
             [
               tiredButton
-              , Style.addButton
+              , Style.addButton ""
               , Style.doneButton Nothing
             ]
         , --main content

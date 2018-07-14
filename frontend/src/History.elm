@@ -5,11 +5,8 @@ import Navigation
 import Html
 import Http
 import Html.Styled exposing (..)
-import Json.Decode.Pipeline
-import Json.Decode
 import SDK exposing(..)
 import Html.Styled.Attributes exposing (css, href, src, placeholder, type_)
-import Html.Styled.Events exposing (..)
 import Loader
 import Menu
 import Style exposing (defaultColors)
@@ -88,7 +85,7 @@ view state =
                 Menu.sideBarHtml
             , Menu.topBarHtml ToggleSideMenu "Log" [
                Style.backToHome
-              , Style.addButton
+              , Style.addButton ""
               , Style.doneButton Nothing
               ]
             , div []

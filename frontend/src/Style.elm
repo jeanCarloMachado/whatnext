@@ -220,15 +220,15 @@ doneButtonHtml url =
             []
         ]
 
-addButton =
-    a [ href "?page=add", css topMenuIconCss ]
+addButton : String -> Html msg
+addButton parent =
+    a [ href <| "?page=add&parent=" ++ parent, css topMenuIconCss ]
         [ img
             [ css [ height (px buttonHeight) ]
             , src "images/add.png"
             ]
             []
         ]
-
 
 
 subjectCss =
