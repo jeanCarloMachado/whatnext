@@ -13,6 +13,7 @@ type alias Subject =
     , daysSinceLast : Int
     , timeAlreadyInvested : Int
     , history : List PastAction
+    , children : List String
     , whatToDoNext : String
     , complexity : Int
     , priority : Int
@@ -25,6 +26,7 @@ emptySubject = Subject
                 ""
                 0
                 0
+                []
                 []
                 ""
                 50
@@ -188,10 +190,14 @@ defaultHeaders requestMetadata =
 decodeEmptyResult =
     Json.Decode.succeed ""
 
-getListRequest state =
+
+
+
+getListRequest : RequestMetadata r -> Bool -> Http.Request (List Subject)
+getListRequest state tiredMode =
     let
         url =
-            state.apiEndpoint ++ "/scheduler" ++ (state.tiredMode |> toUrlBool)
+            state.apiEndpoint ++ "/scheduler" ++ (tiredMode |> toUrlBool)
     in
         Http.request
             { method = "GET"
@@ -259,9 +265,9 @@ setParent subject parent =
 --decoders
 
 
-decodeSubjectList : Decoder (Array Subject)
+decodeSubjectList : Decoder (List Subject)
 decodeSubjectList =
-    Json.Decode.array decodeSubject
+    Json.Decode.list decodeSubject
 
 
 decodeSubject : Decoder Subject
@@ -271,13 +277,12 @@ decodeSubject =
         |> Json.Decode.Pipeline.required "days_since_last_study" Json.Decode.int
         |> Json.Decode.Pipeline.required "time_already_invested" Json.Decode.int
         |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodePastAction) []
+        |> Json.Decode.Pipeline.optional "children" (Json.Decode.list Json.Decode.string) []
         |> Json.Decode.Pipeline.required "whatToDoNext" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "complexity" (Json.Decode.int)
         |> Json.Decode.Pipeline.required "priority" (Json.Decode.int)
         |> Json.Decode.Pipeline.required "objective" (Json.Decode.string)
         |> Json.Decode.Pipeline.optional "parent" (Json.Decode.string) ""
-
-
 
 
 decodeSubjectHistory =

@@ -208,13 +208,86 @@ viewSubject subject =
                     []
                     [ span [ css [ margin (px 20), color defaultColors.textNormal, fontWeight bold ] ] [ text "Next Action: " ]
                     , p [ css [ display block, margin (px 30), fontSize (Css.em 0.9) ] ] [ showMultilineText subject.whatToDoNext ]
-                    ]
+                    ],
+                showHistory subject
                 , div []
-                    [ h2 [ css [ textAlign center, marginTop (px 50), fontWeight bold ] ] [ text "History" ]
-                    , ul [ css [ margin (px 30) ] ] (List.map pastEntryToHtml subject.history)
+                [
+                  subjectsToHtml subject.children
+                 ]
+              ]
+            ]
+        ]
+
+
+subjectsToHtml : List String -> Html.Styled.Html Msg
+subjectsToHtml list =
+    let
+        innerList =
+            List.map (subjectToHtml) list
+    in
+        ul [ css [ listStyle none ] ] innerList
+
+
+subjectToHtml : String -> Html.Styled.Html Msg
+subjectToHtml name =
+    li
+        [ subjectCss
+        , id <| "subject_" ++ name
+        ]
+        [ a [ href <| "?page=view&subjectName=" ++ name ]
+            [ div []
+                [ div
+                    [ css
+                        [ fontSize (Css.em 1.2)
+                        , displayFlex
+                        , justifyContent spaceBetween
+                        , flexDirection row
+                        , alignItems center
+                        ]
+                    ]
+                    [ div []
+                        [ span
+                            [ css
+                                [ fontSize (Css.em 0.5)
+                                , marginRight (px 15)
+                                ]
+                            ]
+                            []
+                        , h1
+                            [ class "noselect"
+                            , css
+                                [ display inline
+                                , color defaultColors.textHighlight
+                                , marginRight (px 20)
+                                ]
+                            ]
+                            [ text name ]
+                        ]
                     ]
                 ]
             ]
+        ]
+
+
+extraInfo subject =
+    if subject.daysSinceLast > 0 then
+        span
+            [ css [ fontSize (Css.em 0.7), color defaultColors.textNormal ]
+            ]
+            [ text <| " " ++ toString subject.daysSinceLast ++ " days ago" ]
+    else
+        Style.emptyNode
+
+
+
+
+showHistory subject =
+  if List.isEmpty subject.history then
+        Style.emptyNode
+  else
+    div []
+        [ h2 [ css [ textAlign center, marginTop (px 50), fontWeight bold ] ] [ text "History" ]
+        , ul [ css [ margin (px 30) ] ] (List.map pastEntryToHtml subject.history)
         ]
 
 

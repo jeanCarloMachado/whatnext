@@ -9,7 +9,6 @@ import Css exposing (..)
 import SDK exposing (Subject, PastAction)
 import Style exposing (defaultColors)
 import Menu
-import Keyboard.Combo
 
 
 -- json
@@ -20,7 +19,6 @@ import Json.Encode
 --rest
 
 import Http exposing (..)
-import Array exposing (Array)
 import Loader
 
 
@@ -34,7 +32,7 @@ main =
 
 
 type alias State =
-    { subjects : List ( Int, Subject )
+    { subjects : List Subject
     , loading : Bool
     , toasterMsg : String
     , tiredMode : Bool
@@ -79,7 +77,7 @@ init flags =
         state =
             initialState flags
     in
-        ( state, Http.send NewList <| SDK.getListRequest state )
+        ( state, Http.send NewList <| SDK.getListRequest state state.tiredMode )
 
 
 
@@ -87,7 +85,7 @@ init flags =
 
 
 type Msg
-    = NewList (Result Http.Error (Array Subject))
+    = NewList (Result Http.Error (List Subject))
     | ToggleTiredMode
     | ToggleSideMenu
     | NoAction
@@ -107,7 +105,7 @@ update : Msg -> State -> ( State, Cmd Msg )
 update msg model =
     case msg of
         NewList (Ok subjects) ->
-            ( { model | subjects = Array.toIndexedList subjects } |> Loader.disableLoading, Cmd.none )
+            ( { model | subjects = subjects } |> Loader.disableLoading, Cmd.none )
 
         NewList (Err msg) ->
             errorResult model msg
@@ -123,7 +121,7 @@ update msg model =
                 newState =
                     { model | tiredMode = not model.tiredMode } |> Loader.enableLoading
             in
-                ( newState, Http.send NewList <| SDK.getListRequest newState )
+                ( newState, Http.send NewList <| SDK.getListRequest newState newState.tiredMode )
 
 
 errorResult : State -> Error -> ( State, Cmd Msg )
@@ -179,7 +177,7 @@ tiredButton = div [
               ]
 
 
-subjectsToHtml : List ( Int, Subject ) -> Html.Styled.Html Msg
+subjectsToHtml : List Subject -> Html.Styled.Html Msg
 subjectsToHtml list =
     let
         innerList =
@@ -188,8 +186,8 @@ subjectsToHtml list =
         ul [ css [ listStyle none ] ] innerList
 
 
-subjectToHtml : ( Int, Subject ) -> Html.Styled.Html Msg
-subjectToHtml ( indice, subject ) =
+subjectToHtml : Subject -> Html.Styled.Html Msg
+subjectToHtml subject =
     li
         [ subjectCss
         , id <| "subject_" ++ subject.name
@@ -212,7 +210,7 @@ subjectToHtml ( indice, subject ) =
                                 , marginRight (px 15)
                                 ]
                             ]
-                            [ text <| toString (indice + 1) ++ "." ]
+                            []
                         , h1
                             [ class "noselect"
                             , css
@@ -222,7 +220,7 @@ subjectToHtml ( indice, subject ) =
                                 ]
                             ]
                             [ text subject.name ]
-                          , inlineInfoOfSubject subject
+                          , extraInfo subject
                         ]
                     ]
                 ]
@@ -230,7 +228,7 @@ subjectToHtml ( indice, subject ) =
         ]
 
 
-inlineInfoOfSubject subject =
+extraInfo subject =
     if subject.daysSinceLast > 0 then
         span
             [ css [ fontSize (Css.em 0.7), color defaultColors.textNormal ]

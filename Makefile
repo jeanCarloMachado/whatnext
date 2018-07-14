@@ -12,7 +12,7 @@ test:
 
 deployFront: buildFront
 	ssh -n -f blog 'rm -rf /home/ubuntu/whatnext/frontend/* ; mkdir -p /home/ubuntu/whatnext/frontend/'
-	 scp -r frontend/build/* blog:"/home/ubuntu/whatnext/frontend/"
+	scp -r frontend/build/* blog:"/home/ubuntu/whatnext/frontend/"
 
 buildFront:
 	(cd frontend ; ELM_APP_API_URL=https://api.thewhatnext.net elm-app build)
