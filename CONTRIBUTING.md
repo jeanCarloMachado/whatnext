@@ -1,9 +1,16 @@
 # Contributing
 
-There are many ways to collaborate to wn.
+
+## Installing the development environment
 
 
-## Installing the development enviroment
+```sh
+make envSetup
+```
+## Running the front and  back
+
+make front
 
 
+make api
 

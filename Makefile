@@ -17,7 +17,7 @@ deployFront: buildFront
 buildFront:
 	(cd frontend ; ELM_APP_API_URL=https://api.thewhatnext.net elm-app build)
 
-install:
+envSetup: initializeData
 	yarn global add create-elm-app
 	yarn global add elm-github-install
 
@@ -51,10 +51,20 @@ compile:
 compileContainer:
 	docker run -it -v ${current_dir}:/wn --entrypoint bash wn-build-image -c "cd /wn ; make compile && cp /root/.local/bin/api /wn/api/api"
 
-copyContent:
+getServerData:
 	scp -r 'blog:~/whatnext_data' /tmp/data
-	rm -rf data/* || true
+	make cleanuData
 	cp -rf /tmp/data/* /data/whatnext
+
+cleanupData:
+	sudo rm -rf /data || true
+
+initializeData: cleanupData
+	sudo mkdir /data
+	sudo chown -R ${USER} /data
+	mkdir /data/whatnext
+	touch /data/whatnext/whatnext_users
+	mkdir /data/whatnext/users
 
 
 deployAll: buildAndDeployApi deployFront
