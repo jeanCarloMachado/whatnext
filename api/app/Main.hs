@@ -18,12 +18,14 @@ import           System.Process
 import           Web.Cookie
 import           Web.Scotty
 import           Web.Scotty.Cookie
+import           Data.Maybe
 
 main = do
   wnDir <- getEnv ("WHATNEXT_SRC")
   scotty 3001 $
    do
     middleware myCors
+
     post "/signup" $ do
       credentials <- jsonData :: ActionM Credentials
       let authToken = createAuthToken credentials
@@ -36,31 +38,38 @@ main = do
       liftIO $ readProcess (wnDir ++ "/" ++ "init.sh") [] ""
       Web.Scotty.setHeader "Content-Type" "application/json"
       text "{\"status\": \"success\"}"
+
     post "/login" $ do
       credentials <- jsonData :: ActionM Credentials
       let authToken = createAuthToken credentials
       json (AuthResult (authToken))
+
     get "/scheduler" $ do
       params <- params
 
       setTiredMode params
       Web.Scotty.setHeader "Content-Type" "application/json"
       runAuthenticatedService wnDir $ scheduler wnDir
+
     get "/detail/:subjectName" $ do
       subjectName <- param "subjectName"
       runAuthenticatedService wnDir $ detail wnDir subjectName
+
     get "/rm/:subjectName" $ do
       subjectName <- param "subjectName"
       runAuthenticatedService wnDir $ remove wnDir subjectName
+
     post "/addOrUpdate" $ do
       alterInfo <- jsonData :: ActionM AlterInfo
-
-
       runAuthenticatedService wnDir $ alterSubject wnDir alterInfo
-    get "/log" $ do runAuthenticatedService wnDir $ getHistory wnDir
+
+    get "/log" $ do
+      runAuthenticatedService wnDir $ getHistory wnDir
+
     post "/done" $ do
       doneInfo <- jsonData :: ActionM DoneInfo
       runAuthenticatedService wnDir $ newDoneEntry wnDir doneInfo
+
     notFound $ do text "Invalid route"
 
 --- state IO
@@ -79,6 +88,7 @@ alterSubject wnDir alterInfo _ = do
       , whatToDoNext alterInfoNew
       , objective alterInfoNew
       , previousName alterInfoNew
+      , fromMaybe "" $ parent alterInfoNew
       ]
 
 filterAlterData subject =
@@ -228,6 +238,7 @@ data AlterInfo = AlterInfo
   , whatToDoNext :: String
   , complexity   :: Int
   , priority     :: Int
+  , parent :: Maybe String
   } deriving (Generic, Show)
 
 instance ToJSON AlterInfo

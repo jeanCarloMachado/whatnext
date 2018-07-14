@@ -132,6 +132,7 @@ data Subject = Subject
   , daysSinceLastStudy  :: Int
   , objective           :: String
   , whatToDoNext        :: String
+  , parent              :: String
   , timeAlreadyInvested :: Int
   , creationDate :: Day
   } deriving (Show, Generic)
@@ -157,8 +158,9 @@ instance FromJSON Subject where
       objective <- o .: "objective"
       whatToDoNext <- o .: "whatToDoNext"
       creationDate <- o .: "creationDate"
+      parent <- o .: "parent"
       let day = getDay $ explodeDate creationDate
-      return ( Subject name priority complexity 0 0 objective whatToDoNext 0 day)
+      return ( Subject name priority complexity 0 0 objective whatToDoNext parent 0 day)
 
 instance ToJSON Subject where
   toJSON Subject {..} =
@@ -166,6 +168,7 @@ instance ToJSON Subject where
       [ "name" .= name
       , "priority" .= priority
       , "complexity" .= complexity
+      , "parent" .= parent
       , "weight" .= weight
       , "days_since_last_study" .= daysSinceLastStudy
       , "objective" .= objective

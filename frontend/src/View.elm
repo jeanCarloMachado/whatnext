@@ -191,6 +191,7 @@ viewSubject subject =
                         [ div []
                             [ subjectProperty "Priority" <| toString subject.priority
                             , subjectProperty "Complexity" <| toString subject.complexity
+                            , subjectProperty "Parent" <| subject.parent
                             ]
                         , div []
                             [ subjectProperty "Last session" <| toString subject.daysSinceLast ++ " days ago"

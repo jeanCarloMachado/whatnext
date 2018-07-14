@@ -77,6 +77,7 @@ type Msg
     | AlterSubjectSubmit
     | NewSubjectResult (Result Http.Error String)
     | GetDetail (Result Http.Error Subject)
+    | ChangeParent String
 
 
 update : Msg -> State -> ( State, Cmd Msg )
@@ -101,6 +102,9 @@ update msg state =
             in
                 ( validateInnerState newState, Cmd.none )
 
+        ChangeParent name ->
+                ( { state | subject = SDK.setParent state.subject name }, Cmd.none )
+
         ChangeWhatToDoNext whatToDoNext ->
             ( { state | subject = SDK.setWhatToDoNext state.subject whatToDoNext }, Cmd.none )
 
@@ -113,7 +117,7 @@ update msg state =
             )
 
         NewSubjectResult _ ->
-            ( state, Navigation.load "?page=scheduler" )
+            ( state, Navigation.back 1)
 
         GetDetail (Ok subject) ->
             let
@@ -189,7 +193,7 @@ content state =
                     [ Style.inputCss
                     , type_ "text"
                     , placeholder "Name"
-                    , onInput (ChangeSubjectName)
+                    , onInput ChangeSubjectName
                     , Html.Styled.Attributes.required True
                     , defaultValue state.subject.name
                     ]
@@ -228,8 +232,20 @@ content state =
                     [ defaultValue state.subject.whatToDoNext
                     , css <| List.append Style.textAreaCss [ minHeight (px 35) ]
                     , placeholder "do x y z"
-                    , onInput (ChangeWhatToDoNext)
+                    , onInput ChangeWhatToDoNext
                     , Html.Styled.Attributes.required False
+                    ]
+                    []
+                ]
+            , span []
+                [ label [ css Style.labelCss ] [ text "Parent" ]
+                , input
+                    [ Style.inputCss
+                    , type_ "text"
+                    , placeholder "Parent name"
+                    , onInput ChangeParent
+                    , Html.Styled.Attributes.required True
+                    , defaultValue state.subject.parent
                     ]
                     []
                 ]

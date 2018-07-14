@@ -10,6 +10,7 @@ subjectToJson() {
     whatToDoNext=$(echo "$sanitizedSubjectRow" | cut -d "|" -f4 )
     objective=$(echo "$sanitizedSubjectRow" | cut -d "|" -f5 )
     creationDate=$(echo "$sanitizedSubjectRow" | cut -d "|" -f6 )
+    parent=$(echo "$sanitizedSubjectRow" | cut -d "|" -f7 )
 
 
     echo "{"
@@ -18,7 +19,8 @@ subjectToJson() {
     echo '  "complexity": '$complexity','
     echo '  "whatToDoNext": "'$whatToDoNext'",'
     echo '  "objective": "'$objective'",'
-    echo '  "creationDate": "'$creationDate'"'
+    echo '  "creationDate": "'$creationDate'",'
+    echo '  "parent": "'$parent'"'
     echo "}"
 }
 

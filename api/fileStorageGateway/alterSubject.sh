@@ -10,6 +10,7 @@ complexity="$3"
 whatToDoNext="$4"
 objective="$5"
 previousName="$6"
+parent="$7"
 creation=$(date "+%Y-%m-%d")
 
 
@@ -27,4 +28,4 @@ whatToDoNext=$(echo "$whatToDoNext" | sed ':a;N;$!ba;s/\n/\\n/g')
 }
 
 sed -r -i "/^$previousName\|/d"  "$WHATNEXT_CONF"
-echo  "$name|$importance|$complexity|$whatToDoNext|$objective|$creation" >> "$WHATNEXT_CONF"
+echo  "$name|$importance|$complexity|$whatToDoNext|$objective|$creation|$parent" >> "$WHATNEXT_CONF"

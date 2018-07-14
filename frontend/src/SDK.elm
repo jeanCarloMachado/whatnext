@@ -17,7 +17,20 @@ type alias Subject =
     , complexity : Int
     , priority : Int
     , objective : String
+    , parent : String
     }
+
+emptySubject : Subject
+emptySubject = Subject
+                ""
+                0
+                0
+                []
+                ""
+                50
+                50
+                ""
+                ""
 
 
 type alias SubjectIdentifier r =
@@ -134,30 +147,38 @@ getDetail requestMetadata subjectName =
 
 
 addSubjectRequest : RequestMetadata r -> Subject -> Http.Request String
-addSubjectRequest requestMetadata subjectData =
+addSubjectRequest requestMetadata subject =
     let
         url =
             requestMetadata.apiEndpoint ++ "/addOrUpdate"
 
-        body =
-            Json.Encode.object
-                [ ( "name", Json.Encode.string subjectData.name )
-                , ( "complexity", Json.Encode.int subjectData.complexity )
-                , ( "priority", Json.Encode.int subjectData.priority )
-                , ( "whatToDoNext", Json.Encode.string subjectData.whatToDoNext )
-                , ( "objective", Json.Encode.string subjectData.objective )
-                , ( "previousName", Json.Encode.string "")
-                ]
+        body = [ ( "name", Json.Encode.string subject.name )
+            , ( "complexity", Json.Encode.int subject.complexity )
+            , ( "priority", Json.Encode.int subject.priority )
+            , ( "whatToDoNext", Json.Encode.string subject.whatToDoNext )
+            , ( "objective", Json.Encode.string subject.objective )
+            , ( "previousName", Json.Encode.string "")
+            ] |> addParent subject
     in
         Http.request
             { method = "POST"
             , headers = defaultHeaders requestMetadata
             , url = url
-            , body = (Http.jsonBody body)
+            , body = (Http.jsonBody <| Json.Encode.object body)
             , expect = (Http.expectJson decodeEmptyResult)
             , timeout = Nothing
             , withCredentials = False
             }
+
+
+addParent subject data =
+    if String.isEmpty subject.parent
+    then
+        data
+    else
+        data ++ [("parent", Json.Encode.string subject.parent)]
+
+
 
 defaultHeaders requestMetadata =
     [ Http.header "Content-Type" "application/json", Http.header "Authorization" requestMetadata.authToken ]
@@ -166,12 +187,6 @@ defaultHeaders requestMetadata =
 
 decodeEmptyResult =
     Json.Decode.succeed ""
-
-
-decodeSubjectList : Decoder (Array Subject)
-decodeSubjectList =
-    Json.Decode.array decodeSubject
-
 
 getListRequest state =
     let
@@ -225,17 +240,6 @@ errorResult state msg =
 
 --- default values
 
-emptySubject : Subject
-emptySubject = Subject
-                ""
-                0
-                0
-                []
-                ""
-                50
-                50
-                ""
-
 
 --- setters
 
@@ -249,9 +253,15 @@ setObjective subject objective =
   {subject | objective = objective }
 setWhatToDoNext subject whatToDoNext =
   {subject | whatToDoNext = whatToDoNext }
-
+setParent subject parent =
+  {subject | parent = parent }
 
 --decoders
+
+
+decodeSubjectList : Decoder (Array Subject)
+decodeSubjectList =
+    Json.Decode.array decodeSubject
 
 
 decodeSubject : Decoder Subject
@@ -265,6 +275,9 @@ decodeSubject =
         |> Json.Decode.Pipeline.required "complexity" (Json.Decode.int)
         |> Json.Decode.Pipeline.required "priority" (Json.Decode.int)
         |> Json.Decode.Pipeline.required "objective" (Json.Decode.string)
+        |> Json.Decode.Pipeline.optional "parent" (Json.Decode.string) ""
+
+
 
 
 decodeSubjectHistory =
