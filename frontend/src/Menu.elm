@@ -26,13 +26,14 @@ topBarHtml toggleMenuEvent title elements =
             , justifyContent spaceBetween
             , flexDirection row
             , minHeight (px 50)
+            , boxShadow5 (px 0) (px 4) (px 8) (px 1) (Css.rgba 0 0 0 0.14)
             ]
         ]
         [
           div [
             css
-              [ backgroundColor defaultColors.barColor
-              , displayFlex
+              [
+               displayFlex
               , justifyContent spaceBetween
               , flexDirection row
               , minHeight (px 50)

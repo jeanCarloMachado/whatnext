@@ -189,8 +189,7 @@ subjectsToHtml list =
 subjectToHtml : Subject -> Html.Styled.Html Msg
 subjectToHtml subject =
     li
-        [ subjectCss
-        , id <| "subject_" ++ subject.name
+        [ Style.subjectCss
         ]
         [ a [ href <| "?page=view&subjectName=" ++ subject.name ]
             [ div []
@@ -256,16 +255,6 @@ subjectProperty name value =
         , span [] [ text value ]
         ]
 
-
-subjectCss =
-    css
-        [ display block
-        , borderWidth (px 1)
-        , padding (px 20)
-        , marginBottom (px 1)
-        , backgroundColor <| Css.rgb 255 255 255
-        , borderStyle none
-        ]
 
 
 pastEntryToHtml : PastAction -> Html Msg

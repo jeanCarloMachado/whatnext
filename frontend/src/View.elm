@@ -138,7 +138,7 @@ view state =
                     ]
                 , --main content
                   div
-                    [ css [ marginTop (px 50), marginLeft (px 10), marginRight (px 10) ] ]
+                    [ css [ marginTop (px 30), marginLeft (px 5), marginRight (px 5) ] ]
                     [ -- conditional loading, modals
                       Loader.getLoadingHtml state.loading
                     , Toaster.html state.toasterMsg
@@ -152,7 +152,7 @@ view state =
 viewSubject : Subject -> Html.Styled.Html Msg
 viewSubject subject =
     div
-        [ subjectCss ]
+        [ Style.subjectCss ]
         [ div []
             [ div
                 [ css
@@ -208,12 +208,9 @@ viewSubject subject =
                     []
                     [ span [ css [ margin (px 20), color defaultColors.textNormal, fontWeight bold ] ] [ text "Next Action: " ]
                     , p [ css [ display block, margin (px 30), fontSize (Css.em 0.9) ] ] [ showMultilineText subject.whatToDoNext ]
-                    ],
-                showHistory subject
-                , div []
-                [
-                  subjectsToHtml subject.children
-                 ]
+                    ]
+                , subjectsToHtml subject.children
+                , showHistory subject
               ]
             ]
         ]
@@ -221,24 +218,33 @@ viewSubject subject =
 
 subjectsToHtml : List String -> Html.Styled.Html Msg
 subjectsToHtml list =
+
+  if List.isEmpty list then
+        Style.emptyNode
+
+  else
     let
         innerList =
             List.map (subjectToHtml) list
     in
-        ul [ css [ listStyle none ] ] innerList
+    div []
+        [ h2 [ css [ textAlign center, marginTop (px 50), marginBottom (px 50), fontWeight bold ] ] [ text "Next steps" ]
+         , ul [ css [ listStyle none ] ] innerList
+        ]
+
 
 
 subjectToHtml : String -> Html.Styled.Html Msg
 subjectToHtml name =
     li
-        [ subjectCss
-        , id <| "subject_" ++ name
+        [
+            Style.subjectCss
         ]
         [ a [ href <| "?page=view&subjectName=" ++ name ]
             [ div []
                 [ div
                     [ css
-                        [ fontSize (Css.em 1.2)
+                        [ fontSize (Css.em 0.9)
                         , displayFlex
                         , justifyContent spaceBetween
                         , flexDirection row
@@ -277,7 +283,6 @@ extraInfo subject =
             [ text <| " " ++ toString subject.daysSinceLast ++ " days ago" ]
     else
         Style.emptyNode
-
 
 
 
@@ -323,16 +328,6 @@ pastEntryToHtml pastEntry =
         , p [ css [ marginLeft (px 20) ] ] [ showMultilineText <| pastEntry.description ]
         ]
 
-
-subjectCss =
-    css
-        [ display block
-        , borderWidth (px 1)
-        , padding (px 20)
-        , marginBottom (px 1)
-        , backgroundColor <| Css.rgb 255 255 255
-        , borderStyle none
-        ]
 
 
 subscriptions : State -> Sub Msg

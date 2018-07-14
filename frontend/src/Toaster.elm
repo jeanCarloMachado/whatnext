@@ -1,6 +1,5 @@
 module Toaster exposing (html)
 
-import Html
 import Html.Styled exposing (..)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css)

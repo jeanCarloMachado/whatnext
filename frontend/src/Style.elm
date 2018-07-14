@@ -228,3 +228,17 @@ addButton =
             ]
             []
         ]
+
+
+
+subjectCss =
+    css
+        [ display block
+        , borderWidth (px 1)
+        , padding (px 20)
+        , marginBottom (px 1)
+        , backgroundColor <| Css.rgb 255 255 255
+        , borderStyle none
+        , boxShadow5 (px 0) (px 4) (px 8) (px 1) (Css.rgba 0 0 0 0.3)
+        ]
+
