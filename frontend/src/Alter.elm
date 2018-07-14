@@ -47,6 +47,7 @@ init flags =
                 flags.authToken
                 flags.apiEndpoint
                 False
+                flags.subjectName
     in
         if String.isEmpty flags.subjectName then
             ( state, Cmd.none )
@@ -63,6 +64,7 @@ type alias State =
     , authToken : String
     , apiEndpoint : String
     , formValid : Bool
+    , previousName: String
     }
 
 
@@ -113,11 +115,12 @@ update msg state =
 
         AlterSubjectSubmit ->
             ( Loader.enableLoading state
-            , Http.send NewSubjectResult <| SDK.addSubjectRequest state state.subject
+            , Http.send NewSubjectResult <| SDK.alterSubjectRequest state state.subject state.previousName
             )
 
         NewSubjectResult _ ->
-            ( state, Navigation.back 1)
+            --since renames are posssible it's not possible to go back to the view page
+            ( state, Navigation.load "?page=scheduler" )
 
         GetDetail (Ok subject) ->
             let

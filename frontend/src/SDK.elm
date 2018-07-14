@@ -146,8 +146,8 @@ getDetail requestMetadata subjectName =
         request
 
 
-addSubjectRequest : RequestMetadata r -> Subject -> Http.Request String
-addSubjectRequest requestMetadata subject =
+alterSubjectRequest : RequestMetadata r -> Subject -> String -> Http.Request String
+alterSubjectRequest requestMetadata subject previousName =
     let
         url =
             requestMetadata.apiEndpoint ++ "/addOrUpdate"
@@ -157,7 +157,7 @@ addSubjectRequest requestMetadata subject =
             , ( "priority", Json.Encode.int subject.priority )
             , ( "whatToDoNext", Json.Encode.string subject.whatToDoNext )
             , ( "objective", Json.Encode.string subject.objective )
-            , ( "previousName", Json.Encode.string "")
+            , ( "previousName", Json.Encode.string previousName)
             ] |> addParent subject
     in
         Http.request
