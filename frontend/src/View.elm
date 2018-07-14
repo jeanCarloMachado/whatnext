@@ -201,13 +201,13 @@ viewSubject subject =
                     ]
                 , div
                     []
-                    [ span [ css [ margin (px 20), color defaultColors.textNormal, fontWeight bold ] ] [ text "Objective: " ]
-                    , p [ css [ display block, margin (px 30), fontSize (Css.em 0.9) ] ] [ showMultilineText subject.objective ]
+                    [ span [ css longEntryCss ] [ text "Objective: " ]
+                    , p [ css longValueCss ] [ showMultilineText subject.objective ]
                     ]
                 , div
                     []
-                    [ span [ css [ margin (px 20), color defaultColors.textNormal, fontWeight bold ] ] [ text "Next Action: " ]
-                    , p [ css [ display block, margin (px 30), fontSize (Css.em 0.9) ] ] [ showMultilineText subject.whatToDoNext ]
+                    [ span [ css longEntryCss ] [ text "Next Action: " ]
+                    , p [ css longValueCss ] [ showMultilineText subject.whatToDoNext ]
                     ]
                 , subjectsToHtml subject.children
                 , showHistory subject
@@ -215,6 +215,11 @@ viewSubject subject =
             ]
         ]
 
+longValueCss =
+    [  overflowWrap breakWord, display block, margin (px 30), fontSize (Css.em 0.9) ]
+
+longEntryCss =
+    [  margin (px 20), color defaultColors.textNormal, fontWeight bold ]
 
 subjectsToHtml : List String -> Html.Styled.Html Msg
 subjectsToHtml list =
