@@ -3,6 +3,11 @@
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 
+getChildren() {
+    parent="$1"
+    grep -r "|$parent$" $WHATNEXT_CONF | cut -d'|' -f1
+}
+
 getEmailByHash() {
     loginHash=$1
 

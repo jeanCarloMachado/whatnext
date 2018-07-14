@@ -15,9 +15,12 @@ def get_subject(name):
         print ('Subject "'+ name + '" was not found')
         sys.exit()
 
-    subjectRow = gateway(['subjectJson', subject['name']])
+    subjectJson = gateway(['subjectJson', subject['name']])
+    subject = json.loads(subjectJson)
 
-    subject = json.loads(subjectRow)
+    children = gateway(['getChildren', subject['name']])
+    subject['children'] = children.split("\n")[:-1]
+
 
     days_since_last_study=gateway(['daysSinceLastStudy', subject['name']])
     days_since_last_study = days_since_last_study or 0
