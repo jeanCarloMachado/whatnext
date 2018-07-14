@@ -35,11 +35,18 @@ main = do
     Just subjects -> do
       subjectsWithDays <- mapM (getDaysSinceLastStudy currentDirectory) subjects
       let finalSubjects =
+            filterOutChildren $
             sortByWeight $
             computeWeights context $
             setTimeAlreadyInvested timePerSubjectList subjectsWithDays
       putStrLn $ mountJson finalSubjects
     _ -> putStrLn "error while decoding subjects"
+
+
+filterOutChildren :: [Subject] -> [Subject]
+filterOutChildren subjects =
+  filter (\x -> null (parent x)) subjects
+
 
 getToday :: IO (Day) -- :: (year,month,day)
 getToday = getCurrentTime >>= return . utctDay
