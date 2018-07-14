@@ -7,10 +7,19 @@
 ```sh
 make envSetup
 ```
-## Running the front and  back
+## Running the api
 
-make front
-
-
+```sh
 make api
+```
 
+
+## Running the webapp
+
+```sh
+make front
+```
+
+
+
+That's it! You can access the site on http://localhost:300

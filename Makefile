@@ -51,18 +51,20 @@ compile:
 compileContainer:
 	docker run -it -v ${current_dir}:/wn --entrypoint bash wn-build-image -c "cd /wn ; make compile && cp /root/.local/bin/api /wn/api/api"
 
-getServerData:
+copyServerData:
 	scp -r 'blog:~/whatnext_data' /tmp/data
-	make cleanuData
+	make initializeDir
 	cp -rf /tmp/data/* /data/whatnext
 
 cleanupData:
 	sudo rm -rf /data || true
 
-initializeData: cleanupData
+initializeDir: cleanupData
 	sudo mkdir /data
 	sudo chown -R ${USER} /data
 	mkdir /data/whatnext
+
+initializeData: initializeDir
 	touch /data/whatnext/whatnext_users
 	mkdir /data/whatnext/users
 
