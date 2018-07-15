@@ -81,10 +81,7 @@ sideBarHtml =
                 , flexDirection column
                 ]
             ]
-            [ a [ css <| List.append Style.buttonCss dropdownMenuItemCss, href "?page=scheduler" ]
-                [ text "Next Steps"
-                ]
-            , a [ css <| List.append Style.buttonCss dropdownMenuItemCss, href "?page=log" ]
+            [ a [ css <| List.append Style.buttonCss dropdownMenuItemCss, href "?page=log" ]
                 [ text "History"
                 ]
             , a

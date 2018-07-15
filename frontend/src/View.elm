@@ -315,7 +315,7 @@ pastEntryToHtml pastEntry =
                             , marginRight (px 20)
                             ]
                         ]
-                        [ text pastEntry.description ]
+                        [ text <| pastEntry.subjectName ++ " " ++ pastEntry.description ]
                     , span
                         [ css [ fontSize (Css.em 0.7), color defaultColors.textNormal ]
                         ]

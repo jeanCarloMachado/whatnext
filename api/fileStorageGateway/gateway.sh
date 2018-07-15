@@ -43,6 +43,16 @@ listSubject() {
     cat "$WHATNEXT_CONF" | grep "$subject|" | sed -e /^$/d
 }
 
+dropEndLine() {
+  sed -e /^$/d
+}
+
+getSubjectParent() {
+
+    subject=$1
+    listSubject "$subject" | cut -d '|' -f7 | dropEndLine
+}
+
 subjectJson() {
     subject=$1
     $__dir/conf2json.sh "$subject"
