@@ -43,6 +43,7 @@ init flags =
     in
         ( state, Http.send GetDetail <| SDK.getDetail state flags.subjectName )
 
+
 type alias State =
     { subjectName : String
     , toasterMsg : String
@@ -61,8 +62,6 @@ type Msg
     | GetDetail (Result Http.Error Subject)
     | Remove (Result Http.Error String)
     | RemoveClick Subject
-
-
 
 
 update : Msg -> State -> ( State, Cmd Msg )
@@ -114,12 +113,11 @@ view state =
                     Menu.sideBarHtml
 
                 --top menu
-                , Menu.topBarHtml ToggleSideMenu ""
-                    [
-                       Style.backToHome
-                     , img
+                , Menu.topBarHtml ToggleSideMenu
+                    ""
+                    [ Style.backToHome
+                    , img
                         [ css Style.topMenuIconCss
-
                         , onClick <| RemoveClick subject
                         , src "images/remove.png"
                         ]
@@ -133,7 +131,7 @@ view state =
                             ]
                             []
                         ]
-                      , Style.addButton subject.name
+                    , Style.addButton subject.name
                     , Style.doneButton <| Just subject.name
                     ]
                 , --main content
@@ -211,39 +209,34 @@ viewSubject subject =
                     ]
                 , subjectsToHtml subject.children
                 , showHistory subject
-              ]
+                ]
             ]
         ]
 
+
 longValueCss =
-    [  overflowWrap breakWord, display block, margin (px 30), fontSize (Css.em 0.9) ]
+    [ overflowWrap breakWord, display block, margin (px 30), fontSize (Css.em 0.9) ]
+
 
 longEntryCss =
-    [  margin (px 20), color defaultColors.textNormal, fontWeight bold ]
+    [ margin (px 20), color defaultColors.textNormal, fontWeight bold ]
+
 
 subjectsToHtml : List String -> Html.Styled.Html Msg
 subjectsToHtml list =
-
-  if List.isEmpty list then
+    if List.isEmpty list then
         Style.emptyNode
-
-  else
-    let
-        innerList =
-            List.map (subjectToHtml) list
-    in
-    div []
-        [ h2 [ css [ textAlign center, marginTop (px 50), marginBottom (px 50), fontWeight bold ] ] [ text "Next steps" ]
-         , ul [ css [ listStyle none ] ] innerList
-        ]
-
+    else
+        div []
+            [ newSection "Next steps"
+            , ul [] <| List.map (subjectToHtml) list
+            ]
 
 
 subjectToHtml : String -> Html.Styled.Html Msg
 subjectToHtml name =
     li
-        [
-            Style.subjectCss
+        [ Style.subjectCss
         ]
         [ a [ href <| "?page=view&subjectName=" ++ name ]
             [ div []
@@ -280,28 +273,64 @@ subjectToHtml name =
         ]
 
 
-extraInfo : Subject -> Html msg
-extraInfo subject =
-    if subject.daysSinceLast > 0 then
-        span
-            [ css [ fontSize (Css.em 0.7), color defaultColors.textNormal ]
-            ]
-            [ text <| " " ++ toString subject.daysSinceLast ++ " days ago" ]
-    else
-        Style.emptyNode
-
-
-
+showHistory : Subject -> Html Msg
 showHistory subject =
-  if List.isEmpty subject.history then
+    if List.isEmpty subject.history then
         Style.emptyNode
-  else
-    div []
-        [ h2 [ css [ textAlign center, marginTop (px 50), fontWeight bold ] ] [ text "History" ]
-        , ul [ css [ margin (px 30) ] ] (List.map pastEntryToHtml subject.history)
+    else
+        div []
+            [ newSection "History"
+            , ul [] (List.map pastEntryToHtml subject.history)
+            ]
+
+
+pastEntryToHtml : PastAction -> Html Msg
+pastEntryToHtml pastEntry =
+    li
+        [ Style.subjectCss
+        ]
+        [ div []
+            [ div
+                [ css
+                    [ fontSize (Css.em 0.9)
+                    , displayFlex
+                    , justifyContent spaceBetween
+                    , flexDirection row
+                    , alignItems center
+                    ]
+                ]
+                [ div []
+                    [ span
+                        [ css
+                            [ fontSize (Css.em 0.5)
+                            , marginRight (px 15)
+                            ]
+                        ]
+                        []
+                    , h1
+                        [ class "noselect"
+                        , css
+                            [ display inline
+                            , color defaultColors.textHighlight
+                            , marginRight (px 20)
+                            ]
+                        ]
+                        [ text pastEntry.description ]
+                    , span
+                        [ css [ fontSize (Css.em 0.7), color defaultColors.textNormal ]
+                        ]
+                        [ text pastEntry.date ]
+                    ]
+                ]
+            ]
         ]
 
 
+newSection title =
+    h2 [ css [ textAlign center, marginTop (px 50), marginBottom (px 50), fontWeight bold ] ] [ text title ]
+
+
+showMultilineText : String -> Html msg
 showMultilineText str =
     let
         newStr =
@@ -311,6 +340,7 @@ showMultilineText str =
         span [ Html.Styled.Attributes.property "innerHTML" (Json.Encode.string newStr) ] []
 
 
+subjectProperty : String -> String -> Html msg
 subjectProperty name value =
     div [ css [ margin (px 20) ] ]
         [ span
@@ -319,21 +349,6 @@ subjectProperty name value =
             [ text <| name ++ ": " ]
         , span [] [ text value ]
         ]
-
-
-pastEntryToHtml : PastAction -> Html Msg
-pastEntryToHtml pastEntry =
-    li [ css [ minHeight (px 30) ] ]
-        [ p
-            [ css
-                [ marginTop (px 15)
-                , color defaultColors.textHighlight
-                ]
-            ]
-            [ text pastEntry.date ]
-        , p [ css [ marginLeft (px 20) ] ] [ showMultilineText <| pastEntry.description ]
-        ]
-
 
 
 subscriptions : State -> Sub Msg

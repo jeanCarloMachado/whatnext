@@ -120,7 +120,7 @@ update msg state =
 
         NewSubjectResult _ ->
             --since renames are posssible it's not possible to go back to the view page
-            ( state, Navigation.load "?page=scheduler" )
+            ( state, Navigation.load <| "?page=view&subjectName=" ++ state.subject.name )
 
         GetDetail (Ok subject) ->
             let
