@@ -12,6 +12,7 @@ test:
 
 deployFront: buildFront
 	aws s3 cp frontend/build/ s3://app.thewhatnext.net/ --recursive
+	curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${WN_ZONE_ID}/purge_cache" -H "X-Auth-Email: contato@jeancarlomachado.com.br" -H "X-Auth-Key: ${WN_CLOUDFLARE_API_KEY}" -H "Content-Type: application/json" --data '{"purge_everything":true}'
 
 
 buildFront:
