@@ -284,11 +284,8 @@ decodeSubject =
         |> Json.Decode.Pipeline.required "objective" (Json.Decode.string)
         |> Json.Decode.Pipeline.optional "parent" (Json.Decode.string) ""
 
-
 decodeSubjectHistory =
     at [ "history" ] (Json.Decode.array decodePastAction)
-
-
 
 
 decodePastAction =
@@ -297,5 +294,37 @@ decodePastAction =
         |> Json.Decode.Pipeline.required "description" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "subject" (Json.Decode.string)
         |> Json.Decode.Pipeline.required "duration" (Json.Decode.int)
+
+
+
+priorities : List (String, String)
+priorities =
+    [ ( "0", "No Priority" )
+    , ( "20", "Low" )
+    , ( "50", "Medium" )
+    , ( "70", "High" )
+    , ( "100", "Higest" )
+    ]
+
+getPriorityString priority =
+    let
+        filtered = List.filter (\x -> (Tuple.first x) == priority) priorities
+    in
+       Tuple.second <| Maybe.withDefault (priority, priority) <| List.head filtered
+
+getComplexityString complexity =
+    let
+        filtered = List.filter (\x -> (Tuple.first x) == complexity) complexities
+    in
+       Tuple.second <| Maybe.withDefault (complexity, complexity) <| List.head filtered
+
+
+complexities : List (String, String)
+complexities =
+    [ ( "10", "Easy" )
+    , ( "50", "Medium" )
+    , ( "80", "Hard" )
+    , ( "100", "Hardest" )
+    ]
 
 

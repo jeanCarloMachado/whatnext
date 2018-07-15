@@ -43,7 +43,6 @@ init flags =
     in
         ( state, Http.send GetDetail <| SDK.getDetail state flags.subjectName )
 
-
 type alias State =
     { subjectName : String
     , toasterMsg : String
@@ -190,8 +189,8 @@ viewSubject subject =
                             ]
                         ]
                         [ div []
-                            [ subjectProperty "Priority" <| toString subject.priority
-                            , subjectProperty "Complexity" <| toString subject.complexity
+                            [ subjectProperty "Priority" <| SDK.getPriorityString <| toString subject.priority
+                            , subjectProperty "Complexity" <| SDK.getComplexityString <| toString subject.complexity
                             , subjectProperty "Parent" <| subject.parent
                             ]
                         , div []
@@ -281,6 +280,7 @@ subjectToHtml name =
         ]
 
 
+extraInfo : Subject -> Html msg
 extraInfo subject =
     if subject.daysSinceLast > 0 then
         span

@@ -95,7 +95,7 @@ update msg state =
             ( { state | subject = SDK.setComplexity state.subject complexity }, Cmd.none )
 
         ChangePriority priority ->
-            ( { state | subject = SDK.setPriority state.subject <| priority * 10 }, Cmd.none )
+            ( { state | subject = SDK.setPriority state.subject priority }, Cmd.none )
 
         ChangeSubjectName name ->
             let
@@ -261,30 +261,11 @@ subscriptions state =
     Sub.none
 
 
-priority =
-    [ ( "0", "No Priority" )
-    , ( "2", "Low" )
-    , ( "5", "Medium" )
-    , ( "7", "High" )
-    , ( "10", "Higest" )
-    ]
-
 
 renderPriorityOptions defaultValue =
-    let
-        defaultValueNew =
-            defaultValue // 10 |> toString
-    in
-        List.map (\option -> Style.optionFromTuple defaultValueNew option) priority
+        List.map (\option -> Style.optionFromTuple (defaultValue |> toString) option) SDK.priorities
 
-
-complexity =
-    [ ( "10", "Easy" )
-    , ( "50", "Medium" )
-    , ( "80", "Hard" )
-    , ( "100", "Hardest" )
-    ]
 
 
 renderComplexityOptions defaultValue =
-    List.map (\option -> Style.optionFromTuple defaultValue option) complexity
+    List.map (\option -> Style.optionFromTuple defaultValue option) SDK.complexities
