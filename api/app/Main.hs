@@ -43,7 +43,6 @@ main = do
       credentials <- jsonData :: ActionM Credentials
       let authToken = createAuthToken credentials
       json (AuthResult (authToken))
-
     get "/scheduler" $ do
       params <- params
 
@@ -106,7 +105,7 @@ newDoneEntry wnDir doneInfo _ = do
   liftIO $ readProcess (wnDir ++ "/" ++ "done.sh") infoList ""
   return $ Left "{\"status\": \"success\"}"
   where
-    infoList = [subjectName doneInfo, description doneInfo, followup doneInfo, show $ duration doneInfo]
+    infoList = [subjectName doneInfo, description doneInfo, show $ duration doneInfo]
 
 remove wnDir subjectName (Right token) = return $ Right token
 remove wnDir subjectName _ = do
@@ -247,7 +246,6 @@ instance FromJSON AlterInfo
 
 data DoneInfo = DoneInfo
   { description :: String
-  , followup    :: String
   , subjectName    :: String
   , duration   :: Int
   } deriving (Generic, Show)

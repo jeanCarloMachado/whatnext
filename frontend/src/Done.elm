@@ -35,7 +35,6 @@ init flags =
                flags.apiEndpoint
                flags.subjectName
                ""
-               ""
                valid
                50
                False
@@ -61,7 +60,6 @@ type alias State =
     , apiEndpoint : String
     , name : String
     , description : String
-    , whatToDoNext : String
     , formValid : Bool
     , duration : Int
     , archive : Bool
@@ -72,7 +70,6 @@ type Msg
     = None
     | ToggleSideMenu
     | ChangeDescription String
-    | ChangeWhatToDoNext String
     | ChangeSubjectName String
     | ChangeDuration String
     | SubmitDone
@@ -92,9 +89,6 @@ update msg state =
 
         ChangeDescription description ->
             ( { state | description = description }, Cmd.none )
-
-        ChangeWhatToDoNext description ->
-            ( { state | whatToDoNext = description }, Cmd.none )
 
         ChangeSubjectName name ->
           let
@@ -194,15 +188,7 @@ content state =
                 , onInput ChangeDescription
                 ]
                 []
-            , label [] [ text "What to do next" ]
-            , textarea
-                [ css Style.textAreaCss
-                , placeholder "study x y z"
-                , onInput ChangeWhatToDoNext
-                ]
-                []
-
-            , label [] [ text "Duration in minutes" ]
+            , label [] [ text "Duration" ]
             , input
                 [ Style.inputCss
                 , type_ "text"

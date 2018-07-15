@@ -5,7 +5,6 @@ import Json.Decode
 import Json.Encode
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline
-import Array exposing (Array)
 
 
 type alias Subject =
@@ -21,18 +20,25 @@ type alias Subject =
     , parent : String
     }
 
+
+type alias AuthResult =
+    { hash : String
+    }
+
+
 emptySubject : Subject
-emptySubject = Subject
-                ""
-                0
-                0
-                []
-                []
-                ""
-                50
-                50
-                ""
-                ""
+emptySubject =
+    Subject
+        ""
+        0
+        0
+        []
+        []
+        ""
+        50
+        50
+        ""
+        ""
 
 
 type alias SubjectIdentifier r =
@@ -55,6 +61,7 @@ type alias RequestMetadata r =
         , authToken : String
     }
 
+
 type alias SubjectData r =
     { r
         | newSubjectName : String
@@ -69,9 +76,9 @@ type alias DoneInfo r =
     { r
         | name : String
         , description : String
-        , whatToDoNext : String
         , duration : Int
     }
+
 
 replaceSame : Subject -> ( Int, Subject ) -> ( Int, Subject )
 replaceSame new ( indice, orig ) =
@@ -81,6 +88,7 @@ replaceSame new ( indice, orig ) =
 
         False ->
             ( indice, orig )
+
 
 
 --- requests
@@ -95,7 +103,6 @@ doneRequest requestMetadata doneInfo =
         body =
             Json.Encode.object
                 [ ( "description", Json.Encode.string doneInfo.description )
-                , ( "followup", Json.Encode.string doneInfo.whatToDoNext )
                 , ( "subjectName", Json.Encode.string doneInfo.name )
                 , ( "duration", Json.Encode.int doneInfo.duration )
                 ]
@@ -128,7 +135,7 @@ removeRequest requestMetadata subject =
             }
 
 
-getDetail : RequestMetadata r  -> String -> Http.Request Subject
+getDetail : RequestMetadata r -> String -> Http.Request Subject
 getDetail requestMetadata subjectName =
     let
         url =
@@ -148,49 +155,90 @@ getDetail requestMetadata subjectName =
         request
 
 
+loginRequest state =
+    let
+        url =
+            state.apiEndpoint ++ "/login"
+
+        body =
+            Json.Encode.object
+                [ ( "email", Json.Encode.string state.email )
+                , ( "password", Json.Encode.string state.password )
+                ]
+    in
+        Http.request
+            { method = "POST"
+            , headers = [ Http.header "Content-Type" "application/json" ]
+            , url = url
+            , body = Http.jsonBody body
+            , expect = Http.expectJson decodeAuthResult
+            , timeout = Nothing
+            , withCredentials = False
+            }
+
+
+signupRequest state =
+    let
+        url =
+            state.apiEndpoint ++ "/signup"
+
+        body =
+            Json.Encode.object
+                [ ( "email", Json.Encode.string state.email )
+                , ( "password", Json.Encode.string state.password )
+                ]
+    in
+        Http.request
+            { method = "POST"
+            , headers = [ Http.header "Content-Type" "application/json" ]
+            , url = url
+            , body = Http.jsonBody body
+            , expect = Http.expectString
+            , timeout = Nothing
+            , withCredentials = False
+            }
+
+
 alterSubjectRequest : RequestMetadata r -> Subject -> String -> Http.Request String
 alterSubjectRequest requestMetadata subject previousName =
     let
         url =
             requestMetadata.apiEndpoint ++ "/addOrUpdate"
 
-        body = [ ( "name", Json.Encode.string subject.name )
+        body =
+            [ ( "name", Json.Encode.string subject.name )
             , ( "complexity", Json.Encode.int subject.complexity )
             , ( "priority", Json.Encode.int subject.priority )
             , ( "whatToDoNext", Json.Encode.string subject.whatToDoNext )
             , ( "objective", Json.Encode.string subject.objective )
-            , ( "previousName", Json.Encode.string previousName)
-            ] |> addParent subject
+            , ( "previousName", Json.Encode.string previousName )
+            ]
+                |> addParent subject
     in
         Http.request
             { method = "POST"
             , headers = defaultHeaders requestMetadata
             , url = url
             , body = (Http.jsonBody <| Json.Encode.object body)
-            , expect = (Http.expectJson decodeEmptyResult)
+            , expect = Http.expectJson decodeEmptyResult
             , timeout = Nothing
             , withCredentials = False
             }
 
 
 addParent subject data =
-    if String.isEmpty subject.parent
-    then
+    if String.isEmpty subject.parent then
         data
     else
-        data ++ [("parent", Json.Encode.string subject.parent)]
-
+        data ++ [ ( "parent", Json.Encode.string subject.parent ) ]
 
 
 defaultHeaders requestMetadata =
     [ Http.header "Content-Type" "application/json", Http.header "Authorization" requestMetadata.authToken ]
 
 
-
 decodeEmptyResult =
     Json.Decode.succeed ""
-
-
 
 
 getListRequest : RequestMetadata r -> Bool -> Http.Request (List Subject)
@@ -225,15 +273,15 @@ getHistory state =
         url =
             state.apiEndpoint ++ "/log"
     in
-          Http.request
-              { method = "GET"
-              , headers = defaultHeaders state
-              , url = url
-              , body = Http.emptyBody
-              , expect = (Http.expectJson decodeHistory)
-              , timeout = Nothing
-              , withCredentials = False
-              }
+        Http.request
+            { method = "GET"
+            , headers = defaultHeaders state
+            , url = url
+            , body = Http.emptyBody
+            , expect = Http.expectJson decodeHistory
+            , timeout = Nothing
+            , withCredentials = False
+            }
 
 
 decodeHistory =
@@ -244,25 +292,42 @@ errorResult state msg =
     ( { state | toasterMsg = (toString msg), loading = False }, Cmd.none )
 
 
+
 --- default values
-
-
 --- setters
 
+
 setName subject name =
-  {subject | name = name }
+    { subject | name = name }
+
+
 setComplexity subject complexity =
-  {subject | complexity = complexity }
+    { subject | complexity = complexity }
+
+
 setPriority subject priority =
-  {subject | priority = priority }
+    { subject | priority = priority }
+
+
 setObjective subject objective =
-  {subject | objective = objective }
+    { subject | objective = objective }
+
+
 setWhatToDoNext subject whatToDoNext =
-  {subject | whatToDoNext = whatToDoNext }
+    { subject | whatToDoNext = whatToDoNext }
+
+
 setParent subject parent =
-  {subject | parent = parent }
+    { subject | parent = parent }
+
+
 
 --decoders
+
+decodeAuthResult : Decoder AuthResult
+decodeAuthResult =
+    Json.Decode.Pipeline.decode AuthResult
+        |> Json.Decode.Pipeline.required "authHash" (Json.Decode.string)
 
 
 decodeSubjectList : Decoder (List Subject)
@@ -284,6 +349,7 @@ decodeSubject =
         |> Json.Decode.Pipeline.required "objective" (Json.Decode.string)
         |> Json.Decode.Pipeline.optional "parent" (Json.Decode.string) ""
 
+
 decodeSubjectHistory =
     at [ "history" ] (Json.Decode.array decodePastAction)
 
@@ -296,8 +362,7 @@ decodePastAction =
         |> Json.Decode.Pipeline.required "duration" (Json.Decode.int)
 
 
-
-priorities : List (String, String)
+priorities : List ( String, String )
 priorities =
     [ ( "0", "No Priority" )
     , ( "20", "Low" )
@@ -306,25 +371,27 @@ priorities =
     , ( "100", "Higest" )
     ]
 
+
 getPriorityString priority =
     let
-        filtered = List.filter (\x -> (Tuple.first x) == priority) priorities
+        filtered =
+            List.filter (\x -> (Tuple.first x) == priority) priorities
     in
-       Tuple.second <| Maybe.withDefault (priority, priority) <| List.head filtered
+        Tuple.second <| Maybe.withDefault ( priority, priority ) <| List.head filtered
+
 
 getComplexityString complexity =
     let
-        filtered = List.filter (\x -> (Tuple.first x) == complexity) complexities
+        filtered =
+            List.filter (\x -> (Tuple.first x) == complexity) complexities
     in
-       Tuple.second <| Maybe.withDefault (complexity, complexity) <| List.head filtered
+        Tuple.second <| Maybe.withDefault ( complexity, complexity ) <| List.head filtered
 
 
-complexities : List (String, String)
+complexities : List ( String, String )
 complexities =
     [ ( "10", "Easy" )
     , ( "50", "Medium" )
     , ( "80", "Hard" )
     , ( "100", "Hardest" )
     ]
-
-

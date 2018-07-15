@@ -1,5 +1,6 @@
 import { Scheduler } from './Scheduler.elm';
 import { View } from './View.elm';
+import { Signup } from './Signup.elm';
 import { Done } from './Done.elm';
 import { History } from './History.elm';
 import { Login } from './Login.elm';
@@ -32,6 +33,9 @@ switch (page) {
 	case "scheduler":
 		obj = Scheduler
 		break
+	case "signup":
+		obj = Signup
+		break
 	case "add":
 	case "alter":
 		obj = Alter
@@ -46,6 +50,7 @@ switch (page) {
 		obj = Done
 		flags.subjectName = getParameterByName("subjectName") || ""
 		break
+	case "login":
 	default:
 		page="login"
 		obj = Login
@@ -56,7 +61,6 @@ if (!token && page != "login") {
 }
 
 
-console.log(process.env.ELM_APP_API_URL)
 obj.embed(document.getElementById('root'), flags)
 
 
