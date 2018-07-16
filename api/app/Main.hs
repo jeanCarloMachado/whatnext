@@ -5,26 +5,26 @@
 
 import           Control.Monad.IO.Class      (liftIO)
 import           Crypto.Hash
-import           Data.Aeson                  (FromJSON, ToJSON)
 import           Data.ByteString.UTF8        as BT
 import           Data.List                   (concat)
 import           Data.String
 import           Data.Text                   as Text
 import           Data.Text.Lazy              as LazyText
 import           GHC.Generics
-import           Network.Wai.Middleware.Cors
 import           System.Environment
 import           System.Process
 import           Web.Cookie
 import           Web.Scotty
 import           Web.Scotty.Cookie
 import           Data.Maybe
+import           Lib
+import           Data.Aeson                  (FromJSON, ToJSON)
 
 main = do
   wnDir <- getEnv ("WHATNEXT_SRC")
   scotty 3001 $
    do
-    middleware myCors
+    middleware Lib.myCors
 
     post "/signup" $ do
       credentials <- jsonData :: ActionM Credentials
@@ -43,6 +43,7 @@ main = do
       credentials <- jsonData :: ActionM Credentials
       let authToken = createAuthToken credentials
       json (AuthResult (authToken))
+
     get "/scheduler" $ do
       params <- params
 
@@ -175,19 +176,6 @@ createAuthToken credentials = toString $ digestToHexByteString end
     ctx2 = hashUpdate ctx1 passwordAsByte
     end = hashFinalize ctx2
 
-myPolicy =
-  CorsResourcePolicy
-  { corsOrigins = Nothing
-  , corsMethods = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
-  , corsRequestHeaders = ["Content-Type", "Authorization"]
-  , corsExposedHeaders = Nothing
-  , corsMaxAge = Nothing
-  , corsVaryOrigin = True
-  , corsRequireOrigin = False
-  , corsIgnoreFailures = True
-  }
-
-myCors = cors (const $ Just myPolicy)
 
 data ApiError = ApiError
   { message :: String
@@ -253,3 +241,4 @@ data DoneInfo = DoneInfo
 instance ToJSON DoneInfo
 
 instance FromJSON DoneInfo
+
