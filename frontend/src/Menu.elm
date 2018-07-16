@@ -90,7 +90,7 @@ sideBarHtml =
                         List.append Style.buttonCss dropdownMenuItemCss
                 , href "/"
                 ]
-                [ text "Quit" ]
+                [ text "Logout" ]
             ]
         ]
 

@@ -20,6 +20,7 @@ type alias Colors =
     , fail : Css.Color
     , barColor : Css.Color
     , invertedHighlight : Css.Color
+    , disabledColor : Css.Color
     }
 
 
@@ -36,6 +37,7 @@ defaultColors =
         (Css.hex "ff2d55")
         (Css.rgb 0 122 255)
         (Css.hex "f0f0f0")
+        (Css.hex "808080")
 
 
 modalCss =

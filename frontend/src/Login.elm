@@ -27,12 +27,13 @@ type alias State =
     , apiEndpoint : String
     , errorMessage : String
     , loading : Bool
+    , formValid : Bool
     }
 
 
 init : Flags -> ( State, Cmd Msg )
 init flags =
-    ( State "" "" flags.apiEndpoint "" False, Cmd.none )
+    ( State "" "" flags.apiEndpoint "" False False, Cmd.none )
 
 
 type Msg
@@ -46,10 +47,10 @@ type Msg
 update msg state =
     case msg of
         UpdateEmail email ->
-            ( { state | email = email }, Cmd.none )
+            ( { state | email = email, formValid = isFormValid state}, Cmd.none )
 
         UpdatePassword password ->
-            ( { state | password = password }, Cmd.none )
+            ( { state | password = password, formValid = isFormValid state}, Cmd.none )
 
         SubmitForm ->
             ( { state | errorMessage = "" } |> Loader.enableLoading, Http.send RequestResult <| SDK.loginRequest state )
@@ -65,8 +66,18 @@ update msg state =
         None ->
             ( state, Cmd.none )
 
+
+isFormValid : State -> Bool
+isFormValid state =
+    if (String.length state.email > 3 && String.length state.password > 1)
+    then
+        True
+    else
+        False
+
 -- view
 
+view : State -> Html Msg
 view state =
     div
         [ css
@@ -120,16 +131,26 @@ view state =
                             , href "?page=signup"
                         ]
                         [ text "Not a member?" ]
-                    , button
-                        [ css Style.buttonCss
-                        , onClick SubmitForm
-                        ]
-                        [ text "Login" ]
+                    , loginButton state
                     ]
                 ]
             ]
         ]
 
+
+loginButton state =
+    case state.formValid of
+        True ->
+            button
+                [ css Style.buttonCss
+                , onClick SubmitForm
+                ]
+                [ text "Login" ]
+        False ->
+            button
+                [ css <| Style.buttonCss ++ [backgroundColor defaultColors.disabledColor ]
+                ]
+                [ text "Login" ]
 
 subscriptions : State -> Sub Msg
 subscriptions state =
