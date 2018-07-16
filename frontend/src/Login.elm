@@ -13,6 +13,7 @@ import Navigation
 import Storage.Local
 import Task
 
+
 type alias Flags =
     { apiEndpoint : String }
 
@@ -33,7 +34,20 @@ type alias State =
 
 init : Flags -> ( State, Cmd Msg )
 init flags =
-    ( State "" "" flags.apiEndpoint "" False False, Cmd.none )
+    let
+        initState = initialState flags
+    in
+        ( {initState | formValid = isFormValid initState }, Cmd.none )
+
+
+initialState flags =
+    State
+        ""
+        ""
+        flags.apiEndpoint
+        ""
+        False
+        False
 
 
 type Msg
@@ -47,35 +61,39 @@ type Msg
 update msg state =
     case msg of
         UpdateEmail email ->
-            ( { state | email = email, formValid = isFormValid state}, Cmd.none )
+            ( { state | email = email, formValid = isFormValid state }, Cmd.none )
 
         UpdatePassword password ->
-            ( { state | password = password, formValid = isFormValid state}, Cmd.none )
+            ( { state | password = password, formValid = isFormValid state }, Cmd.none )
 
         SubmitForm ->
             ( { state | errorMessage = "" } |> Loader.enableLoading, Http.send RequestResult <| SDK.loginRequest state )
 
         RequestResult (Ok authResult) ->
             let
-                setStorage = Storage.Local.set "Authorization" authResult.hash
+                setStorage =
+                    Storage.Local.set "Authorization" authResult.hash
             in
-            ( state ,Cmd.batch [Task.attempt (\a -> (None)) setStorage, Navigation.load "?page=scheduler"  ])
+                ( state, Cmd.batch [ Task.attempt (\a -> (None)) setStorage, Navigation.load "?page=scheduler" ] )
 
         RequestResult (Err msg) ->
-              ( { state | errorMessage = "Something went wrong" }, Cmd.none )
+            ( { state | errorMessage = "Something went wrong" }, Cmd.none )
+
         None ->
             ( state, Cmd.none )
 
 
 isFormValid : State -> Bool
 isFormValid state =
-    if (String.length state.email > 3 && String.length state.password > 1)
-    then
+    if (String.length state.email > 3 && String.length state.password > 1) then
         True
     else
         False
 
+
+
 -- view
+
 
 view : State -> Html Msg
 view state =
@@ -96,7 +114,7 @@ view state =
                     [ color defaultColors.textHighlight
                     ]
                 ]
-                [ text "Login"]
+                [ text "Login" ]
             , div
                 [ css
                     [ marginTop (px 20)
@@ -128,7 +146,7 @@ view state =
                             , padding (px 10)
                             , color defaultColors.normalButton
                             ]
-                            , href "?page=signup"
+                        , href "?page=signup"
                         ]
                         [ text "Not a member?" ]
                     , loginButton state
@@ -146,14 +164,14 @@ loginButton state =
                 , onClick SubmitForm
                 ]
                 [ text "Login" ]
+
         False ->
             button
-                [ css <| Style.buttonCss ++ [backgroundColor defaultColors.disabledColor ]
+                [ css <| Style.buttonCss ++ [ backgroundColor defaultColors.disabledColor ]
                 ]
                 [ text "Login" ]
+
 
 subscriptions : State -> Sub Msg
 subscriptions state =
     Sub.none
-
-

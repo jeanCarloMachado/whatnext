@@ -189,7 +189,6 @@ viewSubject subject =
                         [ div []
                             [ subjectProperty "Priority" <| SDK.getPriorityString <| toString subject.priority
                             , subjectProperty "Complexity" <| SDK.getComplexityString <| toString subject.complexity
-                            , subjectProperty "Parent" <| subject.parent
                             ]
                         , div []
                             [ subjectProperty "Last session" <| toString subject.daysSinceLast ++ " days ago"
@@ -207,11 +206,59 @@ viewSubject subject =
                     [ span [ css longEntryCss ] [ text "Next Action: " ]
                     , p [ css longValueCss ] [ showMultilineText subject.whatToDoNext ]
                     ]
+                , parentHtml subject
                 , subjectsToHtml subject.children
                 , showHistory subject
                 ]
             ]
         ]
+
+
+parentHtml subject =
+    if String.isEmpty subject.parent then
+        Style.emptyNode
+    else
+        div []
+            [
+                 newSection "Parent"
+                , div
+                [ Style.subjectCss
+                ]
+                [
+                a [ href <| "?page=view&subjectName=" ++ subject.parent ]
+                    [ div []
+                        [ div
+                            [ css
+                                [ fontSize (Css.em 0.9)
+                                , displayFlex
+                                , justifyContent spaceBetween
+                                , flexDirection row
+                                , alignItems center
+                                ]
+                            ]
+                            [ div []
+                                [ span
+                                    [ css
+                                        [ fontSize (Css.em 0.5)
+                                        , marginRight (px 15)
+                                        ]
+                                    ]
+                                    []
+                                , h1
+                                    [ class "noselect"
+                                    , css
+                                        [ display inline
+                                        , color defaultColors.textHighlight
+                                        , marginRight (px 20)
+                                        ]
+                                    ]
+                                    [ text subject.parent ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
 
 
 longValueCss =
