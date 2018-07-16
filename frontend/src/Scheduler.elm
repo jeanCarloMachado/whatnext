@@ -228,12 +228,13 @@ subjectToHtml subject =
 
 
 extraInfo subject =
-    if subject.daysSinceLast > 0 then
+    case subject.daysSinceLast of
+      Just days ->
         span
             [ css [ fontSize (Css.em 0.7), color defaultColors.textNormal ]
             ]
-            [ text <| " " ++ toString subject.daysSinceLast ++ " days ago" ]
-    else
+            [ text <| " " ++ toString days ++ " days ago" ]
+      Nothing ->
         Style.emptyNode
 
 

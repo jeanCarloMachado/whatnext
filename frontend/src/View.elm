@@ -132,7 +132,8 @@ view state =
                             []
                         ]
                     , Style.addButton subject.name
-                    , Style.doneButton <| Just subject.name
+                    , Style.doneButton <| Just <| "?page=done&subjectName=" ++ subject.name ++ "&parent=" ++ subject.parent
+
                     ]
                 , --main content
                   div
@@ -191,7 +192,7 @@ viewSubject subject =
                             , subjectProperty "Complexity" <| SDK.getComplexityString <| toString subject.complexity
                             ]
                         , div []
-                            [ subjectProperty "Last session" <| toString subject.daysSinceLast ++ " days ago"
+                            [ subjectProperty "Last session" <| lastSessionString subject.daysSinceLast 
                             , subjectProperty "Already invested" <| (toString subject.timeAlreadyInvested) ++ " minutes"
                             ]
                         ]
@@ -212,6 +213,13 @@ viewSubject subject =
                 ]
             ]
         ]
+
+lastSessionString maybe =
+    case maybe of
+        Just days ->
+            (toString days) ++ " days ago"
+        Nothing ->
+            "Never"
 
 
 parentHtml subject =

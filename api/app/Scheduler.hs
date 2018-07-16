@@ -15,6 +15,7 @@ import           System.Environment
 import           System.Process
 import           Data.Time.Calendar (fromGregorian, Day, diffDays)
 import Data.Time.Clock (utctDay, getCurrentTime)
+import 					 Data.Maybe (fromMaybe)
 
 
 main :: IO()
@@ -60,14 +61,13 @@ getDaysSinceLastStudy currentDirectory subject = do
       (currentDirectory ++ "/gateway.sh")
       ["daysSinceLastStudy", name subject]
       ""
-  let daysInt = daysToInt daysSinceLastStudy
-  return (subject {daysSinceLastStudy = daysInt})
+  return (subject {daysSinceLastStudy = daysWrapper daysSinceLastStudy})
 
 tiredModeValToBool Nothing = False
 tiredModeValToBool _       = True
 
-daysToInt "" = 0
-daysToInt x  = read x :: Int
+daysWrapper "" = Nothing
+daysWrapper x  = Just ( read x :: Int)
 
 
 sortByWeight :: [Subject] -> [Subject]
@@ -86,7 +86,7 @@ computeWeight context subject =
   where
     regularizedPriority = (priority subject) / 100
     regularizedComplexity = (complexity subject) / 100
-    floatDaysSinceLastStudy = fromIntegral $ daysSinceLastStudy subject
+    floatDaysSinceLastStudy = fromIntegral $ fromMaybe 0 (daysSinceLastStudy subject)
     daysSinceLastStudyQuadratic =
       (floatDaysSinceLastStudy ** 2) /
       reasonableMaxDaysWithoutDoing (floatDaysSinceLastStudy ** 2)
@@ -136,7 +136,7 @@ data Subject = Subject
   , priority            :: Float
   , complexity          :: Float
   , weight              :: Float
-  , daysSinceLastStudy  :: Int
+  , daysSinceLastStudy  :: Maybe Int
   , objective           :: String
   , whatToDoNext        :: String
   , parent              :: String
@@ -167,7 +167,7 @@ instance FromJSON Subject where
       creationDate <- o .: "creationDate"
       parent <- o .: "parent"
       let day = getDay $ explodeDate creationDate
-      return ( Subject name priority complexity 0 0 objective whatToDoNext parent 0 day)
+      return ( Subject name priority complexity 0 Nothing objective whatToDoNext parent 0 day)
 
 instance ToJSON Subject where
   toJSON Subject {..} =

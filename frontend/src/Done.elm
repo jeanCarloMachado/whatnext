@@ -2,7 +2,7 @@ module Done exposing (..)
 
 import Html
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (property, css, href, src, placeholder, type_, id, class, value, required, defaultValue)
+import Html.Styled.Attributes exposing (property, css, href, src, placeholder, type_, id, class, value, required, defaultValue, checked)
 import Css exposing (..)
 import Style exposing (defaultColors)
 import Html.Styled.Events exposing (..)
@@ -18,14 +18,19 @@ type alias Flags =
     { apiEndpoint : String
     , authToken : String
     , subjectName : String
+    , parent : String
     }
 
 
 init : Flags -> ( State, Cmd Msg )
 init flags =
+        (initialState flags, Cmd.none )
+
+initialState flags =
     let
         valid = not <| String.isEmpty flags.subjectName
-        state =
+    in
+        if String.isEmpty flags.parent then
             State
                ""
                False
@@ -34,12 +39,43 @@ init flags =
                flags.authToken
                flags.apiEndpoint
                flags.subjectName
+               flags.parent
+               flags.subjectName
                ""
                valid
                50
                False
-    in
-        ( state, Cmd.none )
+         else
+            State
+               ""
+               False
+               False
+               ""
+               flags.authToken
+               flags.apiEndpoint
+               flags.subjectName
+               flags.parent
+               flags.parent
+               flags.subjectName
+               valid
+               50
+               True
+
+type alias State =
+    { errorMessage : String
+    , sideMenu : Bool
+    , loading : Bool
+    , toasterMsg : String
+    , authToken : String
+    , apiEndpoint : String
+    , name : String
+    , parent : String
+    , title : String
+    , description : String
+    , formValid : Bool
+    , duration : Int
+    , archive : Bool
+    }
 
 main =
     Html.programWithFlags
@@ -50,27 +86,11 @@ main =
         }
 
 
-
-type alias State =
-    { errorMessage : String
-    , sideMenu : Bool
-    , loading : Bool
-    , toasterMsg : String
-    , authToken : String
-    , apiEndpoint : String
-    , name : String
-    , description : String
-    , formValid : Bool
-    , duration : Int
-    , archive : Bool
-    }
-
-
 type Msg
     = None
     | ToggleSideMenu
     | ChangeDescription String
-    | ChangeSubjectName String
+    | ChangeSubjectTitle String
     | ChangeDuration String
     | SubmitDone
     | ArchiveToggle
@@ -90,9 +110,9 @@ update msg state =
         ChangeDescription description ->
             ( { state | description = description }, Cmd.none )
 
-        ChangeSubjectName name ->
+        ChangeSubjectTitle title ->
           let
-            newState =  { state | name = name }
+            newState =  { state | title = title }
           in
             (validateInnerState newState, Cmd.none )
 
@@ -171,20 +191,21 @@ content state =
                 ]
             ]
             [
-            label [ css Style.labelCss ] [ text "Subject name" ]
+            label [ css Style.labelCss ] [ text "Title" ]
             , input
                 [ Style.inputCss
                 , type_ "text"
                 , placeholder "Name"
                 , Html.Styled.Attributes.required True
-                , onInput ChangeSubjectName
-                , defaultValue state.name
+                , onInput ChangeSubjectTitle
+                , defaultValue state.title
                 ]
                 []
             , label [] [ text "What was done?" ]
             , textarea
                 [ css Style.textAreaCss
                 , placeholder "studied x y z"
+                , defaultValue state.description
                 , onInput ChangeDescription
                 ]
                 []
@@ -201,7 +222,7 @@ content state =
 
             , span [ css [ marginRight (px 10) ] ] [ text "Archive subject" ]
             , label [ class "switch" ]
-                [ input [ type_ "checkbox", onClick ArchiveToggle ] []
+                [ input [ type_ "checkbox", onClick ArchiveToggle, Html.Styled.Attributes.checked state.archive ] []
                 , span [ class "slider" ] []
                 ]
             ]

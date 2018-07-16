@@ -9,7 +9,7 @@ import Json.Decode.Pipeline
 
 type alias Subject =
     { name : String
-    , daysSinceLast : Int
+    , daysSinceLast : Maybe Int
     , timeAlreadyInvested : Int
     , history : List PastAction
     , children : List String
@@ -30,7 +30,7 @@ emptySubject : Subject
 emptySubject =
     Subject
         ""
-        0
+        Nothing
         0
         []
         []
@@ -74,7 +74,7 @@ type alias SubjectData r =
 
 type alias DoneInfo r =
     { r
-        | name : String
+        | title : String
         , description : String
         , duration : Int
     }
@@ -103,7 +103,7 @@ doneRequest requestMetadata doneInfo =
         body =
             Json.Encode.object
                 [ ( "description", Json.Encode.string doneInfo.description )
-                , ( "subjectName", Json.Encode.string doneInfo.name )
+                , ( "subjectName", Json.Encode.string doneInfo.title )
                 , ( "duration", Json.Encode.int doneInfo.duration )
                 ]
     in
@@ -339,8 +339,8 @@ decodeSubject : Decoder Subject
 decodeSubject =
     Json.Decode.Pipeline.decode Subject
         |> Json.Decode.Pipeline.required "name" (Json.Decode.string)
-        |> Json.Decode.Pipeline.required "days_since_last_study" Json.Decode.int
-        |> Json.Decode.Pipeline.required "time_already_invested" Json.Decode.int
+        |> Json.Decode.Pipeline.optional "days_since_last_study" (Json.Decode.map Just Json.Decode.int) Nothing
+        |> Json.Decode.Pipeline.required "time_already_invested" Json.Decode.int 
         |> Json.Decode.Pipeline.optional "history" (Json.Decode.list decodePastAction) []
         |> Json.Decode.Pipeline.optional "children" (Json.Decode.list Json.Decode.string) []
         |> Json.Decode.Pipeline.required "whatToDoNext" (Json.Decode.string)

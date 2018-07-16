@@ -22,7 +22,7 @@ type alias Flags =
     { apiEndpoint : String
     , authToken : String
     , subjectName : String
-    , parentName : String
+    , parent : String
     }
 
 type alias State =
@@ -55,7 +55,7 @@ init flags =
                 False
                 False
                 ""
-                (SDK.setParent SDK.emptySubject flags.parentName)
+                (SDK.setParent SDK.emptySubject flags.parent)
                 flags.authToken
                 flags.apiEndpoint
                 False

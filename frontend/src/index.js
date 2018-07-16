@@ -24,7 +24,6 @@ let flags = {
 	authToken: token
 }
 let obj = null
-let parentName = null
 
 switch (page) {
 	case "log":
@@ -40,7 +39,7 @@ switch (page) {
 	case "alter":
 		obj = Alter
 		flags.subjectName = getParameterByName("subjectName") || ""
-		flags.parentName = getParameterByName("parent") || ""
+		flags.parent = getParameterByName("parent") || ""
 		break
 	case "view":
 		obj = View
@@ -49,6 +48,7 @@ switch (page) {
 	case "done":
 		obj = Done
 		flags.subjectName = getParameterByName("subjectName") || ""
+		flags.parent = getParameterByName("parent") || ""
 		break
 	case "login":
 	default:

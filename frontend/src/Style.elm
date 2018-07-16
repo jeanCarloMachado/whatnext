@@ -164,10 +164,10 @@ buttonHeight =
 
 
 doneButton : Maybe String -> Html msg
-doneButton subjectName =
-    case subjectName of
-        Just name ->
-            doneButtonHtml <| "?page=done&subjectName=" ++ name
+doneButton maybeUrl =
+    case maybeUrl of
+        Just url ->
+            doneButtonHtml url
 
         Nothing ->
             doneButtonHtml "?page=done"
