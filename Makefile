@@ -55,7 +55,7 @@ compileContainer:
 copyServerData:
 	scp -r 'blog:~/whatnext_data' /tmp/data
 	make initializeDir
-	cp -rf /tmp/data/whatnext_data/* /data/whatnext
+	cp -rf /tmp/data/* /data/whatnext
 
 cleanupData:
 	sudo rm -rf /data || true

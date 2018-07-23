@@ -288,6 +288,7 @@ decodeHistory =
     Json.Decode.array decodePastAction
 
 
+--errorResult : State -> Error -> ( State, Cmd Msg )
 errorResult state msg =
     ( { state | toasterMsg = (toString msg), loading = False }, Cmd.none )
 
@@ -353,6 +354,9 @@ decodeSubject =
 decodeSubjectHistory =
     at [ "history" ] (Json.Decode.array decodePastAction)
 
+
+decodeApiError = 
+    at [ "message" ] (Json.Decode.string)
 
 decodePastAction =
     Json.Decode.Pipeline.decode PastAction

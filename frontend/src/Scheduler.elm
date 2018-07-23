@@ -1,5 +1,6 @@
 module Scheduler exposing (..)
 
+import Json.Decode
 import Html
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (property, css, href, src, placeholder, type_, id, class, value, required, defaultValue)
@@ -9,6 +10,7 @@ import Css exposing (..)
 import SDK exposing (Subject, PastAction)
 import Style exposing (defaultColors)
 import Menu
+import Navigation
 
 
 -- json
@@ -100,15 +102,24 @@ type alias Flags =
 
 -- update
 
-
 update : Msg -> State -> ( State, Cmd Msg )
 update msg model =
     case msg of
         NewList (Ok subjects) ->
             ( { model | subjects = subjects } |> Loader.disableLoading, Cmd.none )
+        NewList (Err (BadPayload message response)) ->
+            case getErrorMessage response of
+                Ok messageStr ->
+                    if messageStr == "token invalid" 
+                    then
+                      (model, Navigation.load "?page=login")
+                    else
+                     SDK.errorResult model message
 
-        NewList (Err msg) ->
-            errorResult model msg
+                _ -> SDK.errorResult model message
+
+        NewList (Err _) ->
+            SDK.errorResult model msg
 
         NoAction ->
             ( model, Cmd.none )
@@ -124,9 +135,8 @@ update msg model =
                 ( newState, Http.send NewList <| SDK.getListRequest newState newState.tiredMode )
 
 
-errorResult : State -> Error -> ( State, Cmd Msg )
-errorResult model msg =
-    ( { model | toasterMsg = (toString msg), loading = False }, Cmd.none )
+getErrorMessage response =
+            Json.Decode.decodeString (Json.Decode.field "message" Json.Decode.string) response.body
 
 
 view : State -> Html.Styled.Html Msg

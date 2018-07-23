@@ -21,7 +21,6 @@ type alias Flags =
 main =
     Html.programWithFlags { init = init, view = view >> toUnstyled, update = update, subscriptions = subscriptions }
 
-
 type alias State =
     { email : String
     , password : String
@@ -37,7 +36,7 @@ init flags =
     let
         initState = initialState flags
     in
-        ( {initState | formValid = isFormValid initState }, Cmd.none )
+        ( {initState | formValid = True }, Cmd.none )
 
 
 initialState flags =
@@ -58,6 +57,7 @@ type Msg
     | RequestResult (Result Http.Error SDK.AuthResult)
 
 
+update : Msg -> State -> (State, Cmd Msg)
 update msg state =
     case msg of
         UpdateEmail email ->
