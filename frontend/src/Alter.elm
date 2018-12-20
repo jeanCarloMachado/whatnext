@@ -224,7 +224,7 @@ content state =
                     [ defaultValue state.subject.objective
                     , css <| List.append Style.textAreaCss [ minHeight (px 35) ]
                     , placeholder "After finishing studying this subject will be able to ..."
-                    , onInput (ChangeObjective)
+                    , on (ChangeObjective)
                     , Html.Styled.Attributes.required False
                     ]
                     []
